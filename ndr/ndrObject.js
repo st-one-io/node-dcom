@@ -1,23 +1,26 @@
 var NetworkDataRepresentation = require("./NetworkDataRepresentation.js");
 
-module.exports = function ndrObject (){
+function ndrObject (){
   this.opnum = -1;
   this.value;
+};
 
-  this.write = function (ndr){};
-  this.read = function (ndr){};
+ndrObject.prototype.write = function (ndr){};
 
-  this.getOpnum = function getOpnum(){
-    return this.opnum;
-  }
+ndrObject.prototype.read = function (ndr){};
 
-  this.encode = function (ndr, dst){
-    ndr.buf = dst;
-    write(ndr);
-  }
-
-  this.decode = function (ndr, src){
-    ndr.buf = src;
-    read(ndr);
-  }
+ndrObject.prototype.getOpnum = function getOpnum(){
+  return this.opnum;
 }
+
+ndrObject.prototype.encode = function (ndr, dst){
+  ndr.buf = dst;
+  write(ndr);
+}
+
+ndrObject.prototype.decode = function (ndr, src){
+  ndr.buf = src;
+  read(ndr);
+}
+
+module.exports = ndrObject;

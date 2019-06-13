@@ -1,5 +1,5 @@
 
-module.exports = function Format (dataRepresentation){
+function Format (dataRepresentation){
   this.LITTLE_ENDIAN = 0x10000000;
   this.BIG_ENDIAN = 0x00000000;
 
@@ -31,29 +31,31 @@ module.exports = function Format (dataRepresentation){
   if((dataRepresentation & this.FLOATING_POINT_MASK) != this.IEEE_FLOATING_POINT){
     throw new Error("Only IEEE floating point is currently supported.");
   }
+};
 
-  this.getDefaultFormat = function (){
-    return new Format(this.DEFAULT_DATA_REPRESENTATION);
-  }
-
-  this.getDataRepresentation = function (){
-    return this.dataRepresentation;
-  }
-
-  this.readFormat = function (src, index, connectionless){
-    var value = src[index++] << 24;
-    value |= (src[index++] & 0xff) << 16;
-    value |= (src[index++] & 0xff) << 8;
-    if (!connectionless) value |= src[index] & 0xff;
-    console.log(value);
-    return new Format(value);
-  }
-
-  this.writeFormat = function (dest, index, connectionless){
-    var val = getDataRepresentation();
-    dest[index++] = ((val >> 24) & 0xff);
-    dest[index++] = ((val >> 16) & 0xff);
-    dest[index] = 0x00;
-    if (!connectionless) dest[++index] = 0x00;
-  }
+Format.prototype.getDefaultFormat = function (){
+  return new Format(this.DEFAULT_DATA_REPRESENTATION);
 }
+
+Format.prototype.getDataRepresentation = function (){
+  return this.dataRepresentation;
+}
+
+Format.prototype.readFormat = function (src, index, connectionless){
+  var value = src[index++] << 24;
+  value |= (src[index++] & 0xff) << 16;
+  value |= (src[index++] & 0xff) << 8;
+  if (!connectionless) value |= src[index] & 0xff;
+  console.log(value);
+  return new Format(value);
+}
+
+Format.prototype.writeFormat = function (dest, index, connectionless){
+  var val = getDataRepresentation();
+  dest[index++] = ((val >> 24) & 0xff);
+  dest[index++] = ((val >> 16) & 0xff);
+  dest[index] = 0x00;
+  if (!connectionless) dest[++index] = 0x00;
+}
+
+module.exports = Format;
