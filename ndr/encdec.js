@@ -1,4 +1,4 @@
-var smbConstants = require("./smbConstants");
+var SmbConstants = require("./smbconstants");
 
 module.exports = {
   // constants

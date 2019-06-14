@@ -1,5 +1,5 @@
-var hexDump = require("./hexDump");
-var Format = require("./Format.js");
+var hexDump = require("./hexdump");
+var Format = require("./format.js");
 
 function NetworkDataRepresentation(){
   const NDR_UUID = "8a885d04-1ceb-11c9-9fe8-08002b104860";

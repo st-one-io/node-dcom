@@ -4,7 +4,7 @@
  * just in case.
  */
 
-var smbConstants = {
+var SmbConstants = {
   DEFAULT_PORT: 445,
   DEFAULT_MAX_MPX_COUNT: 10,
   DEFAULT_RESPONSE_TIMEOUT: 30000,
@@ -100,4 +100,4 @@ var smbConstants = {
   FOREVER: -1
 };
 
-module.exports = Object.freeze(smbConstants);
+module.exports = Object.freeze(SmbConstants);

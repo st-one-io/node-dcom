@@ -1,9 +1,9 @@
-var ndrBuffer = require("./ndr/ndrBuffer.js");
-var ndrOjbect = require("./ndr/ndrObject.js");
-var hexDump = require("./ndr/hexDump.js");
-var NetworkDataRepresentation = require("./ndr/NetworkDataRepresentation.js");
+var ndrBuffer = require("../../ndr/ndrbuffer.js");
+var ndrOjbect = require("../../ndr/ndrobject.js");
+var hexDump = require("../../ndr/hexdump.js");
+var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
 
-function UUID(string){
+function UUID(uuid){
   this.NIL_UUID = "00000000-0000-0000-0000-000000000000";
 
   this.TIMELOW_INDEX = 0;
@@ -90,6 +90,24 @@ UUID.prototype.toString = function(){
   return String(buffer);
 }
 
-UUID.prototype.parse = function(){
-  
+UUID.prototype.parse = function(uuid){
+  var count = 0;
+  var temp = uuid.split("-");
+
+  this.timeLow = Number.parseInt(temp[0], 16);
+  this.timeMid = Number.parseInt(temp[1], 16);
+  this.timeHighAndVersion = Number.parseInt(temp[2], 16);
+
+  var token = temp[3];
+  this.clockSeqHighAndReserved = Number.parseInt(token.substring(0, 2), 16);
+  this.clockSeqLow = Number.parseInt(token.substring(2), 16);
+
+  token = temp[4];
+  for (var i = 0; i < 6; i++){
+    var offset = i * 2;
+    this.node[i] = ((Number.parseInt(token[offset], 16) << 4) | (Number.parseInt(token[offset + 1],16)));
+  }
+  //console.log(this.timeLow, this.timeMid, this.timeHighAndVersion, this.clockSeqHighAndReserved, this.clockSeqLow, this.node);
 }
+
+module.exports = UUID;

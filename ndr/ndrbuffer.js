@@ -1,7 +1,7 @@
 var HashMap = require('hashmap');
 var Encdec = require('./encdec.js');
 
-function ndrBuffer(buf, start){
+function NdrBuffer(buf, start){
   this.referent = undefined;
   this.referents = new HashMap();
   this.entry = {
@@ -14,43 +14,43 @@ function ndrBuffer(buf, start){
   this.start = start;
   this.index = start;
   this.length = 0;
-  //ndrBuffer
+  //NdrBuffer
   this.deferred = this;
   // bool
   this.ignoreAlign = false;
 };
 
-ndrBuffer.prototype.derive = function (idx){
-  var nb = new ndrBuffer(buf, start);
+NdrBuffer.prototype.derive = function (idx){
+  var nb = new NdrBuffer(buf, start);
   nb.index = idx;
   nb.deferred = this.deferred;
   nb.ignoreAlign = this.ignoreAlign;
   return nb;
 }
 
-ndrBuffer.prototype.reset = function (){
+NdrBuffer.prototype.reset = function (){
   this.index = start;
   length = 0;
   deferred = this;
 }
 
-ndrBuffer.prototype.getIndex = function (){
+NdrBuffer.prototype.getIndex = function (){
   return this.index;
 }
 
-ndrBuffer.prototype.setIndex = function (index){
+NdrBuffer.prototype.setIndex = function (index){
   this.index = index;
 }
 
-ndrBuffer.prototype.getCapacity = function (){
+NdrBuffer.prototype.getCapacity = function (){
   return buf.length - start;
 }
 
-ndrBuffer.prototype.getBuffer = function (){
+NdrBuffer.prototype.getBuffer = function (){
   return buf;
 }
 
-ndrBuffer.prototype.alignToValue = function (boundary, value){
+NdrBuffer.prototype.alignToValue = function (boundary, value){
   if (ignoreAlign){
     return 0;
   }
@@ -63,7 +63,7 @@ ndrBuffer.prototype.alignToValue = function (boundary, value){
   return n;
 }
 
-ndrBuffer.prototype.writeOctetArray = function (b, i, l){
+NdrBuffer.prototype.writeOctetArray = function (b, i, l){
   var temp = buf.slice(this.index, (this.index + l));
   while (temp.length > 0){
     b.splice(i, 0, temp.shift());
@@ -72,7 +72,7 @@ ndrBuffer.prototype.writeOctetArray = function (b, i, l){
   this.advance(l);
 }
 
-ndrBuffer.prototype.readOctetArray = function (b, i, l){
+NdrBuffer.prototype.readOctetArray = function (b, i, l){
   var temp = b.slice(this.index, (this.index + l));
   while (temp.length > 0){
     buff.splice(i, 0, temp.shift());
@@ -81,18 +81,18 @@ ndrBuffer.prototype.readOctetArray = function (b, i, l){
   this.advance(l);
 }
 
-ndrBuffer.prototype.getLength = function (){
+NdrBuffer.prototype.getLength = function (){
   return this.deferred.length;
 }
 
-ndrBuffer.prototype.advance = function (n){
+NdrBuffer.prototype.advance = function (n){
   this.index += n;
   if ((this.index - this.start) > this.deferred.length){
     this.deferred.length = this.index - this.start;
   }
 }
 
-ndrBuffer.prototype.align = function (boundary){
+NdrBuffer.prototype.align = function (boundary){
   if (ignoreAlign){
     return 0;
   }
@@ -104,44 +104,44 @@ ndrBuffer.prototype.align = function (boundary){
   return n;
 }
 
-ndrBuffer.prototype.enc_ndr_small = function (s){
+NdrBuffer.prototype.enc_ndr_small = function (s){
   buf[this.index] = s & 0xFF;
   this.advance(1);
 }
 
-ndrBuffer.prototype.dec_ndr_small = function (){
+NdrBuffer.prototype.dec_ndr_small = function (){
   var val = buf[this.index] & 0xFF;
   this.advance(1);
   return val;
 }
 
-ndrBuffer.prototype.enc_ndr_short = function (s){
+NdrBuffer.prototype.enc_ndr_short = function (s){
   this.align(2);
   Encdec.enc_uint16le(s, buf, this.index);
   this.advance(2);
 }
 
-ndrBuffer.prototype.dec_ndr_short = function (){
+NdrBuffer.prototype.dec_ndr_short = function (){
   this.align(2);
   var val = Encdec.dec_uint16le(buf,this.index);
   this.advance(2);
   return val;
 }
 
-ndrBuffer.prototype.enc_ndr_long = function (l){
+NdrBuffer.prototype.enc_ndr_long = function (l){
   this.align(4);
   Encdec.enc_uint32le(l, buf, this.index);
   this.advance(4);
 }
 
-ndrBuffer.prototype.dec_ndr_long = function (){
+NdrBuffer.prototype.dec_ndr_long = function (){
   this.align(4);
   var val = Encdec.dec_uint32le(buf, this.index);
   this.advance(4);
   return val;
 }
 
-ndrBuffer.prototype.enc_ndr_string = function (s){
+NdrBuffer.prototype.enc_ndr_string = function (s){
   this.align(4);
   var i = this.index;
   var len = s.length;
@@ -162,7 +162,7 @@ ndrBuffer.prototype.enc_ndr_string = function (s){
   this.advance(i - this.index);
 }
 
-ndrBuffer.prototype.dec_ndr_string = function (){
+NdrBuffer.prototype.dec_ndr_string = function (){
   this.align(4);
   var i = this.index;
   var val = null;
@@ -180,7 +180,7 @@ ndrBuffer.prototype.dec_ndr_string = function (){
   return val;
 }
 
-ndrBuffer.prototype.getDceReferent = function (obj){
+NdrBuffer.prototype.getDceReferent = function (obj){
   var e;
 
   if (this.referents == null){
@@ -197,7 +197,7 @@ ndrBuffer.prototype.getDceReferent = function (obj){
   return e.referent;
 }
 
-ndrBuffer.prototype.enc_ndr_referent = function (obj, type) {
+NdrBuffer.prototype.enc_ndr_referent = function (obj, type) {
   if (obj == null){
     this.enc_ndr_long(0);
     return;
@@ -213,8 +213,8 @@ ndrBuffer.prototype.enc_ndr_referent = function (obj, type) {
   }
 }
 
-ndrBuffer.prototype.toString = function(){
+NdrBuffer.prototype.toString = function(){
   return String("start=" + this.start + ", index=" + this.index + ",length=" + this.getLength());
 }
 
-module.exports = ndrBuffer;
+module.exports = NdrBuffer;
