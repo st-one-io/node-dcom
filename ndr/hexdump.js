@@ -36,13 +36,15 @@ function hexdump(src, srcIndex, length){
       if (si == length){
         var n = 16 - s;
         var tmp = SPACE_CHARS.slice(0, (0 + n * 3));
+        var tmp_index = ci;
         while(tmp.length > 0){
-          c.splice(ci, 0, tmp.shift());
+          c.splice(tmp_index++, 0, tmp.shift());
         }
         ci += n * 3;
         tmp = SPACE_CHARS.slice(0, n);
+        tmp_index = s;
         while(tmp.length > 0){
-          d.splice(s, 0, tmp.shift());
+          d.splice(tmp_index, 0, tmp.shift());
         }
         break;
       }
@@ -60,8 +62,9 @@ function hexdump(src, srcIndex, length){
     c[ci++] = ' ';
     c[ci++] = '|';
     tmp = d.slice(0, 16);
+    tmp_index = ci;
     while(tmp.length > 0)
-      c.splice(ci, 0, tmp.shift());
+      c.splice(tmp_index++, 0, tmp.shift());
     ci += 16;
     c[ci++] = '|';
     temp = c.slice(0, NL_LENGTH);

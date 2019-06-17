@@ -1,0 +1,21 @@
+{
+  "name": "node-dcom",
+  "version": "1.0.0",
+  "description": "Simple lib to support DCOM communication",
+  "main": "none",
+  "scripts": {
+    "test": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.netsmarttech.com/igor.steuck/node-dcom.git"
+  },
+  "keywords": [
+    "dcom",
+    "com",
+    "opc",
+    "opc-da"
+  ],
+  "author": "Igor Steuck Lopes",
+  "license": "ISC"
+}

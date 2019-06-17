@@ -46,8 +46,9 @@ UUID.prototype.decode = function (ndr, src){
   clockSewLow = src.dec_ndr_small();
 
   var temp = this.node.slice(0, 6);
+  var temp_index= dst.index;
   while(temp.length > 0)
-    dst.buf.splice(dst.index, 0, temp.shift());
+    dst.buf.splice(temp_index++, 0, temp.shift());
   dst.index += 6;
 }
 

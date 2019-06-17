@@ -65,8 +65,9 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
 
 NdrBuffer.prototype.writeOctetArray = function (b, i, l){
   var temp = buf.slice(this.index, (this.index + l));
+  var temp_index= i;
   while (temp.length > 0){
-    b.splice(i, 0, temp.shift());
+    b.splice(temp_index++, 0, temp.shift());
     i++;
   }
   this.advance(l);
@@ -74,8 +75,9 @@ NdrBuffer.prototype.writeOctetArray = function (b, i, l){
 
 NdrBuffer.prototype.readOctetArray = function (b, i, l){
   var temp = b.slice(this.index, (this.index + l));
+  var temp_index= i;
   while (temp.length > 0){
-    buff.splice(i, 0, temp.shift());
+    buff.splice(temp_index++, 0, temp.shift());
     i++;
   }
   this.advance(l);
