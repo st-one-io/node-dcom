@@ -4,7 +4,9 @@ class Fragmentable {
 
   }
 
-  fragment(size, stub){
-  
-  }
+  fragment(size){};
+
+  assemble(fragments){};
 }
+
+module.exports = Fragmentable;
