@@ -119,6 +119,14 @@ class Variant
     this.supportedTypes_classes(new Number(this.VT_ARRAY), Array);
     this.supportedTypes_classes(new Number(this.VT_UNKNOWN), ComObject);
     this.supportedTypes_classes(new Number(this.VT_DISPATCH), ComObject);
+
+    // init Arrays
+    this.arryInits = new Array();
+    this.arryInits.push(IString);
+    this.arryInits.push(IPointer);
+    this.arryInits.push(ComObjectImpl);
+    this.arryInits.push(Dispatch);
+    this.arryInits.push
   }
 
   OUTPARAMforType(c isArray)
@@ -351,45 +359,64 @@ class Variant
     ]);
   }
 
-  VariantVal(value)
-  {
-    if (variant instanceof Variant ) {
-      this.init(variant, true):
-    } else if (value instanceof String) {
-      this.VariantValBool(new IString(value));
-    } else if (value instanceof Number) {
-      this.VariantValBool(value, false);
-    } else if (value instanceof IString) {
-      this.VariantValBool(value, false);
-    } else if (value instanceof ComObject) {
-      this.VariantValBool(value, false);
+  VariantValBool(value, isByref, errorCode){
+    isByref = (isByref == undefined) ? false : isByref;
+    errorCode = (erroCode == undefined) ? false: errorCode;
+
+    if (value instanceof Number)
+    {
+      this.init(new Number(value), isByref);
+    }
+    else if (value instanceof Boolean)
+    {
+      this.init(new Boolean(value), isByref);
+    }
+    else if (value instanceof IString)
+     {
+      this.init(value, isByref);
+    }
+    else if (value instanceof String)
+     {
+      this.init(new IString(value), isByref);
+    }
+    else if (value instanceof Date)
+    {
+      this.init(value, isByref);
+    }
+    else if (value instanceof Currency)
+    {
+      this.init(value, isByref);
+    }
+    else if (value instanceof SCODE)
+    {
+      this.init(new VariantBody(VariantBody.SCODE, errorCode, false));
+    }
+    else if (value instanceof EMPTY)
+    {
+      this.init(null);
+    }
+    else if (value instanceof NULL)
+    {
+      this.init(new VariantBody(VariantBody.NULL));
+    }
+    else if (value instanceof ComObject)
+    {
+      this.init(value, isByref);
       if (value instanceof Dispatch) {
         this.setFlag(Flags.FLAG_REPRESENTATION_USE_DISPATCH_IID);
       } else {
         this.setFlag(Flags.FLAG_REPRESENTATION_UNKNOWN_IID);
       }
-    } else if (value instanceof Date) {
-      this.VariantValBool(value, false);
-    } else if (value instanceof Currency) {
-      this.VariantValBool(value, false);
-    }
+    } else if () {
 
+    }
   }
 
-
-
-  VariantValBool(value, isByref){
-    if (value instanceof Number) {
-      this.init(new Number(value), isByref);
-    } else if (value instanceof Boolean) {
-      this.init(new Boolean(value), isByref);
-    } else if (value instanceof IString) {
-      this.init(value, isByref);
-    } else if (value instanceof String) {
-      this.init(new IString(value), isByref);
-    } else if (value instanceof Date) {
-      this.init(value, isByref);
-    }    
+  VariantArray(array, isByref, FLAG)
+  {
+    isByref = (isByref == undefined) ? false : isByref;
+    FLAG = (FLAG == undefined) ? Flags.FLAG_NULL : FLAG;
+    this.init(array, isByref, FLAG);
   }
 };
 
