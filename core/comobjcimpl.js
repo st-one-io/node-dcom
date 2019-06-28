@@ -41,7 +41,7 @@ class ComObjectImpl extends ComObject
   queryInterface(iid)
   {
     this.checkLocal();
-    return session.getStub()getInterface(iid, this.ptr.getIPID());
+    return session.getStub().getInterface(iid, this.ptr.getIPID());
   }
 
   addRef()
