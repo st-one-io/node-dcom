@@ -6,47 +6,47 @@ class ComObject {
       this.IID = "00000000-0000-0000-c000-000000000046";
   }
 
-  queryInterface(iid);
+  queryInterface(iid){};
 
-  addRef();
+  addRef(){};
 
-  release();
+  release(){};
 
-  getIPid();
+  getIPid(){};
 
-  call(obj, int, timeout);
+  call(obj, int, timeout){};
 
-  set instanceLevelSocketTimeout(timeout);
+  setInstanceLevelSocketTimeout(timeout){};
 
-  get instanceLevelSocketTimeout(timeout);
+  getInstanceLevelSocketTimeout(timeout){};
 
-  internal_getInterfacePointer();
+  internal_getInterfacePointer(){};
 
-  get associatedSession();
+  get associatedSession(){};
 
-  get interfaceIdentifier();
+  get interfaceIdentifier(){};
 
-  isDispatchSupported();
+  isDispatchSupported(){};
 
-  internal_setConnectionInfo(connectionPointer, cookie);
+  internal_setConnectionInfo(connectionPointer, cookie){};
 
-  internal_getConnectionInfo(identifier);
+  internal_getConnectionInfo(identifier){};
 
-  internal_removeConnectionInfo(identifier);
+  internal_removeConnectionInfo(identifier){};
 
-  registerUnreferencedHandler(unreferenced);
+  registerUnreferencedHandler(unreferenced){};
 
-  get unreferencedHandler();
+  get unreferencedHandler(){};
 
-  unregisterUnreferencedHandler();
+  unregisterUnreferencedHandler(){};
 
-  internal_setDeffered(deffered);
+  internal_setDeffered(deffered){};
 
-  islocalReference();
+  islocalReference(){};
 
-  get customObject();
+  get customObject(){};
 
-  get lengthOfInterfacePointer();
+  get lengthOfInterfacePointer(){};
 }
 
 module.exports = ComObject;

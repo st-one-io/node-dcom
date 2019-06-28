@@ -9,8 +9,8 @@ class Variant
   {
     this.EMPTY = new Variant(new EMPTY());
     this.EMPTY_BYREF = new Variant(this.EMPTY);
-    this.NULL = new Variant(new NULL()):
-    this.OPTIONAL_PARAM = new Variant(Variant.SCODE, ErrorCodes.DISP_E_PARAMNOTFOUND):
+    this.NULL = new Variant(new NULL());
+    this.OPTIONAL_PARAM = new Variant(Variant.SCODE, ErrorCodes.DISP_E_PARAMNOTFOUND);
     this.SCODE = new SCODE();
     this.member = null;
 
@@ -126,10 +126,11 @@ class Variant
     this.arryInits.push(IPointer);
     this.arryInits.push(ComObjectImpl);
     this.arryInits.push(Dispatch);
-    this.arryInits.push
+    this.arryInits.push(Unknown);
+    this.arryInits.push(ComObject);
   }
 
-  OUTPARAMforType(c isArray)
+  OUTPARAMforType(c, isArray)
   {
     var variant = null;
     if (!isArray) {
@@ -293,7 +294,7 @@ class Variant
     return new Variant(new IArray([Variant.EMPTY()], true), true);
   }
 
-  init(obj, isByref))
+  init(obj, isByref)
   {
     isByref = (isByref == undefined) ? false : isByref;
 
@@ -301,7 +302,7 @@ class Variant
       throw new Error("Ilegal Argument: " + ErrorCodes.VARIANT_ONLY_JIARRAY_EXCEPTED);
     }
 
-    if (obj != null && obj instancof InterfacePointer) {
+    if (obj != null && obj instanceof InterfacePointer) {
       throw new Error("Ilegal Argument:" + ErrorCodes.VARIANT_TYPE_INCORRECT);
     }
 
@@ -407,8 +408,6 @@ class Variant
       } else {
         this.setFlag(Flags.FLAG_REPRESENTATION_UNKNOWN_IID);
       }
-    } else if () {
-
     }
   }
 
@@ -416,10 +415,485 @@ class Variant
   {
     isByref = (isByref == undefined) ? false : isByref;
     FLAG = (FLAG == undefined) ? Flags.FLAG_NULL : FLAG;
-    this.init(array, isByref, FLAG);
+    this.initArrays(array, isByref, FLAG);
+  }
+
+
+  //TO-DO: this will take some time, postpone it until it is needed
+  initArrays(array, isByref, FLAG)
+  {
+    var variant2 = null;
+    var array2 = null;
+    var c= NULL;
+    var newArrayObj = null;
+    var is2Dim = false;
+
+    if (array == null) {
+      this.init(null, false);
+      return;
+    }
+
+    var dimension = 1;
+    if (array.length == 1 && (array[0] instanceof Array)) {
+      dimension = 2;
+    }
+
+    switch (array.length) {
+      case 1:
+        var obj = array.getArrayInstance();
+        newArrayObj = obj;
+        c = obj[0].constructor;
+        break;
+      case 2:
+        var obj2 = array.getArrayInstance();
+
+        var name = typeof obj2[0][0].constructor;
+        var subArray = obj2;
+        name = name.substring(1);
+        break;
+      default:
+    }
+  }
+
+  getObject()
+  {
+    this.checkValidity();
+    return (this.member.getReferent());
+  }
+
+  getObjectAsInt(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsInt();
+  }
+
+  getObjectAsFloat(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsFloat();
+  }
+
+  getObjectAsCODE(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsCODE();
+  }
+
+  getObjectAsDouble(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsDouble();
+  }
+
+  getObjectAsShort(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsShort();
+  }
+
+  getObjectAsBoolean(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsBoolean();
+  }
+
+  getObjectAsString(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsString();
+  }
+
+  //TO-DO: asString2
+
+  getObjectAsDate(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsDate();
+  }
+
+  getObjectAsComObject(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsComObject();
+  }
+
+  getObjectAsVariant(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsVariant();
+  }
+
+  getObjectAsArray(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsArray();
+  }
+
+  getObjectAsLong(){
+    this.checkValidity();
+    return (this.member.getReferent()).getObjectAsLong();
+  }
+
+  encode(ndr, defferedPointers, FLAG)
+  {
+    this.member.setDeferred(true);
+    //TO-DO: serializing
+  }
+
+  decode(ndr, defferedPointers, FLAG, addionalData)
+  {
+    var variant = new Variant();
+    var ref = new Pointer(VariantBody);
+    ref.setDeferred(true):
+    //TO-DO: deserializing
+    return variant;
+  }
+
+  isArray()
+  {
+    this.checkValidity;
+    return (this.member.getReferent()).isArray();
+  }
+
+  getLengthInBytes(FLAG)
+  {
+    this.checkValidity();
+    //// TODO: MARSHALING GET LENGTH IN BYTES
+  }
+
+  isByRefFlagSet()
+  {
+    this.checkValidity();
+    return (this.member.getReferent()).isByref();
+  }
+
+  getType()
+  {
+    this.checkValidity();
+    return (this.member.getReferent()).getType();
+  }
+
+  checkValidity()
+  {
+    if (this.member == null || this.member.isNull()) {
+      throw new Error(ErrorCodes.VARIANT_IS_NULL);
+    }
+  }
+
+  toString()
+  {
+    return this.member == null ? "[null]" : "["̉ + this.member.toString() + "]";
   }
 };
 
 class EMPTY{};
 class SCODE{};
 class NULL{};
+
+class VariantBody
+{
+  constructor(constructor,args)
+  {
+    this.serialVersionUID = -8484108480626831102L;
+  	this.VT_PTR = 0x1A;
+  	this.VT_SAFEARRAY = 0x1B;
+  	this.VT_CARRAY = 0x1C;
+    this.VT_USERDEFINED = 0x1D;
+
+    this.EMPTY = new EMPTY();
+    this.NULL = new NULL();
+    this.SCODE = new SCODE();
+
+    this.is2Dimensional = false;
+    this.obj = null;
+    this.type = -1;
+    this.safeArrayStruct = null;
+    this.isArray = false;
+    this.isScode = false;
+    this.isNUll = false;
+    this.nestedArrayRealClass = null;
+    this.type3 = new Array();
+    this.isByref = false;
+    this.FLAG = Flags.FLAG_NULL;
+
+    // easier workaround for lack of function overloading
+    if (constructor == 1) {
+      VariantBodyObj(args);
+    } else if (constructor == 2) {
+      VariantBodyValue(args);
+    } else if (contructor == 3) {
+      VariantBodyArray(args);
+    }
+
+    // populate type3
+    type3.push(Number);
+    type3.push(Boolean);
+    type3.push(String);
+    type3.push(EMPTY);
+    type3.push(NULL);
+    type3.push(SCODE);
+  }
+
+  VariantBodyObj(args){
+    var dataType = (args.dataType == undefined) ? -1 : args.DataType;
+
+    this.obj = (args.referent == null) ? VariantBody.EMPTY : args.referent;
+
+    if (obj instanceof IString && (obj.getType() != Flags.FLAG_REPRESENTATION_STRING_BSTR)) {
+      throw new Error(ErrorCodes.VARIANT_BSTR_ONLY);
+    }
+
+    if (obj instanceof Boolean) {
+      this.FLAG = Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
+    }
+
+    this.isByref = args.isByRef;
+
+    var types = Variant.getSupportedTypes(obj, dataType);
+    if (types != null) {
+      this.type = Number.parseInt(types) | (args.isByRef ? Variant.VT_BYREF:0);
+    } else {
+      throw new Error(ErrorCodes.VARIANT_UNSUPPORTED_TYPE);
+    }
+
+    if (dataType == Variant.VT_NULL) {
+      this.isNull = true;
+      obj = new Number(0);
+    }
+  }
+
+  VariantBodyValue(args)
+  {
+    if (args.value instanceof NULL) {
+      this.VariantBodyObj(new Number(0), false);
+      this.isNull = true;
+      this.type = Varian.VT_NULL;
+    }
+
+    this.VariantBodyObj(new Integer(args.errorCode), args.isByRef);
+    this.isScode = true;
+    this.type = Variant.VT_ERROR;
+  }
+
+  VariantBodyArray(args)
+  {
+    this.FLAG = args.FLAG;
+    this.safeArrayStruct = args.safeArray;
+    this.isArray = true;
+    if (this.safeArrayStruct == null) {
+      this.isNull = true;
+
+    }
+
+    this.nestedArrayRealClass = args.nestedClass;
+    this.is2Dimensional = args.is2Dimensional;
+
+    this.isByRef = args.isByRef;
+
+    var types = Number.parseInt(Variant.getSupportedType(args.nestedClass, FLAG));
+    if (types != null) {
+      this.type = types | (args.isByRef ? Variant.VT_BYREF:0);
+    } else {
+      throw new Error(ErrorCodes.VARIANT_UNSUPPORTED_TYPE);
+    }
+  }
+
+  getObject()
+  {
+    return (this.obj == null) ? this.getArray() : obj);
+  }
+
+  getArray()
+  {
+    var retVal = null;
+
+    if (this.safeArrayStruct != null) {
+      retVal = this.safeArrayStruct.getMember(7).getReferent();
+
+      if (this.is2Dimensional) {
+        var obj3 = retVal.getArrayInstance();
+        var safeArrayBound = this.safeArrayStruct.getMember(8);
+
+        // TODO: IMPLEMENT THE REST WITH BI-DIMENSIONAL Array
+        // IM POSTPONING THIS FOR NOW BUT IT WILL BE NEEDED LATER
+      }
+    }
+  }
+
+  getObjectAsInt()
+  {
+    try {
+      return Number.parseInt(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsLong()
+  {
+    try {
+      return Number.parseInt(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsSCODE()
+  {
+    try {
+      return this.obj.erroCode;
+    }catch(e){};
+  }
+
+  getObjectAsFloat()
+  {
+    try {
+      return Number(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsDouble()
+  {
+    try {
+      return Number(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsShort()
+  {
+    try {
+      return Number.parseInt(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsBoolean()
+  {
+    try {
+      return Boolean(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsString()
+  {
+    try {
+      return String(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsDate()
+  {
+    try {
+      return Date(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsVariant()
+  {
+    try {
+      return Variant(this.obj);
+    }catch(e){};
+  }
+
+  getObjectAsComObject()
+  {
+    try {
+      return ComObject(this.obj);
+    }catch(e){};
+  }
+
+  encode(ndr, defferedPointers, FLAG)
+  {
+    this.FLAG |= FLAG;
+    var index = new Number(ndr.getBuffer().getIndex());
+    if (index%8.0 != 0) {
+      var i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i;
+      ndr.writeOctetArray(new Array[Number.parseInt(i)], 0, Number.parseInt(i));
+    }
+
+    var start = ndr.getBuffer.getIndex();
+
+    ndr.writeUnsignedLong(0xFFFFFFFF);
+    ndr.writeUnsignedLong(0);
+
+    var varType = this.getVarType(obj != null ? obj.constructor : this.nestedArrayRealClass, obj):
+
+    if ((FLAG & FLags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) ==
+      Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) {
+      varType = isByRef ? 0x4000 | Variant.VT_DISPATCH : Variant.VT_DISPATCH;
+    }
+
+    ndr.writeUnsignedShort(varType);
+
+    ndr.writeUnsignedSmall(0xCC);
+		ndr.writeUnsignedSmall(0xCC);
+		ndr.writeUnsignedSmall(0xCC);
+		ndr.writeUnsignedSmall(0xCC);
+		ndr.writeUnsignedSmall(0xCC);
+    ndr.writeUnsignedSmall(0xCC);
+
+    if (obj != null) {
+      ndr.writeUnsignedLong(varType);
+    } else {
+      if (!isByRef) {
+        ndr.writeUnsignedLong(JIVariant.VT_ARRAY);
+      } else {
+        ndr.writeUnsignedLong(JIVariant.VT_BYREF_VT_ARRAY);
+      }
+    }
+
+    if (isByRef) {
+      var flag = -1;
+      if (this.isArray) {
+        flag = -4;
+      } else {
+        switch (this.type) {
+          case Variant.VT_BYREF_VT_VARIANT:
+            flag = 0x10;
+            break;
+          case VT_BYREF_VT_DATE:
+          case VT_BYREF_VT_CY:
+            flag = 8;
+            break;
+          default:
+            flag = 4;
+        }
+      }
+      ndr.writeUnsignedLong(flag);
+    }
+
+    var varDefferedPointers = new Array();
+
+    this.setValue(ndr, obj, varDefferedPointers, FLAG);
+
+    var x = 0;
+    while (x < varDefferedPointers.length) {
+      var newList = new Array();
+      MarshalUnMarshalHelper.serialize(ndr, Pointer, varDefferedPointers[x],
+        newList, FLAG);
+      x++;
+      var aux = newList.slice(0, newList.length);
+      var aux_i = x;
+      while (aux.length > 0) {
+        varDefferedPointers.splice(x, 0, aux.shift());
+      }
+    }
+
+    var currentIndex = 0;
+    var length = (currentIndex = ndr.getBuffer(0).getIndex()) - start;
+    var value = Number.parseInt(length/8);
+    if (length%8.0 != 0) {
+      value++;
+    }
+
+    ndr.getBuffer().setIndex(start);
+    ndr.writeUnsignedLong(value);
+    ndr.getBuffer().setIndex(currentIndex);
+  }
+
+  getMaxLength(c, obj)
+  {
+    var length = 0;
+    if (type3.includes(c)) {
+      length = MarshalUnMarshalHelper.getLengthInBytes(c, obj, FLAG);
+    } else if (c instanceof Number || c instanceof Date || c instanceof Currency) {
+      length = 8;
+    } else if (c instanceof IString) {
+      length = MarshalUnMarshalHelper.getLengthInBytes(c, obj, FLAG);
+    } else if (obj instanceof ComObject) {
+      var value = obj.internal_getInterfacePointer().getLength();
+      value = value + 4 + 4 + 4;
+    }
+
+    return length;
+  }
+
+  getArrayLengthForVarType()
+  {
+    
+  }
+}
