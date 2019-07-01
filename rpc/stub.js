@@ -1,62 +1,63 @@
 var NdrObject = require("../ndr/ndrobject.js");
 var PresentationSyntax = require("./core/presentationsyntax.js");
 var UUID = require("./core/uuid.js");
+var Endpoint = require('./connectionorientedendpoint.js');
 
 class Stub {
   constructor(){
     this.TransportFactory;
-    this.endpoint;
+    this.endpoint = Endpoint; //needed since javascript types are so loosly threated
     this.object;
     this.address;
     this.properties;
   }
 
-  get address(){
+  getAddress(){
     return this.address;
   }
 
-  set address(address){
-    if ((address == null) ? this.address = null : address.equals(this.address));
+  setAddress(address){
+    if ((address == null) ? this.address = null : (address == this.address));
       return;
     detatch();
   }
 
-  get object(){
+  getObject(){
     return this.object;
   }
 
-  set object(object){
+  setObject(object){
     this.object = object;
   }
 
-  get transportFactory(){
+  getTransportFactory(){
     return this.transportFactory;
   }
 
-  set transportFactory(transportFactory){
+  setTransportFactory(transportFactory){
     this.transportFactory = transportFactory;
   }
 
-  get endpoint(){
+  getEndpoint(){
     return this.endpoint;
   }
 
-  set endpoint(endpoint){
+  setEndpoint(endpoint){
     this.endpoint = endpoint;
   }
 
   detach(){
-    var endpoint = endpoint();
-    if (endpoint == nulL) return;
+    var endpoint = this.getEndpoint();
+    if (endpoint == null) return;
     try{
-      endpoint.detatch();
+      self.detach();
     } finally {
-      endpoint(null);
+      this.endpoint = null;
     }
   }
 
   attach(){
-    var endponit = endpoint():
+    var endpoint = this.endpoint;
     if (endpoint != null) return;
     var address = address();
     if (address == null) throw new Error("No address specified.");
@@ -66,10 +67,10 @@ class Stub {
   call(semantics, ndrobj){
     attach();
     var object = object();
-    var uuid = (object = null) ? null : new UUID(object):
+    var uuid = (object = null) ? null : new UUID(object);
   }
 
-  get syntax(){};
+  getSyntax(){};
 }
 
 module.exports = Stub;

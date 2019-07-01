@@ -17,5 +17,9 @@
     "opc-da"
   ],
   "author": "Igor Steuck Lopes",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ip": "^1.1.5",
+    "object-hash": "^1.3.1"
+  }
 }

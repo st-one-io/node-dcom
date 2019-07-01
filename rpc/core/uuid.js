@@ -22,7 +22,9 @@ function UUID(uuid){
   this.clockSewLow;
   this.node = [6];
 
-  this.parse(uuid);
+  if (uuid != undefined) {
+    this.parse(uuid);
+  }
 };
 
 UUID.prototype.encode = function (ndr, dst){

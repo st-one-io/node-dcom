@@ -286,16 +286,28 @@ class Dispatch extends ComObjectImpl
     this.invoke(dispId, propertyFlag, new IArray(variants, true),
       new Array([this.DISPATCH_DISPID_PUTPUTREF], true), null);
   };
-  put(dispId, inparam);
-  put(name, inparam);
 
-  putRef(dispId, inparam);
-  putRef(name, inparam);
+  putRef(dispId, inparam){
+    var parameter = true;
+    if (dispId instanceof String) {
+      this.put(dispId,inparam);
+    }else{
+      this.put(dispId, inparam, parameter);
+    }
+  }
 
-  get(dispId);
-  get(dispId,inparams);
-  get(name, inparams);
-  get(name);
+  get(dispId, inparams);
+  {
+    if (dispId instanceof String) {
+      dispId = this.getIDsOfName(name);
+    }
+
+    if (inparams == undefined) {
+      return this.invoke(dispId, this.DISPATCH_PROPERTYGET, null, null, null)[0];
+    } else {
+      return callMethodA(dispId, inparams, this.DISPATCH_PROPERTYGET);
+    }
+  }
 
   callMethod(name);
   callMethod(dispId);
