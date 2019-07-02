@@ -6,6 +6,8 @@ var Clsid = require('./clsid.js');
 var Dns = require('dns');
 var Oxid = require('./oxid.js');
 var RemoteSCMActivator = require('./remotescmactivator.js');
+var ComTransportFactory = require('../transport/comtransportfactory.js');
+var UUID = require('../rpc/core/uuid.js');
 
 class ComServer extends Stub {
   constructor(){
@@ -20,6 +22,7 @@ class ComServer extends Stub {
     this.timeoutModifiedfrom0 = false;
     this.interfacePtrCtor = null;
     this.listOfIps = new Array();
+
 
     if (arguments.length == 3) {
       if (arguments[0] instanceof Session)
@@ -49,7 +52,8 @@ class ComServer extends Stub {
       }
     }
 
-    super.setTransportFactory(ComTransportFactory.getSingleTon());
+
+    super.setTransportFactory(new ComTransportFactory.getSingleTon());
     // check if any authentication mode is enabled
     if (session.isNNTLMv2Enabled()) {
       // TODO: properties
@@ -176,15 +180,15 @@ class ComServer extends Stub {
   comServerClsid(progId, address, session)
   {
     if (progId == null || address == null || session == null) {
-      throw new Error(ErroCodes.COMSTUB_ILLEGAL_ARGUMENTS);
+      throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
     }
 
     if (session.getStub() != null) {
-      throw new Error(ErroCodes.SESSION_ALREADY_ESTABLISHED);
+      throw new Error(ErrorCodes.SESSION_ALREADY_ESTABLISHED);
     }
 
     if (session.isSSOEnalbed()) {
-      throw new Erro(ErroCodes.COMSTUB_ILLEGAL_ARGUMENTS2);
+      throw new Erro(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS2);
     }
 
     this.address = address.trim();
@@ -198,7 +202,7 @@ class ComServer extends Stub {
 
   initialize(clsid, address, session)
   {
-    //super.setTransportFactory(ComTransportFactory.getSingleTon());
+    super.setTransportFactory(new ComTransportFactory().getSingleTon());
     super.setAddress(address);
     if (session.isNNTLMv2Enabled()) {
       // TODO:
@@ -210,7 +214,7 @@ class ComServer extends Stub {
       // TODO:
     }
 
-    this.clsid = String(clsid).toUpperCase();
+    this.clsid = clsid.getClsid().toUpperCase();
     this.session = session;
     this.session.setTargetServer(address.substring(address.indexOf(":") + 1, address.indexOf("[")));
     try {
@@ -231,13 +235,14 @@ class ComServer extends Stub {
     var attachcomplete = false;
     try {
       this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
-      this.attach();
+      this.attach(this.getSyntax());
 
       attachcomplete = true;
-      this.getEndpoint().getSyntax().setUuid(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
-      this.getEndpoint().getSyntax().setVersion(0,0);
-      this.getEndpoint().rebindEndpoint();
 
+      this.getEndpoint().getSyntax().setUUID(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
+      this.getEndpoint().getSyntax().setVersion(0,0);
+      this.getEndpoint().rebind();
+      console.log("ddbug");
       var serverAlive = new CallBuilder(true);
       serverAlive.attachSession(session);
       serverAlive.setOpnum(2);
@@ -249,6 +254,7 @@ class ComServer extends Stub {
       } catch(e) {
         console.log(e);
       }
+
       console.log("before activate");
       if (System.getCOMVersion() != null && System.getCOMVersion().getMintorVersion() > 1) {
         this.syntax = "000001A0-0000-0000-C000-000000000046:0.0";
@@ -287,6 +293,10 @@ class ComServer extends Stub {
   getServerInterfacePointer()
   {
     return ((this.serverActivation == null) ? this.interfacePtrCtor : this.serverActivation.getMInterfacePointer());
+  }
+
+  getSyntax(){
+    return this.syntax;
   }
 }
 

@@ -14,6 +14,7 @@ var OrphanedPdu = require('./pdu/orphanedpdu.js');
 var RequestCoPdu = require('./pdu/requestcopdu.js');
 var ResponseCoPdu = require('./pdu/responsecopdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
+var Fragmentable = require('./fragmentable.js');
 
 class DefaultConnection
 {
@@ -34,6 +35,7 @@ class DefaultConnection
 
   transmit(pdu, transport)
   {
+    console.log("transmit");
     if (!(pdu instanceof Fragmentable)){
       this.transmitFragment(pdu, transport);
       return;
@@ -80,8 +82,10 @@ class DefaultConnection
 
   transmitFragment(fragment, transport)
   {
+    console.log("transmitFragment");
     this.transmitBuffer.reset();
-    fragment.encode(ndr, this.transmitBuffer);
+    fragment.encode(this.ndr, this.transmitBuffer);
+
     this.processOutgoing();
     transport.send(transmitBuffer);
   }

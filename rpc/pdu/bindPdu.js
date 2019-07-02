@@ -3,12 +3,13 @@ var PresentationContext = require("../core/presentationcontext.js");
 
 class BindPdu extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.BIND_TYPE = 0x0b;
 
     this.contextList;
 
-    this.maxTransmitFragment = MUST_RECEIVE_FRAGMENT_SIZE;
-    this.maxReceiveFragment = MUST_RECEIVE_FRAGMENT_SIZE;
+    this.maxTransmitFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
+    this.maxReceiveFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
 
     this.associationGroupId = 0;
   }
@@ -17,39 +18,39 @@ class BindPdu extends ConnectionOrientedPdu{
     super.resetCallIdCounter;
   }
 
-  get type(){
+  getType(){
     return this.BIND_TYPE;
   }
 
-  get maxTransmitFragment(){
+  getMaxTransmitFragment(){
     return this.maxTransmitFragment;
   }
 
-  set maxTransmitFragment(maxTransmitFragment){
+  setMaxTransmitFragment(maxTransmitFragment){
     this.maxTransmitFragment = maxTransmitFragment;
   }
 
-  get maxReceiveFragment(){
+  getMaxReceiveFragment(){
     return this.maxReceiveFragment;
   }
 
-  set maxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment){
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
-  get associationGroupId(){
+  getAssociationGroupId(){
     return this.associationGroupId;
   }
 
-  set associationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId){
     this.associationGroupId = associationGroupId;
   }
 
-  get contextList(){
+  getContextList(){
     return this.contextList;
   }
 
-  set contextList(contextList){
+  setContextList(contextList){
     this.contextList = contextList;
   }
 

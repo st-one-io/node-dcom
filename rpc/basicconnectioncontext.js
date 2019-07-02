@@ -7,6 +7,7 @@ var BindNoAcknowledgePdu = require('./pdu/bindnoacknowledgepdu.js');
 var BindPdu = require('./pdu/bindPdu.js');
 var FaultCoPdu = require('./pdu/faultCoPdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
+var DefaultConnection = require('./defaultconnection.js');
 
 class BasicConnectionContext {
   constructor(){
@@ -15,8 +16,8 @@ class BasicConnectionContext {
     this.DEFAULT_MAX_TRANSMIT_FRAGMENT = 4280;
     this.DEFAULT_MAX_RECEIVE_FRAGMENT = 4280;
 
-    this.maxTransmitFragment = MAX_TRANSMIT_FRAGMENT;
-    this.maxReceiveFragment = MAX_RECEIVE_FRAGMENT;
+    this.maxTransmitFragment = this.MAX_TRANSMIT_FRAGMENT;
+    this.maxReceiveFragment = this.MAX_RECEIVE_FRAGMENT;
 
     this.connection;
     this.established;
@@ -97,7 +98,8 @@ class BasicConnectionContext {
     }
   }
 
-  get connection(){
+  getConnection(){
+    console.log("getConnection");
     return this.connection;
   }
 

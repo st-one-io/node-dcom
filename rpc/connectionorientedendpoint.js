@@ -7,8 +7,10 @@ var ResponseCoPdu = require('./pdu/responsecopdu.js');
 var FaultCoPdu = require('./pdu/faultCoPdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
 var PresentationSyntax = require('./core/presentationsyntax.js');
+var PresentationContext = require('./core/presentationcontext.js');
 var BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
 var AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
+var BasicConnectionContext = require('./basicconnectioncontext.js');
 
 
 class ConnectionOrientedEndpoint{
@@ -18,24 +20,26 @@ class ConnectionOrientedEndpoint{
     this.BROADCAST = 0x04;
 
     this.CONNECTION_CONTEXT = "rpc.connectionContext";
-
-    this.transport = transport;
-    this.syntax = syntax;
-
-    this.bound
+    try{
+      this.transport = transport;
+      this.syntax = syntax;
+    }catch(e){
+      console.log(e);
+    }
+    this.bound;
     this.callId;
     this.contextIdCounter = 0;
-    this.contextIdToUse = contextIdCounter;
+    this.contextIdToUse = this.contextIdCounter;
 
     this.uuidsVsContextIds = new HashMap();
     this.currentIID = null;
   }
 
-  get transport(){
+  getTransport(){
     return this.transport;
   }
 
-  get syntax(){
+  getSyntax(){
     return this.syntax;
   }
 
@@ -84,11 +88,13 @@ class ConnectionOrientedEndpoint{
   }
 
   rebind(){
+    console.log("rebind");
     this.bound = false;
     this.bind()
   }
 
   bind(){
+    console.log("bind", this.context);
     if (this.bound) return;
     if (this.context != null){
       this.bound = true;
@@ -97,7 +103,7 @@ class ConnectionOrientedEndpoint{
       var pdu = this.context.alter(new PresentationSyntax(cid == null? ++this.contextIdCounter : cid,
         getSyntax()));
       var sendAlter = false;
-
+      console.log(cid)
       if (cid == null){
         this.uuidsVsContextIds.put(getSyntax(), Number.parseInt(this.contextIdCounter));
         this.contextIdToUse = this.contextIdCounter;
@@ -136,7 +142,8 @@ class ConnectionOrientedEndpoint{
 
   send(request){
     this.bind();
-    this.context.getConnection().transmit(request, getTransport);
+    console.log("send");
+    this.context.getConnection().transmit(request, this.getTransport());
   }
 
   receive(){
@@ -150,15 +157,16 @@ class ConnectionOrientedEndpoint{
   }
 
   connect(){
+    console.log("connect");
     this.bound = true;
     this.contextIdCounter = 0;
     this.currentIID = null;
 
-    this.uuidsVsContextIds.put(String(getSyntax()), Number.parseInt(this.contextIdCounter));
+    this.uuidsVsContextIds.set(String(this.getSyntax()), Number.parseInt(this.contextIdCounter));
     this.context = this.createContext();
 
-    var pdu = this.context.init(new PresentationContext(this.contextIdCounter, getSyntax()),
-      getTransport().getProperties());
+    var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax(),
+      this.properties));
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu);
@@ -185,9 +193,11 @@ class ConnectionOrientedEndpoint{
   }
 
   createContext(){
-    var properties = getTransport().getProperties();
+    var properties = this.properties;
     if (properties == null)return new BasicConnectionContext();
     var context = String(properties.CONNECTION_CONTEXT);
     if(context == null)return new BasicConnectionContext();
   }
 }
+
+module.exports = ConnectionOrientedEndpoint;

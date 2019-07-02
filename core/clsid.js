@@ -4,10 +4,8 @@ class Clsid
 {
   constructor(uuid)
   {
-    this.nestedUUID = new UUID();
+    this.nestedUUID = new UUID(uuid);
     this.autoRegister = false;
-
-    this.nestedUUID.parse(uuid);
   }
 
   setAutoRegistration(autoRegister)

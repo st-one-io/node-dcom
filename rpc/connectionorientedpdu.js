@@ -33,7 +33,7 @@ class ConnectionOrientedPdu {
 
     this.minorVersion = 0;
 
-    this.flags = PFC_FIRST_FRAG | PFC_LAST_FRAG;
+    this.flags = (this.PFC_FIRST_FRAG | this.PFC_LAST_FRAG);
 
     this.callIdCounter = 0;
 
@@ -47,23 +47,29 @@ class ConnectionOrientedPdu {
     this.format;
   }
 
-  get majorVersion(){
+  getMajorVersion(){
     return this.CONNECTION_ORIENTED_MAJOR_VERSION;
   }
 
-  get minorVersion(){
+  getMinorVersion(){
     return this.minorVersion;
   }
 
-  set minorVersion(minorVersion){
+  setMinorVersion(minorVersion){
     this.minorVersion = minorVersion;
   }
 
-  get format(){
-    return (this.format != null) ? format : (format = Format.DEFAULT_FORMAT);
+  getFormat(){
+    var aux = new Format(0x10000000);
+    if (this.format != null) {
+      this.format = this.format;
+    } else {
+      this.format = new Format(aux.DEFAULT_FORMAT);
+    }
+    return this.format;
   }
 
-  set Formkat(format){
+  setFormkat(format){
     this.format = format;
   }
 
@@ -83,28 +89,28 @@ class ConnectionOrientedPdu {
     setFlags(value ? (getFlags() | flag) : getFlags() & ~flag);
   }
 
-  get callId(){
+  getCallId(){
     return this.callId;
   }
 
-  set callId(callId){
+  setCallId(callId){
     this.useCallIdCounter = false;
     this.callId = callId;
   }
 
-  get fragmentLength(){
+  getFragmentLength(){
     return this.fragmentLength;
   }
 
-  set fragmentLength(fragLength){
+  setFragmentLength(fragLength){
     this.fragLength = fragLength;
   }
 
-  get authLength(){
+  getAuthLength(){
     return this.authLength;
   }
 
-  set authLength(authLength){
+  setAuthLength(authLength){
     this.authLength = authLength;
   }
 
@@ -115,7 +121,7 @@ class ConnectionOrientedPdu {
 
   encode(ndr, dst){
     ndr.setBuffer(dst);
-    ndr.setFormat(this.format());
+    ndr.setFormat(this.getFormat());
     this.writePdu(ndr);
 
     var buffer = ndr.getBuffer();
@@ -126,16 +132,17 @@ class ConnectionOrientedPdu {
     ndr.writeUnsignedShort(length);
     ndr.writeUnsignedShort(this.authLength());
     buffer.setIndex(length);
+
   }
 
   readPdu(ndr){
-    readHeader(ndr);
-    readBody(ndr);
+    this.readHeader(ndr);
+    this.readBody(ndr);
   }
 
   writePdu(ndr){
-    writeHeader(ndr);
-    writeBody(ndr);
+    this.writeHeader(ndr);
+    this.writeBody(ndr);
   }
 
   readHeader(ndr){
@@ -158,10 +165,12 @@ class ConnectionOrientedPdu {
   }
 
   writeHeader(ndr){
+    console.log("writeHeader");
     ndr.writeUnsignedSmall(this.majorVersion);
     ndr.writeUnsignedSmall(this.minorVersion);
     ndr.writeUnsignedSmall(this.type);
-    ndr.writeFormat(false);
+    ndr.writeUnsignedSmall(this.flags);
+    ndr.writeFormatBool(false);
 
     ndr.writeUnsignedShort(0);
     ndr.writeUnsignedShort(0);

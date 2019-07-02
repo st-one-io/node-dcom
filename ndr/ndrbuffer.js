@@ -29,7 +29,7 @@ NdrBuffer.prototype.derive = function (idx){
 }
 
 NdrBuffer.prototype.reset = function (){
-  this.index = start;
+  this.index = this.start;
   length = 0;
   deferred = this;
 }
@@ -95,19 +95,19 @@ NdrBuffer.prototype.advance = function (n){
 }
 
 NdrBuffer.prototype.align = function (boundary){
-  if (ignoreAlign){
+  if (this.ignoreAlign){
     return 0;
   }
 
   var m = boundary - 1;
-  var i = index - start;
+  var i = this.index - this.start;
   var n = ((i + m) & ~m) - i;
   this.advance(n);
   return n;
 }
 
 NdrBuffer.prototype.enc_ndr_small = function (s){
-  buf[this.index] = s & 0xFF;
+  this.buf[this.index] = s & 0xFF;
   this.advance(1);
 }
 
@@ -119,7 +119,7 @@ NdrBuffer.prototype.dec_ndr_small = function (){
 
 NdrBuffer.prototype.enc_ndr_short = function (s){
   this.align(2);
-  Encdec.enc_uint16le(s, buf, this.index);
+  Encdec.enc_uint16le(s, this.buf, this.index);
   this.advance(2);
 }
 

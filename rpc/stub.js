@@ -6,7 +6,7 @@ var Endpoint = require('./connectionorientedendpoint.js');
 class Stub {
   constructor(){
     this.TransportFactory;
-    this.endpoint = Endpoint; //needed since javascript types are so loosly threated
+    this.endpoint; //needed since javascript types are so loosly threated
     this.object;
     this.address;
     this.properties;
@@ -50,18 +50,18 @@ class Stub {
     var endpoint = this.getEndpoint();
     if (endpoint == null) return;
     try{
-      self.detach();
+      endpoint.detach();
     } finally {
       this.endpoint = null;
     }
   }
 
-  attach(){
+  attach(syntax){
     var endpoint = this.endpoint;
     if (endpoint != null) return;
-    var address = address();
+    var address = this.address;
     if (address == null) throw new Error("No address specified.");
-    endpoint(transportFactory().createTransport(address, properties()).attach( new PresentationSyntax(syntax())));
+    this.setEndpoint(this.getTransportFactory().createTransport(address).attach( new PresentationSyntax(syntax)));
   }
 
   call(semantics, ndrobj){
@@ -70,7 +70,9 @@ class Stub {
     var uuid = (object = null) ? null : new UUID(object);
   }
 
-  getSyntax(){};
+  getSyntax(){
+    return this.endpoint.getSyntax();
+  };
 }
 
 module.exports = Stub;

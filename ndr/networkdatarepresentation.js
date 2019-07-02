@@ -82,7 +82,7 @@ NetworkDataRepresentation.prototype.writeFormat = function (format){
 NetworkDataRepresentation.prototype.writeFormatBool = function (connectionless){
   var index = this.buf.getIndex();
   this.buf.index += connectionless ? 3 : 4;
-  format.writeFormat(this.buf.buf, index, connectionless);
+  this.format.writeFormat(this.buf.buf, index, connectionless);
 }
 
 NetworkDataRepresentation.prototype.readCharacterArray = function (array, offset, length){
