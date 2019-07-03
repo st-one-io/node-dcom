@@ -15,20 +15,22 @@ var RequestCoPdu = require('./pdu/requestcopdu.js');
 var ResponseCoPdu = require('./pdu/responsecopdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
 var Fragmentable = require('./fragmentable.js');
-var Buffer = require('buffer');
+//var Buffer = require('buffer');
 
 class DefaultConnection
 {
   constructor(transmitLength, receiveLength)
   {
-    if (transmitLength == undefined && receiveLength == undefined){
-      this.transmitLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
-      this.receiveLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
-    }
+    //FIXME these are defined per instance but need to be statically avaialbe
+    // either define in a constants file or we should export the class and the constants separately
+    //this.transmitLength = transmitLength || ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
+    //this.receiveLength = receiveLength || ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
+    this.transmitLength = transmitLength || 7160;
+    this.receiveLength = receiveLength || 7160;
 
     this.ndr = new NetworkDataRepresentation();
-    this.transmitBuffer = new NdrBuffer(Buffer.alloc(), 0);
-    this.receiveBuffer = new NdrBuffer(new Array(this.transmitLength), 0);
+    this.transmitBuffer = new NdrBuffer(Buffer.alloc(this.transmitLength), 0);
+    this.receiveBuffer = new NdrBuffer(Buffer.alloc(this.receiveLength), 0);
     this.security;
     this.contextId;
     this.bytesRemainingInReceiveBuffer = false;

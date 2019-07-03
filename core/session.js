@@ -93,7 +93,7 @@ class Session
     var intendedDestination;
 
     try {
-      sock = Net.createserver((c) => {
+      sock = Net.createServer((c) => {
         console.log("client connected");
         c.on('end', () => {
           console.log("client disconnected");

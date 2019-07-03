@@ -18,7 +18,7 @@ class BindPdu extends ConnectionOrientedPdu{
     super.resetCallIdCounter;
   }
 
-  getType(){
+  get type(){
     return this.BIND_TYPE;
   }
 
@@ -68,10 +68,10 @@ class BindPdu extends ConnectionOrientedPdu{
   }
 
   writeBody(ndr){
-    ndr.writeUnsignedShort(maxTransmitFragment());
-    ndr.writeUnsignedShort(maxReceiveFragment());
-    ndr.writeUnsignedLong(associationGroupId());
-    var contextList = getContextList();
+    ndr.writeUnsignedShort(this.getMaxTransmitFragment());
+    ndr.writeUnsignedShort(this.getMaxReceiveFragment());
+    ndr.writeUnsignedLong(this.getAssociationGroupId());
+    var contextList = this.getContextList();
     var count = contextList.length;
     ndr.writeUnsignedSmall(count);
     for (var i = 0; i < count; i++) {

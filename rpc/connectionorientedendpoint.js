@@ -193,9 +193,9 @@ class ConnectionOrientedEndpoint{
 
   createContext(){
     var properties = this.properties;
-    if (properties == null)return new BasicConnectionContext();
+    if (!properties) return this.properties = new BasicConnectionContext();
     var context = String(properties.CONNECTION_CONTEXT);
-    if(context == null)return new BasicConnectionContext();
+    if(!context)return new BasicConnectionContext();
   }
 }
 

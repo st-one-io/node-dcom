@@ -31,6 +31,7 @@ class ConnectionOrientedPdu {
     this.CALL_ID_OFFSET = 12;
     this.HEADER_LENGTH = 16;
 
+    this.majorVersion = this.CONNECTION_ORIENTED_MAJOR_VERSION;
     this.minorVersion = 0;
 
     this.flags = (this.PFC_FIRST_FRAG | this.PFC_LAST_FRAG);
@@ -142,7 +143,7 @@ class ConnectionOrientedPdu {
 
   writePdu(ndr){
     this.writeHeader(ndr);
-    //this.writeBody(ndr);
+    this.writeBody(ndr);
   }
 
   readHeader(ndr){
@@ -150,8 +151,8 @@ class ConnectionOrientedPdu {
       throw new Error("Version mismatch.");
     }
 
-    this.minorVersion(ndr.readUnsignedSmall());
-    if (this.type() != ndr.readUnsignedSmall()){
+    this.setMinorVersion(ndr.readUnsignedSmall());
+    if (this.type != ndr.readUnsignedSmall()){
       throw new Error("Incorrect PDU type.");
     }
 
@@ -172,18 +173,22 @@ class ConnectionOrientedPdu {
     ndr.writeUnsignedSmall(this.flags);
     ndr.writeFormatBool(false);
 
-    ndr.writeUnsignedShort(0);
-    ndr.writeUnsignedShort(0);
+    ndr.writeUnsignedShort(0); //frag length, to be later overriden
+    ndr.writeUnsignedShort(0); //auth length, to be later overriden
     ndr.writeUnsignedLong(this.useCallIdCounter ? this.callIdCounter : this.callId);
   }
 
-  readBody(ndr){};
-
-  writeBody(ndr){
-    console.log("writeBody");
+  readBody(ndr){
+    throw new Error("Should never be called, PDUs implementation must override");
   };
 
-  get type(){};
+  writeBody(ndr) {
+    throw new Error("Should never be called, PDUs implementation must override");
+  };
+
+  get type(){
+    throw new Error("Should never be called, PDUs implementation must override");
+  };
 }
 
 module.exports = ConnectionOrientedPdu;

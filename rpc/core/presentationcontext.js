@@ -14,8 +14,8 @@ PresentationContext.prototype.read = function (ndr) {
 
   var count = ndr.readUnsignedSmall();
 
-  abstractSyntax.decode(ndr, ndr.getBuffer());
-  this.transferSyntaxes = new PresentationSyntax[count];
+  this.abstractSyntax.decode(ndr, ndr.getBuffer());
+  this.transferSyntaxes = new Array(count);
 
   for (var i = 0; i < count; i++){
     transferSyntaxes[i] = new PresentationSyntax();
@@ -25,12 +25,12 @@ PresentationContext.prototype.read = function (ndr) {
 
 PresentationContext.prototype.write = function (ndr) {
   ndr.getBuffer().align(4, 0xcc);
-  ndr.writeUnsignedSHort(this.contextId);
-  ndr.writeUnsignedSHort(this.transferSyntaxes.length);
+  ndr.writeUnsignedShort(this.contextId);
+  ndr.writeUnsignedShort(this.transferSyntaxes.length);
 
-  abstractSyntax.encode(ndr, ndr.getBuffer());
-  for (var i = 0; i < transferSyntaxes.length; i++){
-    transferSyntaxes[i].encode(ndr, nder.getBuffer());
+  this.abstractSyntax.encode(ndr, ndr.getBuffer());
+  for (var i = 0; i < this.transferSyntaxes.length; i++){
+    this.transferSyntaxes[i].encode(ndr, ndr.getBuffer());
   }
 };
 

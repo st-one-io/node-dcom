@@ -3,7 +3,7 @@ var PresentationSyntax = require('../rpc/core/presentationsyntax.js');
 var os = require('os');
 var net = require('net');
 var dns = require('dns');
-var ByteBuffer = require('bytebuffer');
+//var ByteBuffer = require('bytebuffer');
 var ComEndpoint = require('./comendpoint.js');
 
 class ComTransport
@@ -100,9 +100,12 @@ class ComTransport
     if (!this.attached) {
       throw new Erro("Transport not attached.");
     }
-    var byteBuffer = ByteBuffer.wrap(buffer.getBuffer());
+    //var byteBuffer = ByteBuffer.wrap(buffer.getBuffer());
+    let buf = buffer.getBuffer();
+    //FIXME quick-fix to trim buffer to its real length. Need to check where this should be
+    let length = buf.readUInt16LE(8);
     try{
-      this.channelWrapper.write(byteBuffer.buffer);
+      this.channelWrapper.write(buf.slice(0, length + 1));
     } catch(e){
       console.log(e);
     }
@@ -116,6 +119,14 @@ class ComTransport
 
     var timeoutMillis = 3000;
     console.log("before");
+    /**
+     * FIXME this await won't work. To make an awaitable receive function
+     * we need to listen on the 'data' event at socket creation time create 
+     * a synchronization mechanism: store the received data, and everytime 
+     * this here is called, check if there's anything stored, sending it;
+     * and storing the "resolve" of the created promise, calling it whenever
+     * the 'data' event is fired, with the received buffer
+     */
     await this.channelWrapper.on('data', function(data){
       buffer = data;
     });

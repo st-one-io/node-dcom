@@ -32,11 +32,11 @@ class PresentationSyntax{
   };
 
   getMajorVersion() {
-    return version & 0xffff;
+    return this.version & 0xffff;
   };
 
   getMinorVersion() {
-    return (version >> 16) & 0xffff;
+    return (this.version >> 16) & 0xffff;
   };
 
   setVersionTwo(majorVersion, minorVersion) {
@@ -45,7 +45,7 @@ class PresentationSyntax{
 
   encode(ndr, dst) {
     this.uuid.encode(ndr, dst);
-    dst.enc_ndr_long(version);
+    dst.enc_ndr_long(this.version);
   };
 
   decode(ndr, src) {
