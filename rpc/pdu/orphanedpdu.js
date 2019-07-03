@@ -2,10 +2,11 @@ var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class OrphanedPdu extends ConnectionOrientedPdu {
   constructor(){
+    super();
     this.ORPHANED_TYPE = 0x13;
   }
 
-  get type(){
+  getType(){
     return this.ORPHANED_TYPE;
   }
 }

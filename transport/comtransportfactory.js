@@ -7,6 +7,7 @@ class ComTransportFactory {
 
   createTransport(address)
   {
+    console.log("createTransport");
     return new ComTransport(address);
   }
 

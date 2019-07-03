@@ -5,7 +5,7 @@ class ShutdownPdu extends ConnectionOrientedPdu {
     this.SHUTDOWN_TYPE = 0x11;
   }
 
-  get type(){
+  getType(){
     return this.SHUTDOWN_TYPE;
   }
 }

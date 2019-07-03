@@ -30,7 +30,7 @@ class ConnectionOrientedEndpoint{
     this.callId;
     this.contextIdCounter = 0;
     this.contextIdToUse = this.contextIdCounter;
-
+    this.context;
     this.uuidsVsContextIds = new HashMap();
     this.currentIID = null;
   }
@@ -88,13 +88,12 @@ class ConnectionOrientedEndpoint{
   }
 
   rebind(){
-    console.log("rebind");
     this.bound = false;
     this.bind()
   }
 
   bind(){
-    console.log("bind", this.context);
+    console.log("bind");
     if (this.bound) return;
     if (this.context != null){
       this.bound = true;
@@ -103,7 +102,7 @@ class ConnectionOrientedEndpoint{
       var pdu = this.context.alter(new PresentationSyntax(cid == null? ++this.contextIdCounter : cid,
         getSyntax()));
       var sendAlter = false;
-      console.log(cid)
+
       if (cid == null){
         this.uuidsVsContextIds.put(getSyntax(), Number.parseInt(this.contextIdCounter));
         this.contextIdToUse = this.contextIdCounter;
@@ -141,19 +140,19 @@ class ConnectionOrientedEndpoint{
   }
 
   send(request){
-    this.bind();
     console.log("send");
+    this.bind();
     this.context.getConnection().transmit(request, this.getTransport());
   }
 
   receive(){
-    return this.context.getConnection().receive(getTransport());
+    return this.context.getConnection().receive(this.getTransport());
   }
 
   detach(){
     this.bound = false;
     this.context = null;
-    getTransport().close();
+    this.getTransport().close();
   }
 
   connect(){

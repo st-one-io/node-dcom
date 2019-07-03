@@ -177,7 +177,7 @@ class ComServer extends Stub {
     this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress()));
   }
 
-  comServerClsid(progId, address, session)
+  async comServerClsid(progId, address, session)
   {
     if (progId == null || address == null || session == null) {
       throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
@@ -191,19 +191,20 @@ class ComServer extends Stub {
       throw new Erro(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS2);
     }
 
-    this.address = address.trim();
+    address = address.trim();
     Dns.lookup(this.address, function(err, addr, family){
-      this.address = addr;
+      address = addr;
     });
 
-    this.address = "ncacn_ip_tcp:"+ address + "[135]";
-    this.initialize(progId, this.address, session);
+    address = "ncacn_ip_tcp:"+ address + "[135]";
+    await this.initialize(progId, address, session);
   }
 
-  initialize(clsid, address, session)
+  async initialize(clsid, address, session)
   {
-    super.setTransportFactory(new ComTransportFactory().getSingleTon());
-    super.setAddress(address);
+    this.transportFactory = (new ComTransportFactory().getSingleTon());
+    this.address = address;
+
     if (session.isNNTLMv2Enabled()) {
       // TODO:
     }
@@ -218,31 +219,35 @@ class ComServer extends Stub {
     this.session = session;
     this.session.setTargetServer(address.substring(address.indexOf(":") + 1, address.indexOf("[")));
     try {
-      this.start();
+      await this.start();
     } catch (e) {
       console.log(e);
       // TODO: HUGE TO-DO, related to winReg and for the firs time well defined Exceptions were needed
     }
-    this.session.setStub(this);
-    this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress()));
+    if (this.serverActivation != null) {
+      this.session.setStub(this);
+      this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress()));
+    }
   }
 
-  start(){
+  async start(){
     if (this.serverActivation != null && this.serverActivation.isActivationSuccessful()) {
       return;
     }
-
+    console.log("start");
     var attachcomplete = false;
     try {
       this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
-      this.attach(this.getSyntax());
-
+      await this.attach(this.getSyntax());
+      console.log("after first attach");
       attachcomplete = true;
 
       this.getEndpoint().getSyntax().setUUID(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
       this.getEndpoint().getSyntax().setVersion(0,0);
+      console.log("before rebind");
+
       this.getEndpoint().rebind();
-      console.log("ddbug");
+      console.log("after rebind");
       var serverAlive = new CallBuilder(true);
       serverAlive.attachSession(session);
       serverAlive.setOpnum(2);
@@ -284,10 +289,12 @@ class ComServer extends Stub {
     }
 
     this.syntax = "00000143-0000-0000-c000-000000000046:0.0";
-
-    var bindings = this.serverActivation.getDualStringArrayForOxid().getStringBindings();
-    var i = 0;
-
+    if(this.serverActivation != null){
+      var bindings = this.serverActivation.getDualStringArrayForOxid().getStringBindings();
+      var i = 0;
+    } else {
+      console.error("Not able to create server");
+    }
   }
 
   getServerInterfacePointer()

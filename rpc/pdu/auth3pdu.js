@@ -2,8 +2,9 @@ var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class Auth3Pdu extends ConnectionOrientedPdu {
   constructor(){
+    super();
     this.AUTH3_TYPE = 0x10;
-    setCallId(0);
+    this.setCallId(0);
   }
 
   get type(){

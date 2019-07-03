@@ -6,6 +6,7 @@ var UUID = require("../core/uuid.js");
 
 class RequestCoPdu extends ConnectionOrientedPdu {
   constructor(){
+    super();
     this.REQUEST_TYPE = 0x00;
     this.stub = [];
     this.allocationHint = 0;
@@ -14,47 +15,47 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     this.object;
   }
 
-  get type(){
+  geType(){
     return this.REQUEST_TYPE;
   }
 
-  get stub(){
+  getStub(){
     return this.stub;
   }
 
-  set stub(stub){
+  setStub(stub){
     this.stub = stub;
   }
 
-  get allocationHint(){
+  getAllocationHint(){
     return this.allocationHint;
   }
 
-  set allocationHint(allocationHint){
+  setAllocationHint(allocationHint){
     this.allocationHint = allocationHint;
   }
 
-  get contextId(){
+  getContextId(){
     return this.contextId;
   }
 
-  set contextId(contextId){
+  setContextId(contextId){
     this.contextId = contextId;
   }
 
-  get opnum(){
+  getOpnum(){
     return this.opnum;
   }
 
-  set opnum(opnum){
+  setOpnum(opnum){
     this.opnum = opnum;
   }
 
-  get object(){
+  getObject(){
     return object;
   }
 
-  set object(object){
+  setObject(object){
     this.object = object;
     flag(PFC_OBJECT_UUID, object != null);
   }

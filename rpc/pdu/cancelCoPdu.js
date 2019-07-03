@@ -2,10 +2,11 @@ var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class CancelCoPdu extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.CANCEL_TYPE = 0x12;
   }
 
-  get type(){
+  getType(){
     return this.CANCEL_TYPE;
   }
 }

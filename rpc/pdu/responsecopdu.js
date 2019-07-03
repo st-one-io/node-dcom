@@ -4,6 +4,7 @@ var Fragmentable = require("../fragmentable.js");
 
 class ResponseCoPdu extends ConnectionOrientedPdu {
   constructor(){
+    super();
     this.RESPONSE_TYPE = 0x02;
     this.stub = [];
     this.allocationHint = 0;
@@ -11,39 +12,39 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
     this.cacnelCount = 0;
   }
 
-  get type(){
+  getType(){
     return this.RESPONSE_TYPE;
   }
 
-  get stub(){
+  getStub(){
     return this.stub;
   }
 
-  set stub(stub){
+  setStub(stub){
     this.stub = stub;
   }
 
-  get allocationHint(){
+  getAllocationHint(){
     return this.allocationHint;
   }
 
-  set allocationHint(allocationHint){
+  setAllocationHint(allocationHint){
     this.allocationHint = allocationHint;
   }
 
-  get contextId(){
+  getContextId(){
     return this.contextId;
   }
 
-  set contextId(contextId){
+  setContextId(contextId){
     this.contextId = contextId;
   }
 
-  get cancelCount(){
+  getCancelCount(){
     return this.opnum;
   }
 
-  set cancelCount(cancelCount){
+  setCancelCount(cancelCount){
     this.cancelCount = cancelCount;
   }
 

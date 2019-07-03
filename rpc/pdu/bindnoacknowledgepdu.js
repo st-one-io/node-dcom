@@ -17,23 +17,23 @@ class BindNoAcknowledgePdu extends ConnectionOrientedPdu{
     this.rejectReason = this.REASON_NOT_SPECIFIED;
   }
 
-  get type(){
+  getType(){
     return this.BIND_NO_ACKNOWLEDGE_TYPE;
   }
 
-  get rejectReason(){
+  getRejectReason(){
     return this.rejectReason;
   }
 
-  set rejectReason(rejectReason){
+  setRejectReason(rejectReason){
     this.rejectReason = rejectReason;
   }
 
-  get versionList(){
+  getVersionList(){
     return this.versionList;
   }
 
-  set versionList(versionList){
+  setVersionList(versionList){
     this.versionList = versionList;
   }
 

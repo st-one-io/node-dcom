@@ -10,6 +10,7 @@ class ComTransport
 {
   constructor(address)
   {
+    console.log("new ComTransport");
     this.PROTOCOL = "ncacn_ip_tcp";
     this.LOCALHOST = os.hostname();
     this.DEFAULT_READ_READY_HANDOFF_TIMEOUT_SECS = 30;
@@ -64,33 +65,30 @@ class ComTransport
 
   attach(syntax)
   {
-    if (this.attached) {
-      throw new Error("Transport already attached");
-    }
-
-    try {
+    console.log("attach");
+    var self = this;
+    return new Promise(function(resolve, reject){
+      if (self.attached) {
+        throw new Error("Transport already attached");
+      }
       var channel = new net.Socket();
-      var ipAddr;
-      dns.lookup(this.host, function(err, address, family){
-        ipAddr = address;
+      var endpoint = new ComEndpoint()
+
+      channel.connect(Number.parseInt(self.port),  self.host, () => {
+        console.log("connected.");
+        self.attached = true;
+        channel.setKeepAlive(true);
+        self.channelWrapper = channel;
+        resolve(new ComEndpoint(self, syntax));
       });
-
-      channel.connect(this.port, ipAddr);
-      this.attached = true;
-      channel.setKeepAlive(true);
-      this.channelWrapper = channel;
-
-      return new ComEndpoint(this, syntax);
-    } catch (e) {
-      this.close();
-    }
+    });
   }
 
   close()
   {
     try {
       if (this.channelWrapper != null) {
-        this.channelWrapper.close();
+        this.channelWrapper.end();
       }
     } finally {
       this.attached = false;
@@ -102,22 +100,26 @@ class ComTransport
     if (!this.attached) {
       throw new Erro("Transport not attached.");
     }
-
     var byteBuffer = ByteBuffer.wrap(buffer.getBuffer());
-    this.channelWrapper.write(byteBuffer);
+    try{
+      this.channelWrapper.write(byteBuffer.buffer);
+    } catch(e){
+      console.log(e);
+    }
   }
 
-  receive(buffer)
+  async receive(buffer)
   {
     if (!this.attached) {
-      throw new Erro("Transport not attached.");
+      throw new Error("Transport not attached.");
     }
 
     var timeoutMillis = 3000;
-
-    this.channelWrapper.on('data', function(data){
+    console.log("before");
+    await this.channelWrapper.on('data', function(data){
       buffer = data;
     });
+    console.log("after");
   }
 
   toString()

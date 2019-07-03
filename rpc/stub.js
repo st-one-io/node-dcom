@@ -56,12 +56,21 @@ class Stub {
     }
   }
 
-  attach(syntax){
-    var endpoint = this.endpoint;
-    if (endpoint != null) return;
-    var address = this.address;
-    if (address == null) throw new Error("No address specified.");
-    this.setEndpoint(this.getTransportFactory().createTransport(address).attach( new PresentationSyntax(syntax)));
+  async attach(syntax){
+    console.log("stub attach");
+    var self = this;
+    //return new Promise(function(resolve, reject) {
+      var endpoint = self.endpoint;
+      if (endpoint != null) return;
+      var address = self.address;
+      if (address == null) throw new Error("No address specified.");
+
+      console.log();
+      let promise = await (self.getTransportFactory().createTransport(address).attach( new PresentationSyntax(syntax)));
+      self.setEndpoint(promise);
+      //.then(function(resolve){self.setEndpoint(resolve);
+      //});
+    //});
   }
 
   call(semantics, ndrobj){

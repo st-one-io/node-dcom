@@ -121,18 +121,18 @@ class ConnectionOrientedPdu {
 
   encode(ndr, dst){
     ndr.setBuffer(dst);
+    console.log(dst);
     ndr.setFormat(this.getFormat());
     this.writePdu(ndr);
 
     var buffer = ndr.getBuffer();
     var length = buffer.getLength();
-    this.fragmentLength(length);
+    this.setFragmentLength(length);
 
     buffer.setIndex(this.FRAG_LENGTH_OFFSET);
     ndr.writeUnsignedShort(length);
-    ndr.writeUnsignedShort(this.authLength());
+    ndr.writeUnsignedShort(this.getAuthLength());
     buffer.setIndex(length);
-
   }
 
   readPdu(ndr){
@@ -142,7 +142,7 @@ class ConnectionOrientedPdu {
 
   writePdu(ndr){
     this.writeHeader(ndr);
-    this.writeBody(ndr);
+    //this.writeBody(ndr);
   }
 
   readHeader(ndr){
@@ -165,7 +165,7 @@ class ConnectionOrientedPdu {
   }
 
   writeHeader(ndr){
-    console.log("writeHeader");
+    console.log(ndr.getBuffer());
     ndr.writeUnsignedSmall(this.majorVersion);
     ndr.writeUnsignedSmall(this.minorVersion);
     ndr.writeUnsignedSmall(this.type);
@@ -179,7 +179,9 @@ class ConnectionOrientedPdu {
 
   readBody(ndr){};
 
-  writeBody(ndr){};
+  writeBody(ndr){
+    console.log("writeBody");
+  };
 
   get type(){};
 }

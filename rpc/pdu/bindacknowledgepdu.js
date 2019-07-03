@@ -4,56 +4,57 @@ var PresentationResult = require("../core/presentationresult.js");
 
 class BindAcknowledgePdu extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.BIND_ACKOWLEDGE_TYPE = 0x0c;
     this.resultList;
-    this.maxTransmitFragment = MUST_RECEIVE_FRAGMENT_SIZE;
-    this.maxReceiveFragment = MUST_RECEIVE_FRAGMENT_SIZE;
+    this.maxTransmitFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
+    this.maxReceiveFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
 
     this.associationGroupId = 0;
     this.secondaryAddress;
   }
 
-  get type(){
+  getType(){
     return this.BIND_ACKNOWLEDGE_TYPE;
   }
 
-  get maxTransmitFragment(){
+  getMaxTransmitFragment(){
     return this.maxTransmitFragment;
   }
 
-  set maxTransmitFragment(maxTransmitFragment){
+  setMaxTransmitFragment(maxTransmitFragment){
     this.maxTransmitFragment = maxTransmitFragment;
   }
 
-  get maxReceiveFragment(){
+  getMaxReceiveFragment(){
     return this.maxReceiveFragment;
   }
 
-  set maxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment){
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
-  get associationGroupId(){
+  getAssociationGroupId(){
     return this.associationGroupId;
   }
 
-  set associationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId){
     this.associationGroupId = associationGroupId;
   }
 
-  get secondaryAddress(){
+  getSecondaryAddress(){
     return this.secondaryAddress;
   }
 
-  set secondaryAddress(secondaryAddress){
+  setSecondaryAddress(secondaryAddress){
     this.secondaryAddress = secondaryAddress;
   }
 
-  get resultList(){
+  getResultList(){
     return this.resultList;
   }
 
-  set resultList(resultList){
+  setResultList(resultList){
     this.resultList = resultList;
   }
 

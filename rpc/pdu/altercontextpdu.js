@@ -2,7 +2,7 @@ var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 var PresentationContext = require("../core/presentationcontext.js");
 class AlterContextPdu {
   constructor(){
-    this.ALTER_CONTEX_TYPE = 0x0e;
+    this.ALTER_CONTEXT_TYPE = 0x0e;
 
     this.contextList;
 
@@ -12,39 +12,39 @@ class AlterContextPdu {
     this.associationGroupId = 0;
   }
 
-  get type(){
+  getType(){
     return this.ALTER_CONTEX_TYPE;
   }
 
-  get maxTransmitFramgent(){
+  getMaxTransmitFramgent(){
     return this.maxTransmitFramgent;
   }
 
-  set maxTransmitFramgent(maxTransmitFramgent){
+  setMaxTransmitFramgent(maxTransmitFramgent){
     this.maxTransmitFramgent = maxTransmitFramgent;
   }
 
-  get maxReceiveFragment(){
+  getMaxReceiveFragment(){
     return this.maxReceiveFragment;
   }
 
-  set maxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment){
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
-  get associationGroupId(){
+  getAssociationGroupId(){
     return this.associationGroupId;
   }
 
-  set associationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId){
     this.associationGroupId = associationGroupId;
   }
 
-  get contextList(){
+  getContextList(){
     return this.contextList;
   }
 
-  set contextList(contextList){
+  setContextList(contextList){
     this.contextList = contextList;
   }
 

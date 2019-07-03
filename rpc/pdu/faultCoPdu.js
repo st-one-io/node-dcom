@@ -6,6 +6,7 @@ var Fragmentable = require("../fragmentable.js");
 
 class FaultCoPdu extends ConnectionOrientedPdu {
   constructor(){
+    super();
     this.FAULT_TYPE = 0x03;
     this.stub;
     this.allocationHint = 0;
@@ -14,47 +15,47 @@ class FaultCoPdu extends ConnectionOrientedPdu {
     this.status = FaultCodes.UNSPECIFIED_REJECTION;
   }
 
-  get type(){
+  getType(){
     return this.FAULT_TYPE;
   }
 
-  get stub(){
+  getStub(){
     return this.stub;
   }
 
-  set stub(stub){
+  setStub(stub){
     this.stub = stub;
   }
 
-  get allocationHint(){
+  getAllocationHint(){
     return this.allocationHint;
   }
 
-  set allocationHint(allocationHint){
+  setAllocationHint(allocationHint){
     this.allocationHint = allocationHint;
   }
 
-  get contextId(){
+  getContextId(){
     return this.contextId;
   }
 
-  set contextId(contextId){
+  setContextId(contextId){
     this.contextId = contextId;
   }
 
-  get cancelCount(){
+  getCancelCount(){
     return this.cancelCount;
   }
 
-  set cancelCount(cancelCount){
+  setCancelCount(cancelCount){
     this.cancelCount = cancelCount;
   }
 
-  get status(){
+  getStatus(){
     return this.status;
   }
 
-  set status(status){
+  setStatus(status){
     this.status = status;
   }
 

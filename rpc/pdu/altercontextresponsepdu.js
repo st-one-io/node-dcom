@@ -16,47 +16,47 @@ class AlterContextResponsePdu{
     this.secondaryAddress;
   }
 
-  get type(){
+  getType(){
     return this.ALTER_CONTEXT_RESPONSE_TYPE;
   }
 
-  get maxTransmitFragment(){
+  getMaxTransmitFragment(){
     return this.maxTransmitFragment;
   }
 
-  set maxTransmitFragment(maxTransmitFragment){
+  setMaxTransmitFragment(maxTransmitFragment){
     this.maxTransmitFragment = maxTransmitFragment;
   }
 
-  get maxReceiveFragment(){
+  getMaxReceiveFragment(){
     return this.maxReceiveFragment;
   }
 
-  set maxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment){
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
-  get associationGroupId(){
+  getAssociationGroupId(){
     return this.associationGroupId;
   }
 
-  set associationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId){
     this.associationGroupId = associationGroupId;
   }
 
-  get secondaryAddress(){
+  getSecondaryAddress(){
     return this.secondaryAddress;
   }
 
-  set secondaryAddress(secondaryAddress){
+  setSecondaryAddress(secondaryAddress){
     this.secondaryAddress = secondaryAddress;
   }
 
-  get resultList(){
+  getResultList(){
     return this.resultList;
   }
 
-  set resultList(resultList){
+  setResultList(resultList){
     this.resultList = resultList;
   }
 

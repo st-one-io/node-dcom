@@ -15,19 +15,20 @@ var RequestCoPdu = require('./pdu/requestcopdu.js');
 var ResponseCoPdu = require('./pdu/responsecopdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
 var Fragmentable = require('./fragmentable.js');
+var Buffer = require('buffer');
 
 class DefaultConnection
 {
   constructor(transmitLength, receiveLength)
   {
     if (transmitLength == undefined && receiveLength == undefined){
-      transmitLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
-      receiveLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
+      this.transmitLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
+      this.receiveLength = ConnectionOrientedPdu.MUST_RECEIVE_FRAGMENT_SIZE;
     }
 
     this.ndr = new NetworkDataRepresentation();
-    this.transmitBuffer = new NdrBuffer([transmitLength], 0);
-    this.receiveBuffer = new NdrBuffer([receiveLength], 0);
+    this.transmitBuffer = new NdrBuffer(Buffer.alloc(), 0);
+    this.receiveBuffer = new NdrBuffer(new Array(this.transmitLength), 0);
     this.security;
     this.contextId;
     this.bytesRemainingInReceiveBuffer = false;
@@ -50,7 +51,7 @@ class DefaultConnection
   receive(transport)
   {
     var fragment = this.receiveFragment(transport);
-    if (!(fragment instanceof Fragmentable) || fragment.getFlag(ConnectionOrientedPdu.PFC_LAST_FRAG)){
+    if (!(fragment instanceof Fragmentable) || fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)){
       return fragment;
     }
 
@@ -87,7 +88,8 @@ class DefaultConnection
     fragment.encode(this.ndr, this.transmitBuffer);
 
     this.processOutgoing();
-    transport.send(transmitBuffer);
+
+    transport.send(this.transmitBuffer);
   }
 
   receiveFragment(transport)
@@ -96,7 +98,7 @@ class DefaultConnection
     var type = -1;
     var read = true;
 
-    if (bytesRemainingInReceiveBuffer) {
+    if (this.bytesRemainingInReceiveBuffer) {
       if (this.receiveBuffer.length > ConnectionOrientedPdu.TYPE_OFFSET){
         this.receiveBuffer.setIndex(ConnectionOrientedPdu.TYPE_OFFSET);
         type = this.receiveBuffer.dec_ndr_small();
@@ -130,7 +132,7 @@ class DefaultConnection
     var lengthOfArrayTobeRead = this.receiveBuffer.length;
 
     if (this.receiveBuffer.length > 0){
-      this.receiveBuffer.setIndex(connectionorientedpdu.FRAG_LENGTH_OFFSET);
+      this.receiveBuffer.setIndex(new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET);
       fragmentLength = this.receiveBuffer.dec_ndr_short();
 
       newbuffer = [fragmentLength];
@@ -176,7 +178,7 @@ class DefaultConnection
         this.receiveBuffer.length = trimSize;
         this.receiveBuffer.index = 0;
         this.receiveBuffer.start = 0;
-        bytesRemainingInReceiveBuffer = truke;
+        bytesRemainingInReceiveBuffer = true;
       }
 
       var bufferTobeUsed = new NdrBuffer(newBuffer, 0);
@@ -313,7 +315,7 @@ class DefaultConnection
           logMsg = false;
         }
 
-        if (security != null){
+        if (this.security != null){
           var ndr2 = new NetworkDataRepresentation();
           ndr2.setBuffer(buffer);
           this.verifyAndUnseal(ndr2);
@@ -337,55 +339,54 @@ class DefaultConnection
 
   processOutgoing()
   {
-    this.ndr.setIndex(ConnectionOrientedPdu.TYPE_OFFSET);
+    this.ndr.getBuffer().setIndex((new ConnectionOrientedPdu).TYPE_OFFSET);
     var logMsg = true;
     switch (this.ndr.readUnsignedSmall()) {
-      case Auth3Pdu.AUTH3_TYPE:
+      case (new Auth3Pdu().AUTH3_TYPE):
         if (logMsg) {
           console.log("Sending AUTH3");
           logMsg = false;
         }
-      case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
+      case (new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE):
         if (logMsg){
           console.log("Sending BIND_ACK");
           logMsg = false;
         }
-      case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
+      case (new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE):
         if (logMsg){
           console.log("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
-
         var verifier = this.outgoingRebind();
         if (verifier != null) this.attachAuthentication(verifier);
         break;
-      case BindPdu.BIND_TYPE:
+      case (new BindPdu().BIND_TYPE):
         if (logMsg){
           console.log("Sending BIND");
           logMsg = false;
         }
-      case AlterContextPdu.ALTER_CONTEXT_TYPE:
+      case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
         if (logMsg){
           console.log("Sending ALTER_CTX");
           logMsg = false;
         }
         break;
-      case FaultCoPdu.FAULT_TYPE:
+      case (new FaultCoPdu().FAULT_TYPE):
         if (logMsg){
           console.log("Sending FAULT");
           logMsg = false;
         }
-      case CancelCoPdu.CANCEL_TYPE:
+      case (new CancelCoPdu().CANCEL_TYPE):
         if (logMsg){
           console.log("Sending CANCEL");
           logMsg = false;
         }
-      case OrphanedPdu.ORPHANED_TYPE:
+      case (new OrphanedPdu().ORPHANED_TYPE):
         if (logMsg){
           console.log("Sending ORPHANED");
           logMsg = false;
         }
-      case ResponseCoPdu.RESPONSE_TYPE:
+      case (new ResponseCoPdu().RESPONSE_TYPE):
         if (logMsg) {
           console.log("Sending RESPONSE");
           logMsg = false;
@@ -394,29 +395,21 @@ class DefaultConnection
           this.signAndSeal(this.ndr);
         }
         break;
-      case RequestCoPdu.REQUEST_TYPE:
+      case (new RequestCoPdu().REQUEST_TYPE):
         if (logMsg) {
           console.log("Sending REQUEST");
           logMsg = false;
         }
-
-        if (security != null){
-          var ndr2 = new NetworkDataRepresentation();
-          ndr2.setBuffer(buffer);
-          this.verifyAndUnseal(ndr2);
-        }else{
-          this.detachAuthentication(buffer);
-        }
         break;
-      case BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE:
-      case ShutdownPdu.SHUTDOWN_TYPE:
+      case (new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE):
+      case (new ShutdownPdu().SHUTDOWN_TYPE):
         return;
       default:
         throw new Error("Invalid outgoing PDU type");
     }
   }
 
-  set security(security)
+  setSecurity(security)
   {
     this.security = security;
   }
@@ -461,7 +454,7 @@ class DefaultConnection
   detachAuthentication(buffer)
   {
     try {
-      buffer.setIndex(ConnectionOrientedPdu.AUTH_LENGTH_OFFSET);
+      buffer.setIndex(new ConnectionOrientedPdu().AUTH_LENGTH_OFFSET);
       var length = buffer.dec_ndr_short();
 
       if (length == 0) {
@@ -480,7 +473,7 @@ class DefaultConnection
       buffer.setIndex(length);
       return verifier;
     } catch (e) {
-      throw new Erro("Error striping authentication from PDU.");
+      throw new Error("Error striping authentication from PDU.");
     }
   }
 

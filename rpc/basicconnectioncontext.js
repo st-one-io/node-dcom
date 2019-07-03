@@ -11,13 +11,14 @@ var DefaultConnection = require('./defaultconnection.js');
 
 class BasicConnectionContext {
   constructor(){
-    this.MAX_TRANSMIT_FRAGMENT = "rpc.connectionContext.maxTransmitFragment";
-    this.MAX_RECEIVE_FRAGMENT = "rpc.connectionContext.maxReceiveFragment";
     this.DEFAULT_MAX_TRANSMIT_FRAGMENT = 4280;
     this.DEFAULT_MAX_RECEIVE_FRAGMENT = 4280;
 
-    this.maxTransmitFragment = this.MAX_TRANSMIT_FRAGMENT;
-    this.maxReceiveFragment = this.MAX_RECEIVE_FRAGMENT;
+    this.maxTransmitFragment = this.DEFAULT_MAX_TRANSMIT_FRAGMENT;
+    this.maxReceiveFragment = this.DEFAULT_MAX_RECEIVE_FRAGMENT;
+
+    this.MAX_TRANSMIT_FRAGMENT = this.maxTransmitFragment;
+    this.MAX_RECEIVE_FRAGMENT = this.maxReceiveFragment;
 
     this.connection;
     this.established;
@@ -25,19 +26,19 @@ class BasicConnectionContext {
     this.receiveLength;
   }
 
-  init(context, properties){
+  init(context){
     this.established = false;
-    this.connection = new DefaultConnection();
-    if (properties != null){
-      var maxTransmit = properties.MAX_TRANSMIT_FRAGMENT;
-      if (maxTransmit != null){
-        this.maxTransmitFragment = Number.parseInt(maxTransmit);
-      }
-      var maxReceive = properties.MAX_RECEIVE_FRAGMENT;
-      if (maxReceive != null){
-        this.maxReceiveFragment = Number.parseInt(maxReceive);
-      }
+    this.connection = new DefaultConnection()
+    //if (properties != null){
+    var maxTransmit = this.MAX_TRANSMIT_FRAGMENT;
+    if (maxTransmit != null){
+      this.maxTransmitFragment = Number.parseInt(maxTransmit);
     }
+    var maxReceive = this.MAX_RECEIVE_FRAGMENT;
+    if (maxReceive != null){
+      this.maxReceiveFragment = Number.parseInt(maxReceive);
+    }
+    //}
     var pdu = new BindPdu();
     pdu.setContextList([context]);
     pdu.setMaxTransmitFragment(this.maxTransmitFragment);
@@ -99,7 +100,6 @@ class BasicConnectionContext {
   }
 
   getConnection(){
-    console.log("getConnection");
     return this.connection;
   }
 
