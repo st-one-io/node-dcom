@@ -22,3 +22,5 @@ class Security{
     }
   //TO-DO: functions implemented by NTLM1.java
 }
+
+module.exports = Security;

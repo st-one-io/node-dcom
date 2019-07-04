@@ -122,7 +122,6 @@ class ConnectionOrientedPdu {
 
   encode(ndr, dst){
     ndr.setBuffer(dst);
-    console.log(dst);
     ndr.setFormat(this.getFormat());
     this.writePdu(ndr);
 
@@ -166,7 +165,6 @@ class ConnectionOrientedPdu {
   }
 
   writeHeader(ndr){
-    console.log(ndr.getBuffer());
     ndr.writeUnsignedSmall(this.majorVersion);
     ndr.writeUnsignedSmall(this.minorVersion);
     ndr.writeUnsignedSmall(this.type);

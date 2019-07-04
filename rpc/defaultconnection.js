@@ -359,6 +359,7 @@ class DefaultConnection
           console.log("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
+        console.log("Asdfasdfasd");
         var verifier = this.outgoingRebind();
         if (verifier != null) this.attachAuthentication(verifier);
         break;

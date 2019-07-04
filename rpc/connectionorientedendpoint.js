@@ -11,7 +11,7 @@ var PresentationContext = require('./core/presentationcontext.js');
 var BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
 var AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
 var BasicConnectionContext = require('./basicconnectioncontext.js');
-
+var NTLMConnectionContext = require('./security/ntlmconnectioncontext.js');
 
 class ConnectionOrientedEndpoint{
   constructor(transport, syntax){
@@ -166,6 +166,7 @@ class ConnectionOrientedEndpoint{
 
     var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax(),
       this.properties));
+
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu);
@@ -193,9 +194,10 @@ class ConnectionOrientedEndpoint{
 
   createContext(){
     var properties = this.properties;
-    if (!properties) return this.properties = new BasicConnectionContext();
+    if (!properties) return this.properties = new NTLMConnectionContext();
+    conso
     var context = String(properties.CONNECTION_CONTEXT);
-    if(!context)return new BasicConnectionContext();
+    if(!context)return new NTLMConnectionContext();
   }
 }
 
