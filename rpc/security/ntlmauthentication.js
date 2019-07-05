@@ -1,6 +1,8 @@
 var Crypto = require('crypto');
 var NtlmFlags = require('./ntlmflags.js');
 var Security = require('../security.js');
+var Type1Message = require('./messages/type1message.js');
+var os = require('os');
 
 class NTLMAuthentication
 {
@@ -101,11 +103,12 @@ class NTLMAuthentication
     return flags;
   }
 
-  createType1()
+  createType1(domain)
   {
     var flags = this.getDefaultFlags();
-    return new Type1Message(flags, this.credentials.domain,
-      new Type1Message.getDefaultWorkstation());
+    console.log("createtype1");
+    return new Type1Message(null, flags, domain,
+      os.hostname());
   }
 
   createType2(type1)

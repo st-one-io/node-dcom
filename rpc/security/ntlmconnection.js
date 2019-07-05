@@ -2,6 +2,8 @@ var DefaultConnection = require('../defaultconnection.js');
 var AuthenticationVerifier = require('../core/authenticationverifier.js');
 var NdrBuffer = require('../../ndr/ndrbuffer.js');
 var NTLMAuthentication = require('./ntlmauthentication.js');
+var NTLMFlags = require('./ntlmflags.js');
+var Security = require('../security.js');
 
 class NTLMConnection extends DefaultConnection
 {
@@ -52,12 +54,12 @@ class NTLMConnection extends DefaultConnection
     }
   }
 
-  outgoindRebind()
+  outgoingRebind(info)
   {
-    console.log("Asdfasdfasdf");
+
     if (this.ntlm == null) {
       this.contextId = ++this.contextSerial;
-      this.ntlm = this.authentication.createType1();
+      this.ntlm = this.authentication.createType1(info.domain);
     } else if (this.ntlm instanceof Type1Message) {
       this.ntlm = this.authentication.createType2(this.ntlm);
     } else if (this.ntlm instanceof Type2Message) {
@@ -76,11 +78,13 @@ class NTLMConnection extends DefaultConnection
       throw new Error("Unrecognized NTLM message.");
     }
 
-    var protectionLevel = this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?
-      new Security().PROTECTION_LEVEL_PRIVACY : this.ntlm.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_SIGN) ?
-                    new Security().PROTECTION_LEVEL_INTEGRITY : new Security().PROTECTION_LEVEL_CONNECT;
 
-    return new AuthenticationVerifier(this.NTLMAuthentication.AUTHENTICATION_SERVICE_NTLM, protectionLevel,
+    var protectionLevel = this.ntlm.getFlag((NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?
+      new Security().PROTECTION_LEVEL_PRIVACY : this.ntlm.getFlag((NtlmFlags.NTLMSSP_NEGOTIATE_SIGN) ?
+                    new Security().PROTECTION_LEVEL_INTEGRITY : new Security().PROTECTION_LEVEL_CONNECT));
+
+
+    return new AuthenticationVerifier(this.authentication.AUTHENTICATION_SERVICE_NTLM, protectionLevel,
       this.contextId, this.ntlm);
   }
 }

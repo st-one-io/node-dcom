@@ -56,7 +56,7 @@ class Stub {
     }
   }
 
-  async attach(syntax){
+  async attach(syntax, info){
     console.log("stub attach");
     var self = this;
     //return new Promise(function(resolve, reject) {
@@ -66,7 +66,7 @@ class Stub {
       if (address == null) throw new Error("No address specified.");
 
       console.log();
-      let promise = await (self.getTransportFactory().createTransport(address).attach( new PresentationSyntax(syntax)));
+      let promise = await (self.getTransportFactory().createTransport(address).attach(new PresentationSyntax(syntax), info));
       self.setEndpoint(promise);
       //.then(function(resolve){self.setEndpoint(resolve);
       //});

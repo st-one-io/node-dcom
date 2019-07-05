@@ -8,7 +8,7 @@ var ComEndpoint = require('./comendpoint.js');
 
 class ComTransport
 {
-  constructor(address)
+  constructor(address, info)
   {
     console.log("new ComTransport");
     this.PROTOCOL = "ncacn_ip_tcp";
@@ -121,8 +121,8 @@ class ComTransport
     console.log("before");
     /**
      * FIXME this await won't work. To make an awaitable receive function
-     * we need to listen on the 'data' event at socket creation time create 
-     * a synchronization mechanism: store the received data, and everytime 
+     * we need to listen on the 'data' event at socket creation time create
+     * a synchronization mechanism: store the received data, and everytime
      * this here is called, check if there's anything stored, sending it;
      * and storing the "resolve" of the created promise, calling it whenever
      * the 'data' event is fired, with the received buffer

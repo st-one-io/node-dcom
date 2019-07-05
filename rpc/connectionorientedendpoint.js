@@ -43,8 +43,8 @@ class ConnectionOrientedEndpoint{
     return this.syntax;
   }
 
-  call(semantics, object, opnum, ndrobj){
-    this.bind();
+  call(semantics, object, opnum, ndrobj, info){
+    this.bind(info);
     var request = new RequestCoPdu();
     request.setContextid(this.contextIdToUse);
 
@@ -87,12 +87,12 @@ class ConnectionOrientedEndpoint{
     }
   }
 
-  rebind(){
+  rebind(info){
     this.bound = false;
-    this.bind()
+    this.bind(info)
   }
 
-  bind(){
+  bind(info){
     console.log("bind");
     if (this.bound) return;
     if (this.context != null){
@@ -112,7 +112,7 @@ class ConnectionOrientedEndpoint{
       }
 
       if (sendAlter){
-        if (pdu != null)this.send(pdu);
+        if (pdu != null)this.send(pdu, info);
         while (!this.context.isEstablished()){
           var recieved = this.receive();
 
@@ -130,19 +130,19 @@ class ConnectionOrientedEndpoint{
                 break;
               default:
             }
-            this.send(pdu);
+            this.send(pdu, info);
           }
         }
       }
     }else{
-      this.connect();
+      this.connect(info);
     }
   }
 
-  send(request){
+  send(request, info){
     console.log("send");
-    this.bind();
-    this.context.getConnection().transmit(request, this.getTransport());
+    this.bind(info);
+    this.context.getConnection().transmit(request, this.getTransport(), info);
   }
 
   receive(){
@@ -155,7 +155,7 @@ class ConnectionOrientedEndpoint{
     this.getTransport().close();
   }
 
-  connect(){
+  connect(info){
     console.log("connect");
     this.bound = true;
     this.contextIdCounter = 0;
@@ -169,7 +169,7 @@ class ConnectionOrientedEndpoint{
 
     this.contextIdToUse = this.contextIdCounter;
 
-    if (pdu != null) this.send(pdu);
+    if (pdu != null) this.send(pdu, info);
     while (!this.context.isEstablished()){
       var recieved = this.receive();
 

@@ -22,7 +22,7 @@ class ComServer extends Stub {
     this.timeoutModifiedfrom0 = false;
     this.interfacePtrCtor = null;
     this.listOfIps = new Array();
-
+    this.info;
 
     if (arguments.length == 3) {
       if (arguments[0] instanceof Session)
@@ -61,7 +61,7 @@ class ComServer extends Stub {
     if (session.isSSOEnalbed()) {
       // TODO: properties
     }
-
+    this.info = {domain: session.domain, username: session.username, password: session.password};
     var addressBindings = interfacePointer.getStringBindings().getStringBindings();
     var i = 0;
     var binding = null;
@@ -195,7 +195,7 @@ class ComServer extends Stub {
     Dns.lookup(this.address, function(err, addr, family){
       address = addr;
     });
-
+    this.info = {domain: session.domain, username: session.username, password: session.password};
     address = "ncacn_ip_tcp:"+ address + "[135]";
     await this.initialize(progId, address, session);
   }
@@ -246,7 +246,7 @@ class ComServer extends Stub {
       this.getEndpoint().getSyntax().setVersion(0,0);
       console.log("before rebind");
 
-      this.getEndpoint().rebind();
+      this.getEndpoint().rebind(this.info);
       console.log("after rebind");
       var serverAlive = new CallBuilder(true);
       serverAlive.attachSession(session);
@@ -254,7 +254,7 @@ class ComServer extends Stub {
       serverAlive.internal_COMVersion();
       console.log("init inside try");
       try {
-        this.call(Endpoint.IDEMPOTENT, serverAlive);
+        this.call(Endpoint.IDEMPOTENT, serverAlive, info);
         System.setCOMVersion(serverAlive.internal_getComVersion());
       } catch(e) {
         console.log(e);
@@ -274,7 +274,7 @@ class ComServer extends Stub {
         this.getEndpoint().getSyntax().setVersion(0,0);
         this.getEndpoint().rebindEndpoint();
         this.serverActivation = new RemActivation(clsid);
-        this.call(Endpoint.IDEMPOTENT, this.serverActivation);
+        this.call(Endpoint.IDEMPOTENT, this.serverActivation, info);
       }
     } catch(e) {
 

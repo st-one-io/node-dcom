@@ -36,17 +36,17 @@ class DefaultConnection
     this.bytesRemainingInReceiveBuffer = false;
   }
 
-  transmit(pdu, transport)
+  transmit(pdu, transport, info)
   {
     console.log("transmit");
     if (!(pdu instanceof Fragmentable)){
-      this.transmitFragment(pdu, transport);
+      this.transmitFragment(pdu, transport, info);
       return;
     }
 
     var fragments = pdu.fragment(this.transmitBuffer.getCapacity());
     while(fragments.hasNext()){
-      this.transmitFragment(fragments.next(), transport);
+      this.transmitFragment(fragments.next(), transport, info);
     }
   }
 
@@ -83,15 +83,15 @@ class DefaultConnection
     });
   }
 
-  transmitFragment(fragment, transport)
+  transmitFragment(fragment, transport, info)
   {
     console.log("transmitFragment");
     this.transmitBuffer.reset();
     fragment.encode(this.ndr, this.transmitBuffer);
 
-    this.processOutgoing();
+    this.processOutgoing(info);
 
-    transport.send(this.transmitBuffer);
+    transport.send(this.transmitBuffer,info);
   }
 
   receiveFragment(transport)
@@ -339,11 +339,17 @@ class DefaultConnection
     }
   }
 
-  processOutgoing()
+  processOutgoing(info)
   {
     this.ndr.getBuffer().setIndex((new ConnectionOrientedPdu).TYPE_OFFSET);
     var logMsg = true;
+
     switch (this.ndr.readUnsignedSmall()) {
+      case (new BindPdu().BIND_TYPE):
+        if (logMsg){
+          console.log("Sending BIND");
+          logMsg = false;
+        }
       case (new Auth3Pdu().AUTH3_TYPE):
         if (logMsg) {
           console.log("Sending AUTH3");
@@ -359,15 +365,12 @@ class DefaultConnection
           console.log("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
-        console.log("Asdfasdfasd");
-        var verifier = this.outgoingRebind();
+
+
+        var verifier = this.outgoingRebind(info);
+        console.log(verifier);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
-      case (new BindPdu().BIND_TYPE):
-        if (logMsg){
-          console.log("Sending BIND");
-          logMsg = false;
-        }
       case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
         if (logMsg){
           console.log("Sending ALTER_CTX");
@@ -594,12 +597,7 @@ class DefaultConnection
     buffer.length = length;
   }
 
-  incomingRebind(verifier){};
-
-  outgoingRebind()
-  {
-    return null;
-  }
+  outgoingRebind(info){};
 }
 
 module.exports = DefaultConnection;
