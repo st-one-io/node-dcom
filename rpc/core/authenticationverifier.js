@@ -34,12 +34,13 @@ AuthenticationVerifier.prototype.encode = function (ndr, dst) {
   dst.enc_ndr_small(this.padding);
   dst.enc_ndr_small(0);
   dst.enc_ndr_long(this.contextId);
+  console.log("AUTH VERIFIFER", this.body.length);
+  var temp = this.body.slice(0, this.body.length);
+  var temp_index= dst.getIndex();
 
-  var temp = body.slice(0, body.length);
-  var temp_index= src.getIndex();
   while(temp.length > 0)
-    src.getBuffer().splice(temp_index++, 0, temp.shift());
-  dst.advance(body.length);
+    dst.getBuffer().splice(temp_index++, 0, temp.shift());
+  dst.advance(this.body.length);
 };
 
 AuthenticationVerifier.prototype.equals = function (obj) {

@@ -245,7 +245,7 @@ class ComServer extends Stub {
       this.getEndpoint().getSyntax().setUUID(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
       this.getEndpoint().getSyntax().setVersion(0,0);
       console.log("before rebind");
-
+      console.log(this.getEndpoint().getSyntax());
       this.getEndpoint().rebind(this.info);
       console.log("after rebind");
       var serverAlive = new CallBuilder(true);

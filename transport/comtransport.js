@@ -96,16 +96,21 @@ class ComTransport
     }
   }
 
-  send(buffer){
+  send(buffer)
+  {
     if (!this.attached) {
       throw new Erro("Transport not attached.");
     }
     //var byteBuffer = ByteBuffer.wrap(buffer.getBuffer());
     let buf = buffer.getBuffer();
     //FIXME quick-fix to trim buffer to its real length. Need to check where this should be
-    let length = buf.readUInt16LE(8);
+    let length = buffer.length;
+
+    //console.log(buf.slice(0, length + 1));
+    console.log(JSON.stringify(buf.slice(0, length + 1)));
+    console.log("debug");
     try{
-      this.channelWrapper.write(buf.slice(0, length + 1));
+      this.channelWrapper.write(Buffer.from(buf.slice(0, length + 1)));
     } catch(e){
       console.log(e);
     }

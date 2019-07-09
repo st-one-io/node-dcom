@@ -4,7 +4,7 @@ class NtlmMessage
 {
   constructor()
   {
-    this.SIGNATURE= ['N', 'T', 'L', 'M', 'S', 'S', 'P', 0];
+    this.SIGNATURE= ['N'.charCodeAt(0), 'T'.charCodeAt(0), 'L'.charCodeAt(0), 'M'.charCodeAt(0), 'S'.charCodeAt(0), 'S'.charCodeAt(0), 'P'.charCodeAt(0), 0];
     this.VERSION = [6, 1, 0, 0, 0, 0, 0, 15];
     this.TYPE1 = 0x01;
     this.TYPE2 = 0x02;
@@ -56,39 +56,43 @@ class NtlmMessage
 
   writeULong(dst, offset, ulong)
   {
-    dest[ offset ] = ( ulong & 0xff );
-    dest[ offset + 1 ] = ( ulong >> 8 & 0xff );
-    dest[ offset + 2 ] = ( ulong >> 16 & 0xff );
-    dest[ offset + 3 ] = ( ulong >> 24 & 0xff );
+    dst[ offset ] = ( ulong & 0xff );
+    dst[ offset + 1 ] = ( ulong >> 8 & 0xff );
+    dst[ offset + 2 ] = ( ulong >> 16 & 0xff );
+    dst[ offset + 3 ] = ( ulong >> 24 & 0xff );
   }
 
   writeUShort(dst, offset, ushort)
   {
-    dest[ offset ] = ( ushort & 0xff );
-    dest[ offset + 1 ] = ( ushort >> 8 & 0xff );
+    dst[ offset ] = ( ushort & 0xff );
+    dst[ offset + 1 ] = ( ushort >> 8 & 0xff );
   }
 
-  writeSecurityBuffer (dest, offset, src) {
+  writeSecurityBuffer (dst, offset, src) {
     var length = ( src != null ) ? src.length : 0;
     if ( length == 0 ) {
         return offset + 4;
     }
-    writeUShort(dest, offset, length);
-    writeUShort(dest, offset + 2, length);
+    this.writeUShort(dst, offset, length);
+    this.writeUShort(dst, offset + 2, length);
     return offset + 4;
   }
 
-  writeSecurityBufferContent (dest, pos, off, src ) {
-    writeULong(dest, off, pos);
+  writeSecurityBufferContent (dst, pos, off, src ) {
+    this.writeULong(dst, off, pos);
     if ( src != null && src.length > 0 ) {
-        System.arraycopy(src, 0, dest, pos, src.length);
+        var aux = src.slice(0, src.length);
+        var aux_i = pos;
+        while (aux.length > 0) {
+          dst.splice(aux_i++, 1, aux.shift());
+        }
         return src.length;
     }
     return 0;
   }
 
   getOEMEncoding () {
-    return OEM_ENCODING;
+    return this.OEM_ENCODING;
   }
 
   toByteArray (){};

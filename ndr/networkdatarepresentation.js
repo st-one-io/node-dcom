@@ -2,14 +2,14 @@ var hexDump = require("./hexdump");
 var Format = require("./format.js");
 
 function NetworkDataRepresentation(){
-  const NDR_UUID = "8a885d04-1ceb-11c9-9fe8-08002b104860";
+  this.NDR_UUID = "8a885d04-1ceb-11c9-9fe8-08002b104860";
 
-  const NDR_MAJOR_VERSION = 2;
+  this.NDR_MAJOR_VERSION = 2;
 
-  const NDR_MINOR_VERSION = 0;
+  this.NDR_MINOR_VERSION = 0;
 
-  const NDR_SYNTAX = String(NDR_UUID + ":" + NDR_MAJOR_VERSION + "."
-  + NDR_MINOR_VERSION);
+  this.NDR_SYNTAX = String(this.NDR_UUID + ":" + this.NDR_MAJOR_VERSION + "."
+  + this.NDR_MINOR_VERSION);
 
   this.ptr;
   this.buf;

@@ -2,6 +2,7 @@ var NtlmMessage = require('./ntlmmessage.js');
 var SmbConstants = require('../../../ndr/smbconstants.js');
 var Buffer = require('buffer');
 var HexDump = require('../../../ndr/hexdump.js');
+var LegacyEncoding = require('legacy-encoding');
 
 class Type1Message extends NtlmMessage
 {
@@ -60,10 +61,11 @@ class Type1Message extends NtlmMessage
 
       var domain;
       var suppliedDomainString = this.getSuppliedDomain();
+
       if ((flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
         suppliedDomainString != null && suppliedDomainString.length != 0) {
         this.flags |= SmbConstants.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED;
-        domain = [...Buffer.from(suppliedDomainString.toUpperCase(), this.getOEMEncoding())];
+        domain = [...LegacyEncoding.encode(suppliedDomainString.toUpperCase(), this.getOEMEncoding())];
         size += domain.length;
       }else {
         this.flags &= SmbConstants.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED ^ 0xffffffff;
@@ -74,39 +76,43 @@ class Type1Message extends NtlmMessage
       if ((flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
         suppliedWorkstationString != null && suppliedWorkstationString.length != 0) {
         this.flags |= SmbConstants.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED;
-        workstation = [...Buffer.from(suppliedWorkstationString.toUpperCase(), this.getOEMEncoding())];
+        workstation = [...LegacyEncoding.encode(suppliedWorkstationString.toUpperCase(), this.getOEMEncoding())];
         size += workstation.length;
       }else {
         this.flags &= SmbConstants.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED ^ 0xffffffff;
       }
-      var type1 = [];
+      var type1 = new Array(size);
       var pos = 0;
 
-      type1.concat(this.NTLMSSP_SIGNATURE.slice(0, this.NTLMSSP_SIGNATURE.length));
-      pos += this.NTLMSSP_SIGNATURE.length;
+      var aux = this.SIGNATURE.slice(0, this.SIGNATURE.length);
+      var aux_i = 0;
+      while (aux.length > 0)
+        type1.splice(aux_i++, 1, aux.shift());
+      pos += this.SIGNATURE.length;
 
       this.writeULong(type1, pos, this.TYPE1);
       pos += 4;
 
-      this.writeUlong(type1, pos, flags);
+      this.writeULong(type1, pos, flags);
       pos += 4;
 
       var domOffOff = this.writeSecurityBuffer(type1, pos, domain);
       pos += 8;
 
-      var domOffOff = this.writeSecurityBuffer(type1, pos, workstation);
+      var wsOffOff = this.writeSecurityBuffer(type1, pos, workstation);
       pos += 8;
 
-      if ( ( flags & NTLMSSP_NEGOTIATE_VERSION ) != 0 ) {
-        var aux = this.NTLMSSP_VERSION.slice(0, this.NTLMSSP_VERSION.length);
+      if ( ( flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION ) != 0 ) {
+        var aux = this.VERSION.slice(0, this.VERSION.length);
         var aux_i = pos;
         while (aux.length > 0)
           type1.splice(aux_i++, 0, aux.shift());
-        pos += NTLMSSP_VERSION.length;
+        pos += this.VERSION.length;
       }
 
       pos += this.writeSecurityBufferContent(type1, pos, domOffOff, domain);
       pos += this.writeSecurityBufferContent(type1, pos, wsOffOff, workstation);
+      console.log(type1, pos);
       return type1;
     } catch (err) {
       throw new Erro(err);

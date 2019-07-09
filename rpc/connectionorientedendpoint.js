@@ -65,12 +65,12 @@ class ConnectionOrientedEndpoint{
     requkest.setObject(object);
 
     if ((semantis & this.MAYBE) != 0){
-      request.setFlag(ConnectionOrientedPdu.PFC_MAYBE, true);
+      request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
 
     this.send(request);
 
-    if (request.getFlag(ConnectionOrientedPdu.PFC_MAYBE)) return;
+    if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
     var rply = this.receive();
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
@@ -163,10 +163,9 @@ class ConnectionOrientedEndpoint{
 
     this.uuidsVsContextIds.set(String(this.getSyntax()), Number.parseInt(this.contextIdCounter));
     this.context = this.createContext();
-
-    var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax(),
-      this.properties));
-
+    
+    var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax()),
+      this.properties);
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu, info);

@@ -29,8 +29,8 @@ class DefaultConnection
     this.receiveLength = receiveLength || 7160;
 
     this.ndr = new NetworkDataRepresentation();
-    this.transmitBuffer = new NdrBuffer(Buffer.alloc(this.transmitLength), 0);
-    this.receiveBuffer = new NdrBuffer(Buffer.alloc(this.receiveLength), 0);
+    this.transmitBuffer = new NdrBuffer(new Array(this.transmitLength), 0);
+    this.receiveBuffer = new NdrBuffer(new Array(this.receiveLength), 0);
     this.security;
     this.contextId;
     this.bytesRemainingInReceiveBuffer = false;
@@ -87,6 +87,7 @@ class DefaultConnection
   {
     console.log("transmitFragment");
     this.transmitBuffer.reset();
+
     fragment.encode(this.ndr, this.transmitBuffer);
 
     this.processOutgoing(info);
@@ -366,9 +367,7 @@ class DefaultConnection
           logMsg = false;
         }
 
-
         var verifier = this.outgoingRebind(info);
-        console.log(verifier);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
       case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
@@ -425,10 +424,12 @@ class DefaultConnection
     try{
       var buffer = this.ndr.getBuffer();
       var length = buffer.getLength();
+
       buffer.setIndex(length);
-      verifier.encode(ndr, buffer);
+      verifier.encode(this.ndr, buffer);
       length = buffer.getLength();
-      buffer.setIndex(ConnectionOrientedPdu.FRAG_LENGTH_OFFSET);
+      console.log("LENGTH", length);
+      buffer.setIndex(new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET);
       this.ndr.writeUnsignedShort(length);
       this.ndr.writeUnsignedShort(verifier.body.length);
     }catch(e){

@@ -7,6 +7,9 @@ class PresentationSyntax{
     this.uuid;
     this.version;
 
+    // cast to object so we can use instanceof successfuly
+    syntax = new String(syntax);
+
     if (syntax instanceof UUID) {
       this.setUUID(syntax);
       this.setVersion(majorVersion, minorVersion);
@@ -44,6 +47,7 @@ class PresentationSyntax{
   };
 
   encode(ndr, dst) {
+    console.log("encoding presentation syntax");
     this.uuid.encode(ndr, dst);
     dst.enc_ndr_long(this.version);
   };
@@ -60,7 +64,7 @@ class PresentationSyntax{
   };
 
   parse(syntax) {
-    this.uuid = new UUID(syntax);
+    this.uuid = new UUID();
     var uuid_token = syntax.split(":")[0];
     var versions = (syntax.split(":"))[1].split(".");
 

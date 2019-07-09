@@ -51,13 +51,14 @@ NdrBuffer.prototype.getBuffer = function (){
 }
 
 NdrBuffer.prototype.alignToValue = function (boundary, value){
-  if (ignoreAlign){
+  if (this.ignoreAlign){
     return 0;
   }
-  var n = alignToValue(boundary);
+
+  var n = this.align(boundary);
   var i = n;
   while (i > 0){
-    this.buf[index -i] = value;
+    this.buf[this.index -i] = value;
     i--;
   }
   return n;

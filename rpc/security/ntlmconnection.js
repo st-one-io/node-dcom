@@ -10,7 +10,7 @@ class NTLMConnection extends DefaultConnection
   constructor()
   {
     super();
-    this.contextSerial;
+    this.contextSerial = 0;
     console.log("ntlmconnection constructor");
     this.authentication = new NTLMAuthentication();
     this.ntlm;
@@ -56,7 +56,6 @@ class NTLMConnection extends DefaultConnection
 
   outgoingRebind(info)
   {
-
     if (this.ntlm == null) {
       this.contextId = ++this.contextSerial;
       this.ntlm = this.authentication.createType1(info.domain);
@@ -72,20 +71,19 @@ class NTLMConnection extends DefaultConnection
       }
     } else if (this.ntlm instanceof Type3Message) {
       return new AuthenticationVerifier(
-        new NTLMAuthenticationVerifier.AUTHENTICATION_SERVICE_NTLM, new Security.PROTECTION_LEVEL_CONNECT,
+        new NTLMAuthenticationVerifier().AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
         this.contextId, [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
     } else {
       throw new Error("Unrecognized NTLM message.");
     }
-
-
-    var protectionLevel = this.ntlm.getFlag((NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?
-      new Security().PROTECTION_LEVEL_PRIVACY : this.ntlm.getFlag((NtlmFlags.NTLMSSP_NEGOTIATE_SIGN) ?
-                    new Security().PROTECTION_LEVEL_INTEGRITY : new Security().PROTECTION_LEVEL_CONNECT));
-
+    var teste = this.ntlm.toByteArray();
+    
+    var protectionLevel = this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?
+      new Security().PROTECTION_LEVEL_PRIVACY : this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SIGN) ?
+                    new Security().PROTECTION_LEVEL_INTEGRITY : new Security().PROTECTION_LEVEL_CONNECT;
 
     return new AuthenticationVerifier(this.authentication.AUTHENTICATION_SERVICE_NTLM, protectionLevel,
-      this.contextId, this.ntlm);
+      this.contextId, this.ntlm.toByteArray());
   }
 }
 
