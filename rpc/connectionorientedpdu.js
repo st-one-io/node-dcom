@@ -70,7 +70,7 @@ class ConnectionOrientedPdu {
     return this.format;
   }
 
-  setFormkat(format){
+  setFormat(format){
     this.format = format;
   }
 
@@ -83,11 +83,11 @@ class ConnectionOrientedPdu {
   }
 
   getFlag(flag){
-    return (getFlags() & flag) != 0;
+    return (this.getFlags() & flag) != 0;
   }
 
   setFlag(flag, value){
-    setFlags(value ? (getFlags() | flag) : getFlags() & ~flag);
+    setFlags(value ? (this.getFlags() | flag) : this.getFlags() & ~flag);
   }
 
   getCallId(){
@@ -117,7 +117,7 @@ class ConnectionOrientedPdu {
 
   decode(ndr, src){
     ndr.setBuffer(src);
-    readPdu(ndr);
+    this.readPdu(ndr);
   }
 
   encode(ndr, dst){
@@ -126,6 +126,8 @@ class ConnectionOrientedPdu {
     this.writePdu(ndr);
 
     var buffer = ndr.getBuffer();
+    //console.log(buffer);
+    console.log(ndr.buf.getLength());
     var length = buffer.getLength();
     this.setFragmentLength(length);
 
@@ -151,29 +153,30 @@ class ConnectionOrientedPdu {
     }
 
     this.setMinorVersion(ndr.readUnsignedSmall());
-    if (this.type != ndr.readUnsignedSmall()){
+    if (this.getType() != ndr.readUnsignedSmall()){
       throw new Error("Incorrect PDU type.");
     }
 
-    this.flags(ndr.readUnsignedSmall());
+    this.setFlags(ndr.readUnsignedSmall());
     var format = ndr.readFormat(false);
-    this.format(format);
+    this.setFormat(format);
     ndr.setFormat(format);
-    this.fragmentLength(ndr.readUnsignedShort());
-    this.authLength(ndr.readUnsignedShort());
-    this.callId = Number.parseInt(ndr.readUnsignedShort());
+    this.setFragmentLength(ndr.readUnsignedShort());
+    this.setAuthLength(ndr.readUnsignedShort());
+    this.callId = Number.parseInt(ndr.readUnsignedLong());
   }
 
   writeHeader(ndr){
     ndr.writeUnsignedSmall(this.majorVersion);
     ndr.writeUnsignedSmall(this.minorVersion);
-    ndr.writeUnsignedSmall(this.type);
+    ndr.writeUnsignedSmall(this.getType());
     ndr.writeUnsignedSmall(this.flags);
     ndr.writeFormatBool(false);
 
     ndr.writeUnsignedShort(0); //frag length, to be later overriden
     ndr.writeUnsignedShort(0); //auth length, to be later overriden
     ndr.writeUnsignedLong(this.useCallIdCounter ? this.callIdCounter : this.callId);
+
   }
 
   readBody(ndr){

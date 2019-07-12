@@ -29,9 +29,16 @@ NdrBuffer.prototype.derive = function (idx){
 }
 
 NdrBuffer.prototype.reset = function (){
+  if (this.index == undefined && this.start == undefined) {
+    this.index = 0;
+    this.start = 0;
+    this.length = 0;
+    this.deferred = this;
+    return
+  }
   this.index = this.start;
-  length = 0;
-  deferred = this;
+  this.length = 0;
+  this.deferred = this;
 }
 
 NdrBuffer.prototype.getIndex = function (){
@@ -90,7 +97,7 @@ NdrBuffer.prototype.getLength = function (){
 
 NdrBuffer.prototype.advance = function (n){
   this.index += n;
-  if ((this.index - this.start) > this.deferred.length){
+  if ((this.index - this.start) > this.length){
     this.deferred.length = this.index - this.start;
   }
 }
@@ -126,7 +133,7 @@ NdrBuffer.prototype.enc_ndr_short = function (s){
 
 NdrBuffer.prototype.dec_ndr_short = function (){
   this.align(2);
-  var val = Encdec.dec_uint16le(buf,this.index);
+  var val = Encdec.dec_uint16le(this.buf,this.index);
   this.advance(2);
   return val;
 }
@@ -139,7 +146,7 @@ NdrBuffer.prototype.enc_ndr_long = function (l){
 
 NdrBuffer.prototype.dec_ndr_long = function (){
   this.align(4);
-  var val = Encdec.dec_uint32le(buf, this.index);
+  var val = Encdec.dec_uint32le(this.buf, this.index);
   this.advance(4);
   return val;
 }
@@ -149,19 +156,19 @@ NdrBuffer.prototype.enc_ndr_string = function (s){
   var i = this.index;
   var len = s.length;
 
-  Encdec.enc_uint32le(len + 1, buf, i);
+  Encdec.enc_uint32le(len + 1, this.buf, i);
   i += 4;
-  Encdec.enc_uint32le(0, buf, i);
+  Encdec.enc_uint32le(0, this.buf, i);
   i += 4;
-  Encdec.enc_uint32le(len + 1, buf, i);
+  Encdec.enc_uint32le(len + 1, this.buf, i);
   i += 4;
 
   // TO-DO: Here the guys from J-Interop do a encoding suppor check.
   // If any unknown problem appear, remember this has to be implemented.
 
   i += len * 2;
-  buf[i++] = '\0';
-  buf[i++] = '\0';
+  this.buf[i++] = '\0';
+  this.buf[i++] = '\0';
   this.advance(i - this.index);
 }
 
@@ -169,7 +176,7 @@ NdrBuffer.prototype.dec_ndr_string = function (){
   this.align(4);
   var i = this.index;
   var val = null;
-  var len = Encdec_dec_uint32le(buf, i);
+  var len = Encdec_dec_uint32le(this.buf, i);
 
   i += 12;
   if (len != 0){
@@ -177,7 +184,7 @@ NdrBuffer.prototype.dec_ndr_string = function (){
     size = len * 2;
 
     if (size < 0 || size > 0xFFFF) throw "INVALID CONFORMANCE";
-    var val = String(buf);
+    var val = String(this.buf);
   }
   this.advance(i - this.index);
   return val;

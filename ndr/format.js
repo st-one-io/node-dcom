@@ -23,16 +23,18 @@ class Format {
 
     // initializing the object
     this.dataRepresentation = dataRepresentation;
-    if ((dataRepresentation & this.BYTE_ORDER_MASK) != this.LITTLE_ENDIAN){
-      throw new Error("Only little-endian byte order is currently supported.");
-    }
+    if(dataRepresentation != null){
+      if ((dataRepresentation & this.BYTE_ORDER_MASK) != this.LITTLE_ENDIAN){
+        throw new Error("Only little-endian byte order is currently supported.");
+      }
 
-    if((dataRepresentation & this.CHARACTER_MASK) != this.ASCII_CHARACTER){
-      throw new Error("Only ASCII character set is currently supported.");
-    }
+      if((dataRepresentation & this.CHARACTER_MASK) != this.ASCII_CHARACTER){
+        throw new Error("Only ASCII character set is currently supported.");
+      }
 
-    if((dataRepresentation & this.FLOATING_POINT_MASK) != this.IEEE_FLOATING_POINT){
-      throw new Error("Only IEEE floating point is currently supported.");
+      if((dataRepresentation & this.FLOATING_POINT_MASK) != this.IEEE_FLOATING_POINT){
+        throw new Error("Only IEEE floating point is currently supported.");
+      }
     }
   }
 
@@ -49,7 +51,6 @@ class Format {
     value |= (src[index++] & 0xff) << 16;
     value |= (src[index++] & 0xff) << 8;
     if (!connectionless) value |= src[index] & 0xff;
-    console.log(value);
     return new Format(value);
   }
 

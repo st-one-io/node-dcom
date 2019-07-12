@@ -20,6 +20,8 @@ class ComTransport
     this.attached;
     this.readReadyHandoffTimeoutSecs = this.DEFAULT_READ_READY_HANDOFF_TIMEOUT_SECS;
     this.channelWrapper;
+    this.recvPromise = null;
+    this.receivedBuffer = new Array();
 
     this.parse(address);
   }
@@ -73,6 +75,25 @@ class ComTransport
       }
       var channel = new net.Socket();
       var endpoint = new ComEndpoint()
+      /* When we recieve some data we check if receive() was already called by
+        checkin if recProm is null. If it is, we resolve it, if not we add the
+        received data to the receiveBuffer and wait for it be called
+      */
+      channel.on('data', function(data){
+        console.log("data received", self.recvPromise);
+        if (self.recvPromise == null) {
+          self.receivedBuffer.concat(data);
+        } else {
+          self.recvPromise.resolve(data);
+          self.recvPromise = null;
+        }
+      });
+
+      channel.on('close', function(){
+        if (self.recvPromise != null) {
+          self.recvPromise.reject();
+        }
+      });
 
       channel.connect(Number.parseInt(self.port),  self.host, () => {
         console.log("connected.");
@@ -101,14 +122,12 @@ class ComTransport
     if (!this.attached) {
       throw new Erro("Transport not attached.");
     }
-    //var byteBuffer = ByteBuffer.wrap(buffer.getBuffer());
+
     let buf = buffer.getBuffer();
     //FIXME quick-fix to trim buffer to its real length. Need to check where this should be
     let length = buffer.length;
 
     //console.log(buf.slice(0, length + 1));
-    console.log(JSON.stringify(buf.slice(0, length + 1)));
-    console.log("debug");
     try{
       this.channelWrapper.write(Buffer.from(buf.slice(0, length + 1)));
     } catch(e){
@@ -116,14 +135,11 @@ class ComTransport
     }
   }
 
-  async receive(buffer)
+  receive(buffer)
   {
     if (!this.attached) {
       throw new Error("Transport not attached.");
     }
-
-    var timeoutMillis = 3000;
-    console.log("before");
     /**
      * FIXME this await won't work. To make an awaitable receive function
      * we need to listen on the 'data' event at socket creation time create
@@ -132,10 +148,16 @@ class ComTransport
      * and storing the "resolve" of the created promise, calling it whenever
      * the 'data' event is fired, with the received buffer
      */
-    await this.channelWrapper.on('data', function(data){
-      buffer = data;
+
+    var self = this;
+    return new Promise(function(resolve, reject){
+      if (self.receivedBuffer.length > 0) {
+        console.log(self.receivedBuffer);
+        resolve(buffer = self.receivedBuffer);
+      } else {
+        self.recvPromise = {resolve: resolve, reject: reject};
+      }
     });
-    console.log("after");
   }
 
   toString()

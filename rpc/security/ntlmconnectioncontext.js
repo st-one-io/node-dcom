@@ -9,6 +9,7 @@ var FaultCoPdu = require('../pdu/faultCoPdu.js');
 var ShutdownPdu = require('../pdu/shutdownpdu.js');
 var DefaultConnection = require('../defaultconnection.js');
 var NTLMConnection = require('./ntlmconnection.js');
+var Auth3Pdu = require('../pdu/auth3pdu.js');
 
 class NTLMConnectionContext
 {
@@ -65,24 +66,27 @@ class NTLMConnectionContext
 
   accept(pdu){
     var results = null;
+
     switch (pdu.getType()){
       case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
         var bindAck = pdu;
+
         results = bindAck.getResultList();
         if (results == null){
           throw new Error("No presentation context results.");
         }
         for (var i = results.length - 1; i >= 0; i--){
-          if (results[i].result != PresentationResult.ACCEPTANCE){
+          if (results[i].result != new PresentationResult().ACCEPTANCE){
             throw new Error("Context rejected.", results[i]);
           }
         }
         this.transmitLength = bindAck.getMaxReceiveFragment();
-        this.receiveLength = bindAck.getMaxTransmitFragmetn();
+        this.receiveLength = bindAck.getMaxTransmitFragment();
         this.established = true;
         this.connection.setTransmitLength(this.transmitLength);
         this.connection.setReceiveLength(this.receiveLength);
         this.assocGroupId = bindAck.getAssociationGroupId();
+        
         return new Auth3Pdu();
       case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
         var alterContextResponse = pdu;

@@ -3,6 +3,7 @@ var SmbConstants = require('../../../ndr/smbconstants.js');
 var Buffer = require('buffer');
 var HexDump = require('../../../ndr/hexdump.js');
 var LegacyEncoding = require('legacy-encoding');
+var NtlmFlags = require('../ntlmflags.js');
 
 class Type1Message extends NtlmMessage
 {
@@ -26,10 +27,10 @@ class Type1Message extends NtlmMessage
 
   getDefaultFlags(unicode)
   {
-    return SmbConstants.NTLMSSP_NEGOTIATE_NTLM
-      | SmbConstants.NTLMSSP_NEGOTIATE_VERSION
-      | unicode ? SmbConstants.NTLMSSP_NEGOTIATE_UNICODE :
-        SmbConstants.NTLMSSP_NEGOTIATE_OEM;
+    return NtlmFlags.NTLMSSP_NEGOTIATE_NTLM
+      | NtlmFlags.NTLMSSP_NEGOTIATE_VERSION
+      | unicode ? NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE :
+        NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
   }
 
   getSuppliedDomain()
@@ -57,29 +58,29 @@ class Type1Message extends NtlmMessage
     try {
       var flags = this.getFlags();
       var size = 8 * 4 + ((this.flags &
-        SmbConstants.NTLMSSP_NEGOTIATE_VERSION) != 0 ? 8 : 0);
+        NtlmFlags.NTLMSSP_NEGOTIATE_VERSION) != 0 ? 8 : 0);
 
       var domain;
       var suppliedDomainString = this.getSuppliedDomain();
 
-      if ((flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
+      if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
         suppliedDomainString != null && suppliedDomainString.length != 0) {
-        this.flags |= SmbConstants.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED;
+        this.flags |= NtlmFlags.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED;
         domain = [...LegacyEncoding.encode(suppliedDomainString.toUpperCase(), this.getOEMEncoding())];
         size += domain.length;
       }else {
-        this.flags &= SmbConstants.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED ^ 0xffffffff;
+        this.flags &= NtlmFlags.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED ^ 0xffffffff;
       }
 
       var workstation;
       var suppliedWorkstationString = this.getSuppliedDomain();
-      if ((flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
+      if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_VERSION) == 0 &&
         suppliedWorkstationString != null && suppliedWorkstationString.length != 0) {
-        this.flags |= SmbConstants.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED;
+        this.flags |= NtlmFlags.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED;
         workstation = [...LegacyEncoding.encode(suppliedWorkstationString.toUpperCase(), this.getOEMEncoding())];
         size += workstation.length;
       }else {
-        this.flags &= SmbConstants.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED ^ 0xffffffff;
+        this.flags &= NtlmFlags.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED ^ 0xffffffff;
       }
       var type1 = new Array(size);
       var pos = 0;
@@ -102,7 +103,7 @@ class Type1Message extends NtlmMessage
       var wsOffOff = this.writeSecurityBuffer(type1, pos, workstation);
       pos += 8;
 
-      if ( ( flags & SmbConstants.NTLMSSP_NEGOTIATE_VERSION ) != 0 ) {
+      if ( ( flags & NtlmFlags.NTLMSSP_NEGOTIATE_VERSION ) != 0 ) {
         var aux = this.VERSION.slice(0, this.VERSION.length);
         var aux_i = pos;
         while (aux.length > 0)
@@ -112,7 +113,6 @@ class Type1Message extends NtlmMessage
 
       pos += this.writeSecurityBufferContent(type1, pos, domOffOff, domain);
       pos += this.writeSecurityBufferContent(type1, pos, wsOffOff, workstation);
-      console.log(type1, pos);
       return type1;
     } catch (err) {
       throw new Erro(err);
@@ -147,13 +147,13 @@ class Type1Message extends NtlmMessage
     this.setFlags(flags);
     pos += 4;
 
-    if ( ( flags & SmbConstants.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED ) != 0 ) {
+    if ( ( flags & NtlmFlags.NTLMSSP_NEGOTIATE_OEM_DOMAIN_SUPPLIED ) != 0 ) {
         var domain = this.readSecurityBuffer(material, pos);
         this.setSuppliedDomain(new String(domain, this.getOEMEncoding()));
     }
     pos += 8;
 
-    if ( ( flags & SmbConstants.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED ) != 0 ) {
+    if ( ( flags & NtlmFlags.NTLMSSP_NEGOTIATE_OEM_WORKSTATION_SUPPLIED ) != 0 ) {
         var workstation = this.readSecurityBuffer(material, pos);
         this.setSuppliedWorkstation(new String(workstation, this.getOEMEncoding()));
     }

@@ -87,12 +87,13 @@ class ConnectionOrientedEndpoint{
     }
   }
 
-  rebind(info){
+  async rebind(info){
+    this.info = info;
     this.bound = false;
-    this.bind(info)
+    await this.bind(this.info)
   }
 
-  bind(info){
+  async bind(info){
     console.log("bind");
     if (this.bound) return;
     if (this.context != null){
@@ -118,35 +119,37 @@ class ConnectionOrientedEndpoint{
 
           if ((pdu = this.context.accept(received)) != null){
             switch (pdu.getType()){
-              case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
+              case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
                 if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
                   this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
                 }
                 break;
-              case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
+              case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
                 if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
                   this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
                 }
                 break;
               default:
             }
+            console.log("SENDING");
             this.send(pdu, info);
           }
         }
       }
     }else{
-      this.connect(info);
+      await this.connect(info);
     }
   }
 
   send(request, info){
     console.log("send");
-    this.bind(info);
+    this.bind(this.info);
     this.context.getConnection().transmit(request, this.getTransport(), info);
   }
 
-  receive(){
-    return this.context.getConnection().receive(this.getTransport());
+  async receive(){
+    console.log("batata");
+    return await this.context.getConnection().receive(this.getTransport());
   }
 
   detach(){
@@ -155,7 +158,7 @@ class ConnectionOrientedEndpoint{
     this.getTransport().close();
   }
 
-  connect(info){
+  async connect(info){
     console.log("connect");
     this.bound = true;
     this.contextIdCounter = 0;
@@ -163,30 +166,33 @@ class ConnectionOrientedEndpoint{
 
     this.uuidsVsContextIds.set(String(this.getSyntax()), Number.parseInt(this.contextIdCounter));
     this.context = this.createContext();
-    
+
     var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax()),
       this.properties);
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu, info);
-    while (!this.context.isEstablished()){
-      var recieved = this.receive();
 
-      if ((pdu = this.context.accept(received)) != null){
+    while (!this.context.isEstablished()){
+      var received = await this.receive();
+
+      pdu = this.context.accept(received);
+
+      if (pdu != null){
         switch (pdu.getType()){
-          case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
-            if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
-              this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
+          case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
+            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION){
+              this.currentIID = String(received.getContextList()[0].abstractSyntax.getUuid());
             }
             break;
-          case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
-            if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
-              this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
+          case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
+            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION){
+              this.currentIID = String(received.getContextList()[0].abstractSyntax.getUuid());
             }
             break;
           default:
         }
-        this.send(pdu);
+        this.send(pdu, this.info);
       }
     }
   }

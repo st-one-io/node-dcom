@@ -4,6 +4,8 @@ var NdrBuffer = require('../../ndr/ndrbuffer.js');
 var NTLMAuthentication = require('./ntlmauthentication.js');
 var NTLMFlags = require('./ntlmflags.js');
 var Security = require('../security.js');
+var Type1Message = require('./messages/type1message.js');
+var Type2Message = require('./messages/type2message.js');
 
 class NTLMConnection extends DefaultConnection
 {
@@ -63,7 +65,7 @@ class NTLMConnection extends DefaultConnection
       this.ntlm = this.authentication.createType2(this.ntlm);
     } else if (this.ntlm instanceof Type2Message) {
       var type2 = this.ntlm;
-      this.ntlm = this.authentication.createType3(type2);
+      this.ntlm = this.authentication.createType3(type2, info);
       // FIXME: same as incomingRebind
       var usentlmv2 = true;
       if (usentlmv2) {
@@ -77,7 +79,7 @@ class NTLMConnection extends DefaultConnection
       throw new Error("Unrecognized NTLM message.");
     }
     var teste = this.ntlm.toByteArray();
-    
+
     var protectionLevel = this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?
       new Security().PROTECTION_LEVEL_PRIVACY : this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SIGN) ?
                     new Security().PROTECTION_LEVEL_INTEGRITY : new Security().PROTECTION_LEVEL_CONNECT;

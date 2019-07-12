@@ -2,23 +2,23 @@ var PresentationSyntax = require("./presentationsyntax.js");
 var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
 
 function PresentationResult(){
-  const ACCEPTANCE = 0;
+  this.ACCEPTANCE = 0;
 
-  const USER_REJECTION = 1;
+  this.USER_REJECTION = 1;
 
-  const PROVIDER_REJECTION = 1;
+  this.PROVIDER_REJECTION = 1;
 
-  const REASON_NOT_SPECIFIED = 0;
+  this.REASON_NOT_SPECIFIED = 0;
 
-  const ABSTRACT_SYNTAX_NOT_SUPPORTED = 1;
+  this.ABSTRACT_SYNTAX_NOT_SUPPORTED = 1;
 
-  const PROPOSED_TRANSFER_SYNTAX_NOT_SUPPORTED = 2;
+  this.PROPOSED_TRANSFER_SYNTAX_NOT_SUPPORTED = 2;
 
-  const LOCAL_LIMIT_EXCEEDED = 3;
+  this.LOCAL_LIMIT_EXCEEDED = 3;
 
-  this.result = ACCEPTANCE;
-  this.reason = REASON_NOT_SPECIFIED;
-  this.transferSyntax = new PresentationSyntax(NetworkDataRepresentation.NDR_SYNTAX);
+  this.result = this.ACCEPTANCE;
+  this.reason = this.REASON_NOT_SPECIFIED;
+  this.transferSyntax = new PresentationSyntax(new NetworkDataRepresentation().NDR_SYNTAX);
 }
 
 PresentationResult.prototype.read = function (ndr) {

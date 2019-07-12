@@ -2,15 +2,22 @@ var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js"
 var Security = require("../security.js");
 
 function AuthenticationVerifier(authenticationService, protectionLevel, contextId, body){
+  if (arguments.length == 1) {
+    this.body = new Array(authenticationService);
+    authenticationService = null;
+  }
   (authenticationService != undefined) ? this.authenticationService = authenticationService :
-    this.authenticationService = Security.AUTHENTICATION_SERVICE_NONE;
+    this.authenticationService = new Security().AUTHENTICATION_SERVICE_NONE;
 
   (protectionLevel != undefined) ? this.protectionLevel = protectionLevel :
-    this.protectionLevel = Security.PROTECTION_LEVEL_NONE;
+    this.protectionLevel = new Security().PROTECTION_LEVEL_NONE;
 
   (contextId != undefined) ? this.contextId = contextId : this.contextId = 0;
-
-  (body != undefined) ? this.body = body : this.body = null;
+  if (body instanceof Number || typeof body == "number") {
+    this.body = new Array(body);
+  }else if(body instanceof Array){
+    (body != undefined) ? this.body = body : this.body = null;
+  }
 }
 
 AuthenticationVerifier.prototype.decode = function (ndr, src) {
@@ -20,11 +27,12 @@ AuthenticationVerifier.prototype.decode = function (ndr, src) {
   src.dec_ndr_small();
   this.contextId = src.dec_ndr_long();
 
-  var temp = src.getBuffer().slice(src.getIndex(), body.length);
+  var temp = src.getBuffer().slice(src.getIndex(), src.getIndex() + this.body.length);
   var temp_index= 0;
-  while(temp.length > 0)
-    body.splice(temp_index++, 0, temp.shift());
-  src.index += body.length;
+  while(temp.length > 0){
+    this.body.splice(temp_index++, 1, temp.shift());
+  }
+  src.index += this.body.length;
 };
 
 AuthenticationVerifier.prototype.encode = function (ndr, dst) {
@@ -34,7 +42,6 @@ AuthenticationVerifier.prototype.encode = function (ndr, dst) {
   dst.enc_ndr_small(this.padding);
   dst.enc_ndr_small(0);
   dst.enc_ndr_long(this.contextId);
-  console.log("AUTH VERIFIFER", this.body.length);
   var temp = this.body.slice(0, this.body.length);
   var temp_index= dst.getIndex();
 

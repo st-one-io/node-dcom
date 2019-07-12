@@ -21,10 +21,10 @@ class UUID{
     this.timeHighAndVersion;
     this.clockSeqHighAndReserved;
     this.clockSewLow;
-    //this.node = [6];
-    this.node1;
-    this.node2;
-    this.node3;
+    this.node = [6];
+    //this.node1;
+    //this.node2;
+    //this.node3;
     this.parse(uuid);
   }
 
@@ -33,15 +33,16 @@ class UUID{
     dst.enc_ndr_short(this.timeMid);
     dst.enc_ndr_short(this.timeHighAndVersion);
     dst.enc_ndr_small(this.clockSeqHighAndReserved);
-    dst.enc_ndr_small(this.clockSewLow);
-    dst.enc_ndr_short(this.node1);
-    dst.enc_ndr_short(this.node2);
-    dst.enc_ndr_short(this.node3);
+    dst.enc_ndr_small(this.clockSeqLow);
+    //dst.enc_ndr_short(this.node1);
+    //dst.enc_ndr_short(this.node2);
+    //dst.enc_ndr_short(this.node3);
 
-    //var temp = this.node.slice(0, 6);
-    //while(temp.length > 0)
-    //  dst.buf.splice(dst.index, 0, temp.shift());
-    //dst.index += 6;
+    var temp = this.node.slice(0, 6);
+    var temp_i = dst.index;
+    while(temp.length > 0)
+      dst.buf.splice(temp_i++, 1, temp.shift());
+    dst.index += 6;
   }
 
   decode (ndr, src){
@@ -124,21 +125,19 @@ class UUID{
     this.timeLow = Number.parseInt(temp[0], 16);
     this.timeMid = Number.parseInt(temp[1], 16);
     this.timeHighAndVersion = Number.parseInt(temp[2], 16);
-
     var token = temp[3];
+
     this.clockSeqHighAndReserved = Number.parseInt(token.substring(0, 2), 16);
     this.clockSeqLow = Number.parseInt(token.substring(2), 16);
+    //this.node1 = parseInt(temp[4].substr(0, 4), 16)
+    //this.node2 = parseInt(temp[4].substr(4, 4), 16)
+    //this.node3 = parseInt(temp[4].console.log(token);substr(8, 4), 16)
 
-    this.node1 = parseInt(temp[4].substr(0, 4), 16)
-    this.node2 = parseInt(temp[4].substr(4, 4), 16)
-    this.node3 = parseInt(temp[4].substr(8, 4), 16)
-
-    //token = temp[4];
-    //for (var i = 0; i < 6; i++){
-    //  var offset = i * 2;
-    //  this.node[i] = ((Number.parseInt(token[offset], 16) << 4) | (Number.parseInt(token[offset + 1],16)));
-    //}
-    //console.log(this.timeLow, this.timeMid, this.timeHighAndVersion, this.clockSeqHighAndReserved, this.clockSeqLow, this.node);
+    token = temp[4];
+    for (var i = 0; i < 6; i++){
+      var offset = i * 2;
+      this.node[i] = ((Number.parseInt(token.charAt(offset), 16) << 4) | (Number.parseInt(token.charAt(offset + 1),16)));
+    }
   }
 }
 module.exports = UUID;

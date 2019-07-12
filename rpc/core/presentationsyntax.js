@@ -7,14 +7,16 @@ class PresentationSyntax{
     this.uuid;
     this.version;
 
-    // cast to object so we can use instanceof successfuly
-    syntax = new String(syntax);
+    if (arguments.length > 0){
+      // cast to object so we can use instanceof successfuly
+      syntax = new String(syntax);
 
-    if (syntax instanceof UUID) {
-      this.setUUID(syntax);
-      this.setVersion(majorVersion, minorVersion);
-    } else if (syntax instanceof String) {
-      this.parse(syntax);
+      if (syntax instanceof UUID) {
+        this.setUUID(syntax);
+        this.setVersion(majorVersion, minorVersion);
+      } else if (syntax instanceof String) {
+        this.parse(syntax);
+      }
     }
   }
 

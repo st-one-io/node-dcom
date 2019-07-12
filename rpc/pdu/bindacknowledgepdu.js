@@ -5,7 +5,7 @@ var PresentationResult = require("../core/presentationresult.js");
 class BindAcknowledgePdu extends ConnectionOrientedPdu{
   constructor(){
     super();
-    this.BIND_ACKOWLEDGE_TYPE = 0x0c;
+    this.BIND_ACKNOWLEDGE_TYPE = 0x0c;
     this.resultList;
     this.maxTransmitFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
     this.maxReceiveFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
@@ -59,20 +59,22 @@ class BindAcknowledgePdu extends ConnectionOrientedPdu{
   }
 
   readBody(ndr){
-    maxTransmitFragment(ndr.readUnsignedShort());
-    maxReceiveFragment(ndr.readUnsignedShort());
-    associationGroupId(Number.parseInt(ndr.readUnsignedLong()));
+    this.setMaxTransmitFragment(ndr.readUnsignedShort());
+    this.setMaxReceiveFragment(ndr.readUnsignedShort());
+    this.setAssociationGroupId(Number.parseInt(ndr.readUnsignedLong()));
     var secondaryAddress = new Port();
     secondaryAddress.read(ndr);
-    secondaryAddress(secondaryAddress);
+    this.setSecondaryAddress(secondaryAddress);
+
     ndr.getBuffer().align(4);
     var count = ndr.readUnsignedSmall();
-    var resultList = [count];
+    var resultList = new Array(count);
     for (var i = 0; i < count; i++) {
         resultList[i] = new PresentationResult();
         resultList[i].read(ndr);
     }
-    resultList(resultList);
+    this.setResultList(resultList);
+    //console.log(this.maxTransmitFragment, this.maxReceiveFragment, this.associationGroupId, this.secondaryAddress, this.resultList);
   }
 
   writeBody(ndr){

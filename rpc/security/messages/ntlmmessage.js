@@ -49,8 +49,8 @@ class NtlmMessage
   {
     var length = this.readUShort(src, index);
     var offset = this.readULong(src, index + 4);
-    var buffer;
-    buffer.concat(src.slice(offset, length));
+    var buffer = new Array();
+    buffer = buffer.concat(src.slice(offset, offset + length));
     return buffer;
   }
 

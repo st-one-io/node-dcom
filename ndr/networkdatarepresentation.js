@@ -69,7 +69,7 @@ NetworkDataRepresentation.prototype.getFormat = function (){
 }
 
 NetworkDataRepresentation.prototype.readFormat = function (connectionless){
-  var format = Format.readFormat(this.buf.buf, this.buf.index, connectionless);
+  var format = new Format().readFormat(this.buf.buf, this.buf.index, connectionless);
   this.buf.index += 4;
   return format;
 }
@@ -89,7 +89,7 @@ NetworkDataRepresentation.prototype.readCharacterArray = function (array, offset
   if (array == null || length == 0) return;
   length += offset;
   for (var i = offset; i < length; i++){
-    this.buf.buf[this.buf.index++] = array[i];
+    array[i] = new Buffer([this.buf.buf[this.buf.index++]]).toString();
   }
 }
 

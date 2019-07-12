@@ -42,8 +42,8 @@ class NTLMAuthentication
       }
     }
 
-    this.useNtlm2sessionsecurity = true;
-    this.useNtlmV2 = true;
+    //this.useNtlm2sessionsecurity = true;
+    //this.useNtlmV2 = true;
     this.domain = domain;
     var security = new Security();
     this.user = security.USERNAME;
@@ -69,6 +69,7 @@ class NTLMAuthentication
   getDefaultFlags()
   {
     var flags = this.BASIC_FLAGS;
+
     if (this.lanManagerkey) flags |= NtlmFlags.NTLMSSp_NEGOTIATE_LM_KEY;
     if (this.sign) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_SIGN;
     if (this.sign) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_SEAL;
@@ -76,8 +77,7 @@ class NTLMAuthentication
     if (this.keyLength >= 56) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_56;
     if (this.keyLength >= 128) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_128;
 
-    flags |= NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2;
-
+    flags |= NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY;
     return flags;
   }
 
@@ -105,6 +105,7 @@ class NTLMAuthentication
 
   createType1(domain)
   {
+    console.log("createType1");
     var flags = this.getDefaultFlags();
     console.log("createtype1");
     return new Type1Message(null, flags, domain,
@@ -128,9 +129,11 @@ class NTLMAuthentication
     return type2Message;
   }
 
-  createType3(type2)
+  createType3(type2, info)
   {
+    console.log("create type3");
     var flags = type2.getFlags();
+
     if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_DATAGRAM_STYLE) != 0) {
       flags = this.adjustFlags(flags);
       flag &= ~0x00020000;
@@ -143,7 +146,7 @@ class NTLMAuthentication
     var target = null;
 
     if (target == null) {
-      target = this.credentials.domain.toUpperCase();
+      target = info.domain.toUpperCase();
       if (target == "") {
         target = this.getTargetFromTargetInformation(type2.getTargetInformation());
       }
@@ -163,10 +166,10 @@ class NTLMAuthentication
       } catch (err) {
           throw new Error("Exception occured while forming NTLMv2 Type3Response ",e);
       }
-    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2) != 0) {
+    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY) != 0) {
       flags = this.adjustFlags(flags);
       flags &= ~0x00020000;
-
+      console.log(flags);
       var challenge = type2.getChallenge();
       var lmResponse = [24];
 

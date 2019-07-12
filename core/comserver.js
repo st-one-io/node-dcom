@@ -237,7 +237,7 @@ class ComServer extends Stub {
     console.log("start");
     var attachcomplete = false;
     try {
-      this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
+      /*this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
       await this.attach(this.getSyntax());
       console.log("after first attach");
       attachcomplete = true;
@@ -268,14 +268,19 @@ class ComServer extends Stub {
         this.getEndPoint().rebindEndpoint();
         this.serverActivation = new RemoteSCMActivator(session.getTargetServer(), clsid);
         this.call(Endpoint.IDEMPOTENT, serverActivation);
-      } else {
+      } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
+        await this.attach(this.getSyntax());
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
+        console.log("debug");
         this.getEndpoint().getSyntax().setVersion(0,0);
-        this.getEndpoint().rebindEndpoint();
+        await this.getEndpoint().rebindEndpoint(this.info);
+        console.log("rebinded");
+
         this.serverActivation = new RemActivation(clsid);
         this.call(Endpoint.IDEMPOTENT, this.serverActivation, info);
-      }
+        console.log("after call");
+      //}
     } catch(e) {
 
     } finally {

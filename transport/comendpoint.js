@@ -7,9 +7,9 @@ class ComEndpoint extends ConnectionOrientedEndoint
     super(transport, syntax);
   }
 
-  rebindEndpoint()
+  async rebindEndpoint(info)
   {
-    this.rebind();
+    await this.rebind(info);
   }
 }
 

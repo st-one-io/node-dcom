@@ -8,10 +8,10 @@ function Port (portSpec){
 
 Port.prototype.read = function (ndr){
   var length = ndr.readUnsignedShort();
-
+  
   if (length > 0){
     var buffer = ndr.getBuffer();
-    ports = [length - 1];
+    ports = new Array(length - 1);
 
     ndr.readCharacterArray(ports, 0, ports.length);
     ndr.readUnsignedSmall();
