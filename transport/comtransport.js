@@ -117,7 +117,7 @@ class ComTransport
     }
   }
 
-  send(buffer)
+  send(buffer, info)
   {
     if (!this.attached) {
       throw new Erro("Transport not attached.");
@@ -126,10 +126,14 @@ class ComTransport
     let buf = buffer.getBuffer();
     //FIXME quick-fix to trim buffer to its real length. Need to check where this should be
     let length = buffer.length;
-
-    //console.log(buf.slice(0, length + 1));
+    
+    
     try{
-      this.channelWrapper.write(Buffer.from(buf.slice(0, length + 1)));
+      if (buf.length <= length){
+        this.channelWrapper.write(Buffer.from(buf));
+      }else {
+        this.channelWrapper.write(Buffer.from(buf.slice(0, length + 1)));
+      }
     } catch(e){
       console.log(e);
     }

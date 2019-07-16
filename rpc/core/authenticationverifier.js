@@ -42,11 +42,11 @@ AuthenticationVerifier.prototype.encode = function (ndr, dst) {
   dst.enc_ndr_small(this.padding);
   dst.enc_ndr_small(0);
   dst.enc_ndr_long(this.contextId);
+  
   var temp = this.body.slice(0, this.body.length);
   var temp_index= dst.getIndex();
-
-  while(temp.length > 0)
-    dst.getBuffer().splice(temp_index++, 0, temp.shift());
+  
+  while (temp.length > 0) dst.getBuffer().splice(temp_index++, 0, temp.shift());
   dst.advance(this.body.length);
 };
 

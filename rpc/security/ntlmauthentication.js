@@ -1,11 +1,22 @@
-var Crypto = require('crypto');
-var NtlmFlags = require('./ntlmflags.js');
-var Security = require('../security.js');
-var Type1Message = require('./messages/type1message.js');
-var os = require('os');
+// @ts-check
+const Crypto = require('crypto');
+const NtlmFlags = require('./ntlmflags.js');
+const Security = require('../security.js');
+const Type1Message = require('./messages/type1message.js');
+const Type2Message = require('./messages/type2message.js');
+const Type3Message = require('./messages/type3message.js');
+const os = require('os');
+const Responses = require('./responses.js');
 
+/**
+ *  NTLM Authentication class
+ */
 class NTLMAuthentication
 {
+  /**
+   *
+   * @param {Object} domain 
+   */
   constructor(domain)
   {
     this.AUTHENTICATION_SERVICE_NTLM = 10;
@@ -23,42 +34,45 @@ class NTLMAuthentication
     this.keyExchange;
     this.useNtlm2sessionsecurity = false;
     this.useNtlmV2 = false;
-
-    var domain = null;
-    var user = null;
-    var password = null;
+    
+    let user = domain.username;
+    let password = domain.password;
     // FIXME: most of these came from properties and have these values by default
     this.lanManagerkey = false;
     this.seal = false;
     this.sign = false;
     this.keyExchange = false;
 
-    var keyLength = 128;
+    const keyLength = 128;
     if (keyLength != null) {
       try {
         this.keyLength = Number.parseInt(keyLength);
       } catch (err) {
-        throw new Erro("Invalid key length: " +  keyLength);
+        throw new Error('Invalid key length: ' + keyLength);
       }
     }
 
-    //this.useNtlm2sessionsecurity = true;
-    //this.useNtlmV2 = true;
-    this.domain = domain;
-    var security = new Security();
+    // this.useNtlm2sessionsecurity = true;
+    // this.useNtlmV2 = true;
+    this.domain = domain.domain;
+    const security = new Security();
     this.user = security.USERNAME;
     this.password = security.PASSWORD;
-
-    this.credentials = {domain: domain, user: user, password: password};
+    
+    this.credentials = {domain: domain.domain, username: user, password: password};
   }
 
-  getSecurity()
-  {
+  /**
+   *  @return {Boolean} security value
+   */
+  getSecurity() {
     return this.security;
   }
 
-  getAuthenticationResource()
-  {
+  /**
+   * @return {String}
+   */
+  getAuthenticationResource() {
     if (this.authenticationSource != null) {
       return this.authenticationSource;
     }
@@ -129,25 +143,29 @@ class NTLMAuthentication
     return type2Message;
   }
 
-  createType3(type2, info)
-  {
-    console.log("create type3");
-    var flags = type2.getFlags();
+  /**
+   * 
+   * @param {Type2Message} type2
+   * @param {Object} info
+   * @return {Type3Message}
+   */
+  createType3(type2, info) {
+    let flags = type2.getFlags();
 
     if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_DATAGRAM_STYLE) != 0) {
       flags = this.adjustFlags(flags);
-      flag &= ~0x00020000;
+      flags &= ~0x00020000;
     }
 
-    var type3 = null;
-    var clienteNonce = new Array(8);
-    var blob = null;
-
-    var target = null;
+    let type3 = null;
+    let clientNonce = new Array(8);
+    const blob = null;
+    
+    let target = null;
 
     if (target == null) {
       target = info.domain.toUpperCase();
-      if (target == "") {
+      if (target == '') {
         target = this.getTargetFromTargetInformation(type2.getTargetInformation());
       }
     }
@@ -155,53 +173,60 @@ class NTLMAuthentication
     if (this.useNtlmV2) {
       clientNonce = [...(Crypto.randomBytes(8))];
       try {
-        var lmv2Response = new Responses.getLMv2Response(target, this.credentials.username,
-          this.credentials.username, type2.getChallenge(), clientNonce);
-        var retval = new Responses().getNTLMv2Response(target, this.credentials.username,
-          this.credentials.username, clientNonce);
-          var ntlmv2Response = retval[0];
-
-          type3 = new Type3Message(flags, lmv2Response, ntlmv2Response, target,
-            this.credentials.username, new Type3Message().getDefaultWorkstation());
+        const lmv2Response = new Responses().getLMv2Response(target,
+            this.credentials.username, this.credentials.password,
+            type2.getChallenge(), clientNonce);
+        const retval = new Responses().getNTLMv2Response(target,
+            this.credentials.username, this.credentials.password,
+            type2.getTargetInformation(), type2.getChallenge(), clientNonce);
+        const ntlmv2Response = retval[0];
+        
+        type3 = new Type3Message(flags, lmv2Response, ntlmv2Response, target,
+            this.credentials.username,
+            new Type3Message().getDefaultWorkstation());
       } catch (err) {
-          throw new Error("Exception occured while forming NTLMv2 Type3Response ",e);
+        throw new Error('Exception occured while forming NTLMv2 Type3Response',
+            e);
       }
-    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY) != 0) {
+    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY)
+         != 0) {
       flags = this.adjustFlags(flags);
       flags &= ~0x00020000;
-      console.log(flags);
-      var challenge = type2.getChallenge();
-      var lmResponse = [24];
+                
+      const challenge = type2.getChallenge();
+      let lmResponse = new Array(24);
 
       clientNonce = [...(Crypto.randomBytes(8))];
-      lmResponse = clientNonce.slice(0, clientNonce.length);
-      var ntResponse;
-
+      let aux = clientNonce.slice(0, clientNonce.length);
+      let aux_i = 0;
+      while (aux.length > 0) lmResponse.splice(aux_i++, 1, aux.shift());
+      
+      let ntResponse;
+      
       try {
-					ntResponse = new Responses().getNTLM2SessionResponse(
+        ntResponse = new Responses().getNTLM2SessionResponse(
             this.credentials.password, challenge, clientNonce);
-			} catch (e)
-			{
-					throw new Error("Exception occured while forming Session Security Type3Response ",e);
+      } catch (e) {
+        throw new Error('Exception occured while forming Session Security Type3Response',e);
       }
-
+      
       type3 = new Type3Message(flags, lmResponse, ntResponse, target,
-        this.credentials.username, new Type3Message().getDefaultWorkstation());
+          this.credentials.username, os.hostname());
     } else {
-      var challenge = type2.getChallenge();
-      var lmResponse = NtlmPasswordAuthentication.getPreNTLMResponse(
-        this.credentials.password, challenge);
-      var ntResponse = NtlmPasswordAuthentication.getNTLMResposne(
-        this.credentials.password, challenge);
+      const challenge = type2.getChallenge();
+      const lmResponse = NtlmPasswordAuthentication.getPreNTLMResponse(
+          this.credentials.password, challenge);
+      const ntResponse = NtlmPasswordAuthentication.getNTLMResposne(
+          this.credentials.password, challenge);
 
       type3 = new Type3Message(flags, lmResponse, ntResponse, target,
-        this.credentials.username, new Type3Message().getDefaultWorkstation());
+          this.credentials.username, new Type3Message().getDefaultWorkstation());
 
       if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_KEY_EXCH) != 0) {
-	      throw new RuntimeException("Key Exchange not supported by Library !");
+	      throw new RuntimeException('Key Exchange not supported by Library !');
       }
     }
-
+    
     if (this.useNtlm2sessionsecurity && (flags & NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2) != 0) {
       var ntlmKeyFactory = new NTLMKeyFactory();
       var userSessionKey;
@@ -236,7 +261,7 @@ class NTLMAuthentication
         }
       }
     }
-
+    
     return type3;
   }
 

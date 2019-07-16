@@ -1,15 +1,19 @@
-var HashMap = require('hashmap');
-var NtlmMessage = require('./ntlmmessage.js');
-var Type1Message = require('./type1message.js');
-var NtlmFlags = require('./../ntlmflags.js');
-var HexDump = require('../../../ndr/hexdump.js');
+const HashMap = require('hashmap');
+const NtlmMessage = require('./ntlmmessage.js');
+const Type1Message = require('./type1message.js');
+const NtlmFlags = require('./../ntlmflags.js');
+const HexDump = require('../../../ndr/hexdump.js');
+const LegacyEncoding = require('legacy-encoding');
 
+/**
+ * NTLM Type 2 Message Class
+ */
 class Type2Message extends NtlmMessage
 {
   constructor(tc, type1, challenge, target)
   {
     super();
-    if (arguments.length == 1) {
+    if (arguments.length == 1) {      
       if (tc instanceof Array) {
         this.parse(tc);
       }
@@ -101,7 +105,7 @@ class Type2Message extends NtlmMessage
 
   getTargetInformation()
   {
-    this.targetInformation;
+    return this.targetInformation;
   }
 
   setTargetInformation(targetInformation)
@@ -209,6 +213,9 @@ class Type2Message extends NtlmMessage
     return type2;
   }
 
+  /**
+   * @return {null}
+   */
   toString(){
     var targetString = this.getTarget();
     var challengeBytes = this.getChallenge();
@@ -221,43 +228,46 @@ class Type2Message extends NtlmMessage
       + Hexdump.toHexString(getFlags(), 8) + "]";
   }
 
-  parse(input)
-  {
-
-    var pos = 0;
+  /**
+   *
+   * @param {Array} input
+   */
+  parse(input) {
+    let pos = 0;
     for (let i = 0; i < 8; i++) {
       if (input[i] != this.SIGNATURE[i]) {
-        throw new Error("Not an NTLMSSP message.");
+        throw new Error('Not an NTLMSSP message.');
       }
     }
     pos += 8;
 
     if (this.readULong(input, pos) != this.TYPE2) {
-      throw new Erro("Not a Type 2 message.");
+      throw new Erro('Not a Type 2 message.');
     }
     pos += 4;
 
-    var flags = this.readULong(input, pos + 8);
+    const flags = this.readULong(input, pos + 8);
     this.setFlags(flags);
 
-
-    var targetName = this.readSecurityBuffer(input, pos);
-    var targetNameOff = this.readULong(input, pos + 4);
+   
+    const targetName = this.readSecurityBuffer(input, pos);
+    const targetNameOff = this.readULong(input, pos + 4);
     if (targetName.length != 0) {
-      this.setTarget(new String(targetName,
-        ( ( flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE ) != 0 ) ?
-        this.UNI_ENCODING : this.getOEMEncoding()));
+      this.setTarget(Buffer.from(targetName).toString(( flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE ) != 0 ?
+      this.UNI_ENCODING : this.getOEMEncoding()));
     }
-
+    
     pos += 12;
 
     if (!this.allZeros8(input, pos)) {
-      var challengeBytes = new Array(8);
-      var aux = input.slice(pos, challengeBytes.length);
-      var aux_i = 0;
+      let challengeBytes = new Array(8);
+      
+      let aux = input.slice(pos, pos+ challengeBytes.length);
+      let aux_i = 0;
       while (aux.length > 0) {
         challengeBytes.splice(aux_i++, 1, aux.shift());
       }
+      this.setChallenge(challengeBytes);
     }
     pos += 8;
 
@@ -267,11 +277,12 @@ class Type2Message extends NtlmMessage
 
     if (!this.allZeros8(input, pos)) {
       var contextBytes = new Array(8);
-      var aux = input.slice(pos, contextBytes.length);
+      var aux = input.slice(pos, pos + contextBytes.length);
       var aux_i = 0;
       while (aux.length > 0) {
         contextBytes.splice(aux_i++, 1, aux.shift());
       }
+      this.setContext(contextBytes);
     }
     pos += 8;
 

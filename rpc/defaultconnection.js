@@ -94,9 +94,10 @@ class DefaultConnection
     this.transmitBuffer.reset();
 
     fragment.encode(this.ndr, this.transmitBuffer);
-
+    
+    
     this.processOutgoing(info);
-
+    
     transport.send(this.transmitBuffer,info);
   }
 
@@ -433,9 +434,10 @@ class DefaultConnection
     try{
       var buffer = this.ndr.getBuffer();
       var length = buffer.getLength();
-
+      
       buffer.setIndex(length);
       verifier.encode(this.ndr, buffer);
+      
       length = buffer.getLength();
       buffer.setIndex(new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET);
       this.ndr.writeUnsignedShort(length);

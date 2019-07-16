@@ -27,7 +27,7 @@ class NTLMConnectionContext
     this.assocGroupId;
   }
 
-  init2(context)
+  init2(context, info)
   {
     console.log("init2");
     this.established = false;
@@ -43,15 +43,15 @@ class NTLMConnectionContext
     pdu.setContextList([context]);
     pdu.setMaxTransmitFragment(this.maxTransmitFragment);
     pdu.setMaxReceiveFragment(this.maxReceiveFragment);
-    this.connection = new NTLMConnection();
+    this.connection = new NTLMConnection(info);
     this.assocGroupId = 0;
     return pdu;
   }
 
-  init(context)
+  init(context, info)
   {
     console.log("init");
-    var pdu = this.init2(context);
+    var pdu = this.init2(context, info);
     return pdu;
   }
 

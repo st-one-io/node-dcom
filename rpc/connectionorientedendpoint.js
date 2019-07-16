@@ -168,7 +168,7 @@ class ConnectionOrientedEndpoint{
     this.context = this.createContext();
 
     var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax()),
-      this.properties);
+      info);
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu, info);
@@ -197,7 +197,7 @@ class ConnectionOrientedEndpoint{
     }
   }
 
-  createContext(){
+  createContext(info){
     var properties = this.properties;
     if (!properties) return this.properties = new NTLMConnectionContext();
     conso
