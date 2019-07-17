@@ -55,7 +55,7 @@ class ComServer extends Stub {
 
     super.setTransportFactory(new ComTransportFactory.getSingleTon());
     // check if any authentication mode is enabled
-    if (session.isNNTLMv2Enabled()) {
+    if (session.isNTLMv2Enabled()) {
       // TODO: properties
     }
     if (session.isSSOEnalbed()) {
@@ -205,7 +205,7 @@ class ComServer extends Stub {
     this.transportFactory = (new ComTransportFactory().getSingleTon());
     this.address = address;
 
-    if (session.isNNTLMv2Enabled()) {
+    if (session.isNTLMv2Enabled()) {
       // TODO:
     }
 
@@ -237,7 +237,7 @@ class ComServer extends Stub {
     console.log("start");
     var attachcomplete = false;
     try {
-      /*this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
+      this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
       await this.attach(this.getSyntax());
       console.log("after first attach");
       attachcomplete = true;
@@ -245,7 +245,7 @@ class ComServer extends Stub {
       this.getEndpoint().getSyntax().setUUID(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
       this.getEndpoint().getSyntax().setVersion(0,0);
       console.log("before rebind");
-      console.log(this.getEndpoint().getSyntax());
+
       this.getEndpoint().rebind(this.info);
       console.log("after rebind");
       var serverAlive = new CallBuilder(true);
@@ -268,19 +268,14 @@ class ComServer extends Stub {
         this.getEndPoint().rebindEndpoint();
         this.serverActivation = new RemoteSCMActivator(session.getTargetServer(), clsid);
         this.call(Endpoint.IDEMPOTENT, serverActivation);
-      } else {*/
+      } else {
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
-        await this.attach(this.getSyntax());
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
-        console.log("debug");
         this.getEndpoint().getSyntax().setVersion(0,0);
-        await this.getEndpoint().rebindEndpoint(this.info);
-        console.log("rebinded");
-
+        this.getEndpoint().rebindEndpoint();
         this.serverActivation = new RemActivation(clsid);
         this.call(Endpoint.IDEMPOTENT, this.serverActivation, info);
-        console.log("after call");
-      //}
+      }
     } catch(e) {
 
     } finally {
@@ -300,6 +295,28 @@ class ComServer extends Stub {
     } else {
       console.error("Not able to create server");
     }
+  }
+
+  /**
+   * @returns {ComObject} represents the ComServer, To be user only with <code>ComServer(Session, InterfacePointer, String)</code> constructor
+   */
+  getInstance() {
+    if (!this.interfacePtrCtor) {
+      throw new Error(System.getLocalizedMessage(ErrorCodes.JI_COMSTUB_WRONGCALLGETINSTANCE));
+    }
+
+    let comObject;
+    
+    if (this.serverInstantiated) {
+      throw new Error(ErrorCodes.JI_OBJECT_ALREADY_INSTANTIATED);
+    }
+
+    comObject = FrameworkHelper.instantiateComObject(session, interfacePtrCtor);
+    //increasing the reference count.
+    comObject.addRef();
+    this.serverInstantiated = true;
+
+    return comObject;
   }
 
   getServerInterfacePointer()

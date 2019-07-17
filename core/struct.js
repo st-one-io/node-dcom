@@ -1,108 +1,124 @@
-var ErroCodes = require('../common/errorcodes.js');
+//@ts-check
+const ErrorCodes = require('../common/errorcodes.js');
+const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+const ComArray = require('./comarray');
+const ComObject = require('./comobject');
+const Variant = require('./variant');
+const ComString = require('./string');
+const Pointer = require('./pointer');
+const Flags = require('./flags');
+const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 
-class Struct
-{
-  constructor()
-  {
-    this.serialVersionUID = "7708214775854162549L";
+const types = require('./types');
+const ComValue = require('./comvalue');
+
+class Struct {
+
+  constructor() {
+    
+    /**@type {ComValue[]} */
     this.listOfMembers = new Array();
+    /**@type {number[]} */
     this.listOfMaxCounts = new Array();
+    /**@type {number[]} */
     this.listOfDimensions = new Array();
     this.arrayAdded = false;
-    this.MEMBER_IS_EMPTY = new Struct();
+    this.MEMBER_IS_EMPTY = Struct.MEMBER_IS_EMPTY;
   }
 
-  addMember(position, member)
-  {
-    if (!(position instanceof Number)) {
+  /**
+   * 
+   * @param {ComValue} value
+   * @param {number} [position]
+   */
+  addMember(value, position) {
+    if (position === undefined){
       position = this.listOfMembers.length;
     }
 
-    member = (member == null) ? new Number(0) : member;
+    value = value || new ComValue(0, types.INTEGER);
+    let member = value.value;
 
-    var memberClass = member.constructor;
-
-    if (this.arrayAdded && (position ==this.listOfMembers.length) && !(memberClass instanceof IArray)) {
-      throw new Erro(ErroCodes.STRUCT_ARRAY_AT_END);
+    //An array has already been added , now a new member cannot be added
+    if (this.arrayAdded && (position == this.listOfMembers.length) && !(member instanceof ComArray)) {
+      throw new Error("STRUCT_ARRAY_AT_END" + ErrorCodes.STRUCT_ARRAY_AT_END);
     }
 
-    if (memberClass instanceof IArray) {
+    //arrays can only be the last element of this struct.
+    if (member instanceof ComArray) {
       if (position != this.listOfMembers.length) {
-        throw new Error(ErroCodes.STRUCT_ARRAY_ONLY_AT_END);
+        throw new Error("STRUCT_ARRAY_ONLY_AT_END" + ErrorCodes.STRUCT_ARRAY_ONLY_AT_END);
       }
 
-      arrayAdded = true;
+      this.arrayAdded = true;
 
       if (member.isConformant() || member.isVarying()) {
-        var aux = member.getConformantMaxCounts();
-        while(aux.length > 0)
-          this.listOfMaxCounts.push(aux.shift());
-        this.listOfDimensions.push(new Number(member.getDimensions()));
+        this.listOfMaxCounts.push(...member.getConformantMaxCounts());
+        this.listOfDimensions.push(member.getDimensions());
       }
     }
 
-    if (memberClass instanceof Struct) {
+    //struct part of another struct
+    if (member instanceof Struct) {
+
       if (member.arrayAdded && this.arrayAdded && position != (this.listOfMembers.length - 1)) {
-        throw new Erro(ErrorCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS);
+        throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS" + ErrorCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS);
       }
 
-      if (this.arrayAdded && (member.arrayAdded)) {
+      if (this.arrayAdded && member.arrayAdded) {
+
+        //means that we have to move the maxcount of the internal struct to this struct.
         this.arrayAdded = true;
 
-        var aux = member.getArrayMaxCounts();
-        while(aux.length > 0)
-          this.listOfMaxCounts.push(aux.shift());
-        member.listOfMaxCounts = [];
+        this.listOfMaxCounts.push(...member.getArrayMaxCounts());
+        member.listOfMaxCounts.length = 0; //clear
 
-        aux = member.listOfDimensions;
-        while(aux.length > 0)
-          this.listOfDimensions.push(aux.shift());
-        member.listOfDimensions = [];
-      }else {
+        this.listOfDimensions.push(...member.listOfDimensions);
+        member.listOfDimensions.length = 0; //clear
+
+      } else {
+
         if (!this.arrayAdded && member.arrayAdded) {
           if (position == this.listOfMembers.length) {
+
+            //means that we have to move the maxcount of the internal struct to this struct.
             this.arrayAdded = true;
 
-            var aux = member.getArrayMaxCounts();
-            while(aux.length > 0)
-              this.listOfMaxCounts.push(aux.shift());
-            member.listOfMaxCounts = [];
+            this.listOfMaxCounts.push(...member.getArrayMaxCounts());
+            member.listOfMaxCounts.length = 0; //clear
 
-            aux = member.listOfDimensions();
-            while(aux.length > 0)
-              this.listOfDimensions.push(aux.shift());
-            member.listOfDimensions = [];
+            this.listOfDimensions.push(...member.listOfDimensions);
+            member.listOfDimensions.length = 0; //clear
           } else {
-            throw new Error(ErroCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS2);
+            throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS2" + ErrorCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS2);
           }
 
         }
       }
     }
 
-    if (memberClass instanceof Pointer && !member.isReference()) {
+    if (member instanceof Pointer && !member.isReference()) {
       member.setDeffered(true);
-    } else if (memberClass  instanceof Variant) {
+    } else if (member instanceof Variant) {
       member.setDeffered(true);
-    } else if (memberClass instanceof IString) {
+    } else if (member instanceof ComString) {
       member.setDeffered(true);
-    } else if (memberClass instanceof ComObject) {
+    } else if (member instanceof ComObject) {
       member.internal_setDeffered(true);
     }
-    this.listOfMembers.splice(position, 0, member);
+    this.listOfMembers.splice(position, 0, value);
   }
 
-  removeMember(index)
-  {
-    var member = this.listOfMembers.splice(index, 1)[0];
-    if (member instanceof IArray) {
-      this.listOfMaxCounts.removeAll(member.getConformantMaxCounts());
-    }else if (member instanceof Struct &K& member.arrayAdded) {
-      var aux = member.getArrayMaxCounts();
-      while (aux.length > 0) {
-        var tmp = this.listOfMaxCounts.indexOf(aux.shift());
-        this.listOfMaxCounts.splice(tmp, 1);
-      }
+  removeMember(index) {
+    var member = this.listOfMembers.splice(index, 1)[0].value;
+
+    if (member instanceof ComArray) {
+      let counts = member.getConformantMaxCounts();
+      this.listOfMaxCounts = this.listOfMaxCounts.filter(elm => !counts.includes(elm));
+    
+    } else if (member instanceof Struct && member.arrayAdded) {
+      let counts = member.getArrayMaxCounts();
+      this.listOfMaxCounts = this.listOfMaxCounts.filter(elm => !counts.includes(elm));
     }
 
     if (this.listOfMaxCounts.length == 0) {
@@ -110,62 +126,82 @@ class Struct
     }
   }
 
-  getMembers()
-  {
+  /**
+   * @returns {ComValue[]}
+   */
+  getMembers() {
     return this.listOfMembers;
   }
 
-  getMember(index)
-  {
+  /**
+   * 
+   * @param {number} index 
+   * @returns {ComValue}
+   */
+  getMember(index) {
     return this.listOfMembers[index];
   }
 
-  getSize()
-  {
+  /**
+   * @returns {number}
+   */
+  getSize() {
     return this.listOfMembers.length;
   }
 
-  encode(ndr, defferedPointers, FLAG)
-  {
-    for (var i = 0; i < this.listOfMaxCounts.length; i++) {
-      MarshalUnMarshalHelper.serialize(ndr, Number, this.listOfMaxCounts[i], null, FLAG);
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   * @param {Pointer[]} defferedPointers 
+   * @param {number} flag
+   */
+  encode(ndr, defferedPointers, flag) {
+    for (const elm of this.listOfMaxCounts) {
+      MarshalUnMarshalHelper.serialize(ndr, new ComValue(elm, types.INTEGER), null, flag);
     }
-
-    var i = 0;
+    
+    let i = 0;
     while (i < this.listOfMembers.length) {
-      var o = this.listOfMembers[i];
+      let o = this.listOfMembers[i];
 
-      if (o instanceof IArray) {
-        o.setConformant(false);
+      if (o.value instanceof ComArray) {
+        o.value.setConformant(false);
       }
 
-      MarshalUnMarshalHelper.serialize(ndr, o.constructor, o, defferedPointers, FLAG);
+      MarshalUnMarshalHelper.serialize(ndr, o, defferedPointers, flag);
 
-      if (o instanceof IArray) {
-        o.setConformant(o.isConformant());
+      if (o.value instanceof ComArray) {
+        o.value.setConformant(o.value.isConformant());
       }
       i++;
     }
   }
 
-  decode(ndr, defferedPointers, FLAG, additionalData)
-  {
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   * @param {Pointer[]} defferedPointers 
+   * @param {number} flag 
+   * @param {Map} additionalData 
+   */
+  decode(ndr, defferedPointers, flag, additionalData) {
     var retVal = new Struct();
     var listOfMaxCounts2 = new Array();
 
-    for (var i = 0; i < this.listOfDimensions.length; i++) {
-      for (var j = 0; j < this.listOfDimensions[i]; j++) {
-        listOfMaxCounts2 = add(MarshalUnMarshalHelper.deSerialize(ndr, Numaber, null, FLAG, additionalData));
+    for (let i = 0; i < this.listOfDimensions.length; i++) {
+      for (let j = 0; j < this.listOfDimensions[i]; j++) {
+        listOfMaxCounts2.push(MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, flag, additionalData));
       }
     }
 
-    var i = 0;
-    var j = 0;
+    let i = 0;
+    let j = 0;
 
     while (i < this.listOfMembers.length) {
-      var o = this.listOfMembers[i];
-      var maxCountTemp = null;
-      if (o instanceof IArray) {
+      let value = this.listOfMembers[i]
+      let o = value.value;
+      let maxCountTemp = null;
+      if (o instanceof ComArray) {
         if (o.isConformant() || o.isVarying()) {
           o.setConformant(false);
           maxCountTemp = o.getConformantMaxCounts();
@@ -173,66 +209,65 @@ class Struct
           j++;
         }
       }
-      var o1 = MarshalUnMarshalHelper.deSerialize(ndr, o, defferedPointers, FLAG, additionalData);
-      if (o instanceof IArray) {
+      var o1 = MarshalUnMarshalHelper.deSerialize(ndr, value, defferedPointers, flag, additionalData);
+      if (o instanceof ComArray) {
         if (o.isConformant() || o.isVarying()) {
           o.setConformant(o.isConformant());
           o.setMaxCountAndUpperBounds(maxCountTemp);
         }
       }
-      try {
-        retval.addMember(o1);
-      }catch(e){
-        console.log(e);
-      }
+      retVal.addMember(o1);
       i++;
     }
     return retVal;
   }
 
-  getLength()
-  {
-    var length = 0;
-    var i = 0;
-    while (i < this.listOfMembers.length) {
-      var o = this.listOfMembers[i];
-
-      // maybe we will need two ifs here
-      length += MarshalUnMarshalHelper.getLengthInBytes(o.constructor, o, Flags.FLAG_NULL);
-      i++;
+  getLength() {
+    let length = 0;
+    for (const member of this.listOfMembers) {
+      length += MarshalUnMarshalHelper.getLengthInBytes(member, Flags.FLAG_NULL);
     }
     return length;
   }
 
-  getArrayCounts()
-  {
-    return this.listOfMaxCounts;
+  getArrayMaxCounts() {
+    return this.listOfMaxCounts.slice();
   }
 
-  getAlignment()
-  {
-    var alignment = 0;
+  getAlignment() {
+    let alignment = 0;
 
-    for (var i = 0; i < this.listOfMembers.length; i++) {
-      var c = this.listOfMembers[i].constructor;
-
-      if (c instanceof Number || c instanceof String ||
-          c instanceof IString || c instanceof Pointer ||
-          c instanceof Variant) {
-        alignment = alignment <= 4 ? 4 : alignment;
-      } else if (c instanceof Date) {
-        alignment = alignment <= 8 ? 8 : aligment;
-      } else {
-        var align = this.listOfMembers[i].getAlignment();
-        aligment = aligment <= align ? align : alignment;
+    for (const member of this.listOfMembers) {
+      switch (member.type){
+        case types.SHORT:
+        case types.UNSIGNEDSHORT:
+          alignment = Math.max(alignment, 2);
+          break;
+        case types.INTEGER:
+        case types.FLOAT:
+        case types.STRING:
+        case types.COMSTRING:
+        case types.POINTER:
+        case types.UNSIGNEDINTEGER:
+        case types.VARIANT:
+          alignment = Math.max(alignment, 4);
+          break;
+        case types.DOUBLE:
+        case types.DATE:
+        case types.LONG:
+          alignment = Math.max(alignment, 8);
+          break;
+        case types.STRUCT:
+        case types.UNION:
+          alignment = Math.max(alignment, member.value.getAlignment());
       }
-
-      if (alignment == 8) {
-        break;
-      }
+      if (alignment == 8) break;
     }
-    return aligment;
+
+    return alignment;
   }
 }
+
+Struct.MEMBER_IS_EMPTY = new Struct();
 
 module.exports = Struct;

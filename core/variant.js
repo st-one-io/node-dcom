@@ -3,9 +3,17 @@ var System = require('../common/system.js');
 var HashMap = require('hashmap');
 var Flags = require('./flags.js');
 
-class Variant
-{
-  constructor()
+const types = require('./types');
+const ComValue = require('./comvalue');
+
+class Variant {
+
+  /**
+   * 
+   * @param {ComValue} [value]
+   * @param {boolean} [isByRef]
+   */
+  constructor(value, isByRef)
   {
     this.EMPTY = new Variant(new EMPTY());
     this.EMPTY_BYREF = new Variant(this.EMPTY);
@@ -315,7 +323,7 @@ class Variant
     this.member.setReferent(0x72657355);
   }
 
-  setDeferred(deffered)
+  setDeffered(deffered)
   {
     if (this.member != null && !this.member.isReference()) {
       this.member.setDeferred(deffered);
@@ -897,3 +905,5 @@ class VariantBody
     
   }
 }
+
+module.exports = Variant;
