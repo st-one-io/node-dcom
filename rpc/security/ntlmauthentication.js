@@ -200,7 +200,7 @@ class NTLMAuthentication
       let aux = clientNonce.slice(0, clientNonce.length);
       let aux_i = 0;
       while (aux.length > 0) lmResponse.splice(aux_i++, 1, aux.shift());
-      
+      while (aux_i < lmResponse.length) lmResponse[aux_i++] = 0;
       let ntResponse;
       
       try {

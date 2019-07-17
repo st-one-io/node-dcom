@@ -74,6 +74,7 @@ class ComTransport
         throw new Error("Transport already attached");
       }
       var channel = new net.Socket();
+      channel.setKeepAlive(true);
       var endpoint = new ComEndpoint()
       /* When we recieve some data we check if receive() was already called by
         checkin if recProm is null. If it is, we resolve it, if not we add the
@@ -127,13 +128,8 @@ class ComTransport
     //FIXME quick-fix to trim buffer to its real length. Need to check where this should be
     let length = buffer.length;
     
-    
     try{
-      if (buf.length <= length){
-        this.channelWrapper.write(Buffer.from(buf));
-      }else {
-        this.channelWrapper.write(Buffer.from(buf.slice(0, length + 1)));
-      }
+        this.channelWrapper.write(Buffer.from(buf.slice(0, length)));
     } catch(e){
       console.log(e);
     }

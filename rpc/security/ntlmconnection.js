@@ -33,6 +33,8 @@ class NTLMConnection extends DefaultConnection
 
   incomingRebind(verifier)
   {
+    console.log("Incomding Rebind");
+    
     switch (verifier.body[8]) {
       case 1:
         this.contextId = verifier.contextId;

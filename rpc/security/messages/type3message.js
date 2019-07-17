@@ -338,10 +338,10 @@ class Type3Message extends NtlmMessage {
     
     const ntResponseBytes = this.getNTResponse();
     size += (ntResponseBytes != null) ? ntResponseBytes.length : 0;
-    
+   
     const sessionKeyBytes = this.getEncryptedSessionKey();
     size += (sessionKeyBytes != null) ? sessionKeyBytes.length : 0;
-   
+    
     let type3 = new Array(size);
     let pos = 0;
     
@@ -384,14 +384,13 @@ class Type3Message extends NtlmMessage {
       while (aux.length > 0) type3.splice(aux_i++, 1, aux.shift());
       pos += 16;
     }
-
+    
     pos += this.writeSecurityBufferContent(type3, pos, lmOff, lmResponseBytes);
     pos += this.writeSecurityBufferContent(type3, pos, ntOff, ntResponseBytes);
     pos += this.writeSecurityBufferContent(type3, pos, domOff, domainBytes);
     pos += this.writeSecurityBufferContent(type3, pos, userOff, userBytes);
     pos += this.writeSecurityBufferContent(type3, pos, wsOff, workstationBytes);
     pos += this.writeSecurityBufferContent(type3, pos, skOff, sessionKeyBytes);
-    console.log(pos);
     return type3;
   }
 
