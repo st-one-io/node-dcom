@@ -59,7 +59,7 @@ class Union {
      * @throws IllegalArgumentException if <code>discriminant</code> is <code>null</code>
      */
     //used both for reading and writing
-    addMember(Object discriminant, JIStruct member) {
+    addMember(discriminant, member) {
         if (discriminant == null) {
             throw new IllegalArgumentException(JISystem.getLocalizedMessage(ErrorCodes.UNION_NULL_DISCRMINANT));
         }

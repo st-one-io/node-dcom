@@ -187,7 +187,7 @@ class ConnectionOrientedPdu {
     throw new Error("Should never be called, PDUs implementation must override");
   };
 
-  get type(){
+  getType(){
     throw new Error("Should never be called, PDUs implementation must override");
   };
 }

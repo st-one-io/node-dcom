@@ -609,7 +609,7 @@ class CallBuilder extends NdrObject {
 		//reset buffer size here...
 		//calculate rough length required length + 16 for the last bytes
 		//plus adding 30 more for the verifier etc. 
-		ndr.getBuffer().buf = Buffer.alloc(this.bufferLength() + 16);
+		ndr.getBuffer().buf = new Array(this.bufferLength() + 16);
 
 		let orpcthis = new OrpcThis();
 		orpcthis.encode(ndr);

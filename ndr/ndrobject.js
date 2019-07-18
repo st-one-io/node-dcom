@@ -15,12 +15,12 @@ NdrObject.prototype.getOpnum = function getOpnum(){
 
 NdrObject.prototype.encode = function (ndr, dst){
   ndr.buf = dst;
-  write(ndr);
+  this.write(ndr);
 }
 
 NdrObject.prototype.decode = function (ndr, src){
   ndr.buf = src;
-  read(ndr);
+  this.read(ndr);
 }
 
 module.exports = NdrObject;

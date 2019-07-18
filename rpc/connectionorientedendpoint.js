@@ -13,17 +13,26 @@ var AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
 var BasicConnectionContext = require('./basicconnectioncontext.js');
 var NTLMConnectionContext = require('./security/ntlmconnectioncontext.js');
 
-class ConnectionOrientedEndpoint{
-  constructor(transport, syntax){
+/**
+ * This class is responsible for connection oriented communications
+ * in general (TCP based)
+ */
+class ConnectionOrientedEndpoint {
+  /**
+   *
+   * @param {ComTransport} transport
+   * @param {PresentationSyntax} syntax
+   */
+  constructor(transport, syntax) {
     this.MAYBE = 0x01;
     this.IDEMPOTENT = 0x02;
     this.BROADCAST = 0x04;
 
     this.CONNECTION_CONTEXT = "rpc.connectionContext";
-    try{
+    try {
       this.transport = transport;
       this.syntax = syntax;
-    }catch(e){
+    } catch (e) {
       console.log(e);
     }
     this.bound;
@@ -46,7 +55,7 @@ class ConnectionOrientedEndpoint{
   call(semantics, object, opnum, ndrobj, info){
     this.bind(info);
     var request = new RequestCoPdu();
-    request.setContextid(this.contextIdToUse);
+    request.setContextId(this.contextIdToUse);
 
     var b = [1024];
     var buffer = new NdrBuffer(b, 0);
@@ -62,9 +71,9 @@ class ConnectionOrientedEndpoint{
     request.setStub(stub);
     request.setAllocationHint(buffer.getLength());
     request.setOpnum(opnum);
-    requkest.setObject(object);
-
-    if ((semantis & this.MAYBE) != 0){
+    request.setObject(object);
+    console.log(request.getStub(), request.getAllocationHint(), request.getOpnum());
+    if ((semantics & this.MAYBE) != 0){
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
 
@@ -93,19 +102,23 @@ class ConnectionOrientedEndpoint{
     await this.bind(this.info)
   }
 
-  async bind(info){
+  /**
+   *
+   * @param {Object} info
+   */
+  async bind(info) {
     console.log("bind");
     if (this.bound) return;
-    if (this.context != null){
+    if (this.context != null) {
       this.bound = true;
-
-      var cid = Number.parseInt(this.uidsVsContextIds.get(getSyntax()));
-      var pdu = this.context.alter(new PresentationSyntax(cid == null? ++this.contextIdCounter : cid,
-        getSyntax()));
-      var sendAlter = false;
+      
+      let cid = Number.parseInt(this.uidsVsContextIds.get(this.getSyntax()));
+      let pdu = this.context.alter(new PresentationSyntax(cid == null? ++this.contextIdCounter : cid,
+        this.getSyntax()));
+        let sendAlter = false;
 
       if (cid == null){
-        this.uuidsVsContextIds.put(getSyntax(), Number.parseInt(this.contextIdCounter));
+        this.uuidsVsContextIds.put(this.getSyntax(), Number.parseInt(this.contextIdCounter));
         this.contextIdToUse = this.contextIdCounter;
         sendAlter = true;
       } else{
@@ -115,7 +128,7 @@ class ConnectionOrientedEndpoint{
       if (sendAlter){
         if (pdu != null)this.send(pdu, info);
         while (!this.context.isEstablished()){
-          var recieved = this.receive();
+          let recieved = this.receive();
 
           if ((pdu = this.context.accept(received)) != null){
             switch (pdu.getType()){
@@ -172,10 +185,10 @@ class ConnectionOrientedEndpoint{
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) this.send(pdu, info);
-
+    
     while (!this.context.isEstablished()){
       var received = await this.receive();
-
+      
       pdu = this.context.accept(received);
 
       if (pdu != null){

@@ -16,12 +16,12 @@ class System
     this.mapOfHostnamesVsIPs = new HashMap();
   }
 
-  set comVersion(comVersion)
+  setComVersion(comVersion)
   {
     this.comVersion = comVersion;
   }
 
-  get comVersion()
+  getComVersion()
   {
     return this.comVersion;
   }
@@ -74,7 +74,7 @@ class System
     this.socketQueue.push(socket);
   }
 
-  set autoRegistration(autoRegistration)
+  setAutoRegistration(autoRegistration)
   {
     this.autoRegistration = autoRegistration;
   }
@@ -86,12 +86,12 @@ class System
 
   // TO-DO: not sure if this is needed but in any case I'll leave the functions there
   // until further analysis
-  set coClassAutoCollection(autoCollection)
+  setCoClassAutoCollection(autoCollection)
   {
     this.autoCollection = autoCollection;
   }
 
-  get isCoClassAutoCollectionSet()
+  getIsCoClassAutoCollectionSet()
   {
     return this.autoCollection;
   }

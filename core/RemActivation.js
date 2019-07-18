@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 // @ts-check
 
 const ComVersion = require('../common/comversion.js');
@@ -5,28 +6,39 @@ const System = require('../common/system.js');
 const HashMap = require('hashmap');
 const ServerActivation = require('./ServerActivation.js');
 const UUID = require('../rpc/core/uuid.js');
+const orpcThis = require('./orpcthis.js');
+const orpcThat = require('./orpcthat.js');
+const objectHash = require('object-hash');
+const Session = require('./session.js');
+const MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
+const DualStringArray = require('./dualstringarray.js');
+const types = require('./types.js');
+const ComValue = require('./comvalue.js');
+const NdrObject = require('../ndr/ndrobject.js');
 
 /**
  * Remote Activation class
  */
-class RemActivation extends ServerActivation {
+class RemActivation extends NdrObject {
     /**
-     * 
-     * @param {Clsid} clsid 
+     *
+     * @param {Clsid} clsid
      */
     constructor(clsid) {
-    super();
+        super();
+        this.RPC_C_IMP_LEVEL_IDENTIFY = 2;
+        this.TPC_C_IMP_LEVEL_IMPERSONATE = 3;
         this.impersonationLevel = this.TPC_C_IMP_LEVEL_IMPERSONATE;
         this.mode = 0;
         
         this.monikerName = null;
         this.clsid = new UUID(clsid);
 
-        this.isActivationSuccessful = false;
+        this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
 
-        this.getDualStringArrayForOxid = null;
+        this.dualStringArrayForOxid = null;
         this.ipid = null;
 
         this.authenticationHint = -1;
@@ -77,6 +89,7 @@ class RemActivation extends ServerActivation {
      * @param {NetworkDatarepresentation} ndr 
      */
     write(ndr) {
+        console.log("WE ARE GETTING HERE");
         let orpcThis = new orpcThis();
         orpcThis.encode(ndr);
         
@@ -99,7 +112,201 @@ class RemActivation extends ServerActivation {
         ndr.writeUnsignedLong(mode);
         
         ndr.writeUnsignedLong(2);
-        //ndr.writeUnsignedLong(new Object())
+        ndr.writeUnsignedLong(objectHash({}));
+        ndr.writeUnsignedLong(2);
+
+        uuid.parse('00000000-0000-0000-c000-000000000046');
+
+        try {
+            uuid.encode(ndr,ndr.buf);
+        } catch (error) {
+            throw new Error(String('RemActivation - write - ' + error));
+        }
+
+        ndr.writeUnsignedLong(1);
+        ndr.writeUnsignedLong(1);
+        ndr.writeUnsignedShort(7);
+
+        let address = (new Session().getLocalHostAsIpString()).split('.');
+
+        ndr.writeUnsignedShort(address[0]);
+        ndr.writeUnsignedShort(address[1]);
+        ndr.writeUnsignedShort(address[2]);
+        ndr.writeUnsignedShort(address[3]);
+        ndr.writeUnsignedShort(0);
+    }
+
+    /**
+     * 
+     * @param {NetworkDataRepresentation} ndr 
+     */
+    read(ndr) {
+        this.oprthat = new orpcThat().decode(ndr);
+
+        this.oxid = new MarshalUnMarshalHelper().readOctetArrayLE(ndr, 8);
+
+        let skipdual = ndr.readUnsignedLong();
+
+        if (skipdual != 0) {
+            ndr.readUnsignedLong();
+
+            this.getDualStringArrayForOxid = new DualStringArray().decode(ndr);
+        }
+
+        try {
+            let ipid2 = new UUID();
+            ipid2.decode(ndr, ndr.getBuffer());
+            this.ipid = (ipid2.toString());
+        } catch (e) {
+            throw new Error(String('RemActivation - read - ' + e));
+        }
+
+        this.authenticationHint = ndr.readUnsignedLong();
+
+        this.comVersion = new ComVersion();
+        this.comVersion.setMajorVersion(ndr.readUnsignedShort());
+        this.comVersion.setMinorVersion(ndr.readUnsingedShort());
+
+        if (this.hresult != 0) {
+            throw new Error("Exception from server: " + this.hresult);
+        }
+
+        let array = new ComArray(new ComValue(new IntefacePointer(),types.INTERFACEPOINTER), null, 1, true);
+        let listOfDefferedPointers = new Array();
+
+        array = new MarshalUnMarshalHelper().deSerialize(ndr, array, listOfDefferedPointers, new Flags().FLAG_NULL, new HashMap());
+
+        let x = 0;
+        while (x < listOfDefferedPointers.length) {
+            let newList = new Array();
+            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, listOfDefferedPointers[x],newList, new Flags().FLAG_NULL, null);
+
+            listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
+            x++;
+            
+            let aux_i = x;
+            while (aux_i < newList.length) listOfDefferedPointers.splice(aux_i++, 1, newList.shift());
+        }
+
+        let arrayObjs = array.getArrayInstance();
+        this.mInterfacePointer = arrayObjs[0];
+
+        if (arrayObjs[1] != null) {
+            this.isDual = true;
+            let ptr = arrayObjs[1];
+            this.dispIpid = ptr.getIPID();
+            this.dispIpid = ptr.getOID();
+            this.dispRefs = ptr.getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
+        }
+
+        array = new ComArray(new ComValue(new Number(), types.INTEGER), null, 1, true);
+        new MarshalUnMarshalHelper().deSerialize(ndr, array, null, new Flags().FLAG_NULL);
+
+        this.activationsuccessful = true;
+    }
+
+    /**
+     * @return {Boolean}
+     */
+    isActivationSuccessful()
+    {
+        return this.activationsuccessful;
+    }
+
+    /**
+     * @return {orpcThat}
+     */
+    getORPCThat()
+    {
+        return this.oprthat;
+    }
+
+    /**
+     * @return {Oxid}
+     */
+    getOxid(){
+        return this.oxid;
+    }
+
+    /**
+     * @return {DualStringArray}
+     */
+    getDualStringArrayForOxid()
+    {
+        return this.dualStringArrayForOxid;
+    }
+
+    /**
+     * @return {Number}
+     */
+    getAuthenticationHint()
+    {
+        return this.authenticationHint;
+    }
+
+    /**
+     * @return {ComVersion}
+     */
+    getComVersion()
+    {
+        return this.comVersion;
+    }
+
+    /**
+     * @return {Number}
+     */
+    getHresult()
+    {
+        return this.hresult;
+    }
+
+    /**
+     * @return {InterfacePointer}
+     */
+    getMInterfacePointer()
+    {
+        return this.mInterfacePointer;
+    }
+
+    /**
+     * @return {String}
+     */
+    getIPID()
+    {
+        return this.ipid;
+    }
+
+    /**
+     * @return {Boolean}
+     */
+    isDual()
+    {
+        return this.isDual;
+    }
+
+    /**
+     * @return {String}
+     */
+    getDispIpid()
+    {
+        return this.dispIpid;
+    }
+
+    /**
+     * @return {Number}
+     */
+    getDispRefs()
+    {
+        return this.dispRefs;
+    }
+
+    /**
+     * 
+     * @param {String} dispIpid 
+     */
+    setDispIpid(dispIpid)
+    {
+        this.dispIpid = dispIpid;
     }
 }
 module.exports = RemActivation;

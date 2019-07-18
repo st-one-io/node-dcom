@@ -128,7 +128,7 @@ class DefaultConnection
       }
       this.bytesRemainingInReceiveBuffer = false;
     }
-
+    
     if (read){
       this.receiveBuffer.reset();
       this.receiveBuffer.buf =[...await (transport.receive(this.receiveBuffer))];

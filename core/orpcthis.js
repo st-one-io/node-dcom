@@ -37,7 +37,7 @@ class OrpcThis {
         this.cid = casualityIdentifier ? casualityIdentifier.toString() : generateUUID();
         this.flags = 0
         this.arry = null; //JIOrpcExtentArray[]
-        this.version = System.getComVersion();
+        this.version = new System().getComVersion();
     }
 
     setORPCFlags(flags) {

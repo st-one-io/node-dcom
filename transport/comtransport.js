@@ -155,6 +155,7 @@ class ComTransport
         console.log(self.receivedBuffer);
         resolve(buffer = self.receivedBuffer);
       } else {
+        console.log("waiting for data");
         self.recvPromise = {resolve: resolve, reject: reject};
       }
     });

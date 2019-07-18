@@ -65,52 +65,52 @@ class UUID{
   toString(){
     var buffer = String("");
 
-    buffer.concat(hexDump.toHexString((this.timeLow >> 28) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 24) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 20) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 16) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeLow >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.timeLow & 0x0f));
-    buffer.concat('-');
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 28) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 24) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 20) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 16) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeLow >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.timeLow & 0x0f, 1));
+    buffer = buffer.concat('-');
 
-    buffer.concat(hexDump.toHexString((this.timeMid >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeMid >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeMid >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.timeMid & 0x0f));
-    buffer.concat('-');
+    buffer = buffer.concat(hexDump.toHexString((this.timeMid >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeMid >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeMid >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.timeMid & 0x0f, 1));
+    buffer = buffer.concat('-');
 
-    buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.timeHighAndVersion & 0x0f));
-    buffer.concat('-');
+    buffer = buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.timeHighAndVersion >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.timeHighAndVersion & 0x0f, 1));
+    buffer = buffer.concat('-');
 
-    buffer.concat(hexDump.toHexString((this.clockSeqHighAndReserved >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.clockSeqHighAndReserved & 0x0f));
+    buffer = buffer.concat(hexDump.toHexString((this.clockSeqHighAndReserved >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.clockSeqHighAndReserved & 0x0f, 1));
 
-    buffer.concat(hexDump.toHexString((this.clockSeqLow >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.clockSeqLow & 0x0f));
-    buffer.concat('-');
+    buffer = buffer.concat(hexDump.toHexString((this.clockSeqLow >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.clockSeqLow & 0x0f, 1));
+    buffer = buffer.concat('-');
 
-    buffer.concat(hexDump.toHexString((this.node1 >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node1 >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node1 >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.node1 & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node2 >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node2 >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node2 >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.node2 & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node3 >> 12) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node3 >> 8) & 0x0f));
-    buffer.concat(hexDump.toHexString((this.node3 >> 4) & 0x0f));
-    buffer.concat(hexDump.toHexString(this.node3 & 0x0f));
+    /*buffer = buffer.concat(hexDump.toHexString((this.node1 >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node1 >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node1 >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.node1 & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node2 >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node2 >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node2 >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.node2 & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node3 >> 12) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node3 >> 8) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString((this.node3 >> 4) & 0x0f, 1));
+    buffer = buffer.concat(hexDump.toHexString(this.node3 & 0x0f, 1));*/
 
-    //for (var i = 0; i < 6; i++) {
-    //  buffer.concat(hexDump.toHexString((this.node[i] >> 4) & 0x0f));
-    //  buffer.concat(hexDump.toHexString(this.node[i] & 0x0f));
-    //}
+    for (var i = 0; i < 6; i++) {
+      buffer = buffer.concat(hexDump.toHexString((this.node[i] >> 4) & 0x0f, 1));
+      buffer = buffer.concat(hexDump.toHexString(this.node[i] & 0x0f, 1));
+    }
     return String(buffer);
   }
 

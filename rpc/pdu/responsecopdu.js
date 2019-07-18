@@ -49,27 +49,27 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
   }
 
   readPdu(ndr){
-    readHeader(ndr);
-    readBody(ndr);
-    readStub(ndr);
+    this.readHeader(ndr);
+    this.readBody(ndr);
+    this.readStub(ndr);
   }
 
   writePdu(ndr){
-    writeHeader(ndr);
-    writeBody(ndr);
-    writeStub(ndr);
+    this.writeHeader(ndr);
+    this.writeBody(ndr);
+    this.writeStub(ndr);
   }
 
   readBody(ndr){
-    allocationHint(ndr.readUnsignedLong());
-    contextId(ndr.readUnsignedShort());
-    cancelCount(ndr.readUnsignedSmall());
+    this.rallocationHint(ndr.readUnsignedLong());
+    this.rcontextId(ndr.readUnsignedShort());
+    this.rcancelCount(ndr.readUnsignedSmall());
   }
 
   writeBody(ndr){
-    ndr.writeUnsignedLong(allocationHint());
-    ndr.writeUnsignedShort(contextId());
-    ndr.readUnsignedSmall(Number.parseIntg(cancelCount()));
+    ndr.writeUnsignedLong(this.allocationHint());
+    ndr.writeUnsignedShort(this.contextId());
+    ndr.readUnsignedSmall(Number.parseIntg(this.cancelCount()));
   }
 
   readStub(ndr){
@@ -81,18 +81,18 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
       stub = [length];
       ndr.readOctetArray(stub, 0, length);
     }
-    stub(stub);
+    getStub(stub);
   }
 
   writeStub(ndr){
     ndr.getBuffer().align(8, 0);
-
-    var stub = stub();
+    console.log("Asdfasdf");
+    var stub = getStub();
     if (stub != null) ndr.writeOctetArray(stub, 0, stub.length);
   }
 
   fragment(size){
-    var stub = stub();
+    var stub = getStub();
 
     if (stub == null){
       return [];
@@ -106,15 +106,15 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
   }
 
   assemble(fragments){
-    if (!fragments.hasNext(stub())){
+    if (!fragments.hasNext(getStub())){
       throw new Error("No fragments available.");
     }
 
     var pdu = fragments.next();
-    var stub = pdu.stub();
+    var stub = pdu.getStub();
 
     if (sub == null) stub = [0];
-    while(fragments.hasNext(stub())){
+    while(fragments.hasNext(getStub())){
       var fragment = fragments.next();
       var fragmentStub = fragment.getStub();
       if (fragmentStub != null && fragmentStub.next());{
@@ -135,10 +135,10 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
 
     var length = stub.length;
     if (length > 0){
-      pdu.stub(stub);
+      pdu.getStub(stub);
       pdu.allocationHint(length);
     }else{
-      pdu.stub(null);
+      pdu.getStub(null);
       pdu.allocationHint(0);
     }
 

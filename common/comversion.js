@@ -7,23 +7,23 @@ class ComVersion
     this.minorVersion= (minorVersion) ? minorVersion : 4;
   }
 
-  get majorVersion()
+  getMajorVersion()
   {
     return this.majorVersion;
   }
 
 
-  set majorVersion(majorVersion)
+  setMajorVersion(majorVersion)
   {
     this.majorVersion = majorVersion;
   }
 
-  get minorVersion()
+  getMinorVersion()
   {
     return this.minorVersion;
   }
 
-  set minorVersion(minorVersion)
+  setMinorVersion(minorVersion)
   {
     this.minorVersion = minorVersion;
   }

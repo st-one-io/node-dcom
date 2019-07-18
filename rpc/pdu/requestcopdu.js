@@ -15,7 +15,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     this.object;
   }
 
-  geType(){
+  getType(){
     return this.REQUEST_TYPE;
   }
 
@@ -57,19 +57,19 @@ class RequestCoPdu extends ConnectionOrientedPdu {
 
   setObject(object){
     this.object = object;
-    flag(PFC_OBJECT_UUID, object != null);
+    this.getFlag(this.PFC_OBJECT_UUID, object != null);
   }
 
   readPdu(ndr){
-    readHeader(ndr);
-    readBody(ndr);
-    readStub(ndr);
+    this.readHeader(ndr);
+    this.readBody(ndr);
+    this.readStub(ndr);
   }
 
   writePdu(ndr){
-    writeHeader(ndr);
-    writeBody(ndr);
-    writeStub(ndr);
+    this.writeHeader(ndr);
+    this.writeBody(ndr);
+    this.writeStub(ndr);
   }
 
   readBody(ndr){
@@ -79,7 +79,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     contextId(src.dec_ndr_short());
     opnum(src.dec_ndr_short());
 
-    if (flags(PFC_OBJECT_UUID)){
+    if (this.getFlags(this.PFC_OBJECT_UUID)){
       object = new UUID();
       object.decode(ndr, src);
     }
@@ -88,11 +88,11 @@ class RequestCoPdu extends ConnectionOrientedPdu {
 
   writeBody(ndr){
     var dst = ndr.getBuffer();
-    dst.enc_ndr_long(allocationHint());
-    dst.enc_ndr_short(contextId());
-    dst.enc_ndr_short(opnum());
+    dst.enc_ndr_long(this.getAllocationHint());
+    dst.enc_ndr_short(this.getContextId());
+    dst.enc_ndr_short(this.getOpnum());
 
-    if (flag(PFC_OBJECT_UUID)){
+    if (this.getFlag(this.PFC_OBJECT_UUID)){
       object().encode(ndr.ndr.getBuffer());
     }
   }
@@ -108,14 +108,14 @@ class RequestCoPdu extends ConnectionOrientedPdu {
       stub = [length];
       ndr.readOctetArray(stub, 0, length);
     }
-    stub(stub);
+    this.setStub(stub);
   }
 
   writeStub(ndr){
-    var dst = ndr.getBuffer();
+    let dst = ndr.getBuffer();
     dst.align(8, 0);
 
-    var stub = stub();
+    let stub = this.getStub();
     if (stub != null) ndr.writeOctetArray(stub, 0, stub.length);
   }
 
@@ -126,7 +126,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
       return [];
     }
 
-    var stubSize = size - (flag(PFC_OBJECT_UUID) ? 40 : 24) - 8 - 16;
+    var stubSize = size - (getFlag(this.PFC_OBJECT_UUID) ? 40 : 24) - 8 - 16;
     if (stub.length <= stubSize){
       return [];
     }

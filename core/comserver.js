@@ -1,13 +1,16 @@
-var Stub = require('../rpc/stub.js');
-var Session = require('./session.js');
-var ErrorCodes = require('../common/errorcodes.js');
-var Endpoint = require('../rpc/connectionorientedendpoint.js');
-var Clsid = require('./clsid.js');
-var Dns = require('dns');
-var Oxid = require('./oxid.js');
-var RemoteSCMActivator = require('./remotescmactivator.js');
-var ComTransportFactory = require('../transport/comtransportfactory.js');
-var UUID = require('../rpc/core/uuid.js');
+const Stub = require('../rpc/stub.js');
+const Session = require('./session.js');
+const ErrorCodes = require('../common/errorcodes.js');
+const Endpoint = require('../rpc/connectionorientedendpoint.js');
+const Clsid = require('./clsid.js');
+const Dns = require('dns');
+const Oxid = require('./oxid.js');
+const RemoteSCMActivator = require('./remotescmactivator.js');
+const ComTransportFactory = require('../transport/comtransportfactory.js');
+const UUID = require('../rpc/core/uuid.js');
+const CallBuilder = require('./callbuilder.js');
+const System = require('../common/system.js');
+const RemActivation = require('./RemActivation.js');
 
 class ComServer extends Stub {
   constructor(){
@@ -237,7 +240,7 @@ class ComServer extends Stub {
     console.log("start");
     var attachcomplete = false;
     try {
-      this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
+      /*this.syntax = "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
       await this.attach(this.getSyntax());
       console.log("after first attach");
       attachcomplete = true;
@@ -246,36 +249,38 @@ class ComServer extends Stub {
       this.getEndpoint().getSyntax().setVersion(0,0);
       console.log("before rebind");
 
-      this.getEndpoint().rebind(this.info);
+      await this.getEndpoint().rebind(this.info);
       console.log("after rebind");
-      var serverAlive = new CallBuilder(true);
-      serverAlive.attachSession(session);
+      let serverAlive = new CallBuilder(true);
+      serverAlive.attachSession(this.session);
       serverAlive.setOpnum(2);
       serverAlive.internal_COMVersion();
       console.log("init inside try");
       try {
-        this.call(Endpoint.IDEMPOTENT, serverAlive, info);
-        System.setCOMVersion(serverAlive.internal_getComVersion());
+        this.call(new Endpoint().IDEMPOTENT, serverAlive, this.info);
+        new System().setComVersion(serverAlive.internal_getComVersion());
       } catch(e) {
         console.log(e);
       }
 
       console.log("before activate");
-      if (System.getCOMVersion() != null && System.getCOMVersion().getMintorVersion() > 1) {
+      if (new System().getComVersion() != null && new System().getComVersion().getMinorVersion() > 1) {
         this.syntax = "000001A0-0000-0000-C000-000000000046:0.0";
-        this.getEndPoint().getSyntax().setUUID(new UUID("000001A0-0000-0000-C000-000000000046"));
+        this.getEndpoint().getSyntax().setUUID(new UUID("000001A0-0000-0000-C000-000000000046"));
         this.getEndpoint().getSyntax().setVersion(0,0);
-        this.getEndPoint().rebindEndpoint();
+        await this.getEndpoint().rebindEndpoint(this.info);
         this.serverActivation = new RemoteSCMActivator(session.getTargetServer(), clsid);
-        this.call(Endpoint.IDEMPOTENT, serverActivation);
-      } else {
+        this.call(new Endpoint().IDEMPOTENT, serverActivation);
+      } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
+        await this.attach(this.getSyntax());
+
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
-        this.getEndpoint().rebindEndpoint();
-        this.serverActivation = new RemActivation(clsid);
-        this.call(Endpoint.IDEMPOTENT, this.serverActivation, info);
-      }
+        await this.getEndpoint().rebindEndpoint(this.info);
+        this.serverActivation = new RemActivation(this.clsid);
+        this.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
+      //}
     } catch(e) {
 
     } finally {

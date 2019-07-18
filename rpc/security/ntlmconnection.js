@@ -33,7 +33,7 @@ class NTLMConnection extends DefaultConnection
 
   incomingRebind(verifier)
   {
-    console.log("Incomding Rebind");
+    console.log("Incoming Rebind");
     
     switch (verifier.body[8]) {
       case 1:

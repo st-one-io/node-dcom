@@ -541,7 +541,7 @@ class Variant {
   {
     var variant = new Variant();
     var ref = new Pointer(VariantBody);
-    ref.setDeferred(true):
+    ref.setDeferred(true);
     //TO-DO: deserializing
     return variant;
   }
@@ -579,7 +579,7 @@ class Variant {
 
   toString()
   {
-    return this.member == null ? "[null]" : "["̉ + this.member.toString() + "]";
+    return this.member == null ? "[null]" : String('[' + this.member.toString() + ']');
   }
 };
 
@@ -591,7 +591,7 @@ class VariantBody
 {
   constructor(constructor,args)
   {
-    this.serialVersionUID = -8484108480626831102L;
+    this.serialVersionUID = -8484108480626831102;
   	this.VT_PTR = 0x1A;
   	this.VT_SAFEARRAY = 0x1B;
   	this.VT_CARRAY = 0x1C;
@@ -697,7 +697,7 @@ class VariantBody
 
   getObject()
   {
-    return (this.obj == null) ? this.getArray() : obj);
+    return (this.obj == null) ? this.getArray() : this.obj;
   }
 
   getArray()
@@ -808,7 +808,7 @@ class VariantBody
     ndr.writeUnsignedLong(0xFFFFFFFF);
     ndr.writeUnsignedLong(0);
 
-    var varType = this.getVarType(obj != null ? obj.constructor : this.nestedArrayRealClass, obj):
+    var varType = this.getVarType(obj != null ? obj.constructor : this.nestedArrayRealClass, obj);
 
     if ((FLAG & FLags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) ==
       Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) {

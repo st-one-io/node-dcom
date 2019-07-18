@@ -74,9 +74,10 @@ class Stub {
   }
 
   call(semantics, ndrobj){
-    attach();
-    var object = object();
+    this.attach();
+    var object = this.getObject();
     var uuid = (object = null) ? null : new UUID(object);
+    this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj);
   }
 
   getSyntax(){
