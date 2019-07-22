@@ -87,7 +87,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
   }
 
   writeBody(ndr){
-    var dst = ndr.getBuffer();
+    let dst = ndr.getBuffer();
     dst.enc_ndr_long(this.getAllocationHint());
     dst.enc_ndr_short(this.getContextId());
     dst.enc_ndr_short(this.getOpnum());
@@ -113,7 +113,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
 
   writeStub(ndr){
     let dst = ndr.getBuffer();
-    dst.align(8, 0);
+    dst.alignToValue(8, 0);
 
     let stub = this.getStub();
     if (stub != null) ndr.writeOctetArray(stub, 0, stub.length);

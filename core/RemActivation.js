@@ -24,7 +24,7 @@ class RemActivation extends NdrObject {
      *
      * @param {Clsid} clsid
      */
-    constructor(clsid) {
+    constructor(clsid, interfaces) {
         super();
         this.RPC_C_IMP_LEVEL_IDENTIFY = 2;
         this.TPC_C_IMP_LEVEL_IMPERSONATE = 3;
@@ -33,7 +33,8 @@ class RemActivation extends NdrObject {
         
         this.monikerName = null;
         this.clsid = new UUID(clsid);
-
+        this.interfaces = interfaces ? interfaces : [];
+        
         this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
@@ -49,6 +50,10 @@ class RemActivation extends NdrObject {
         this.dispIpid = null;
         this.dispRefs = 5;
         this.dispOid = null;
+
+        for (let i = 0; i < this.interfaces.length; i++) {
+            this.interfaces[i] = new UUID(this.interfaces[i]);          
+        }
     }
 
     /**
@@ -89,9 +94,8 @@ class RemActivation extends NdrObject {
      * @param {NetworkDatarepresentation} ndr 
      */
     write(ndr) {
-        console.log("WE ARE GETTING HERE");
-        let orpcThis = new orpcThis();
-        orpcThis.encode(ndr);
+        let oprcthis = new orpcThis();
+        oprcthis.encode(ndr);
         
         let uuid = new UUID();
         uuid.parse(this.clsid.toString());
@@ -109,25 +113,30 @@ class RemActivation extends NdrObject {
 
         ndr.writeUnsignedLong(0);
         ndr.writeUnsignedLong(this.impersonationLevel);
-        ndr.writeUnsignedLong(mode);
+        ndr.writeUnsignedLong(this.mode);
         
-        ndr.writeUnsignedLong(2);
-        ndr.writeUnsignedLong(objectHash({}));
-        ndr.writeUnsignedLong(2);
+        ndr.writeUnsignedLong(this.interfaces.length);
+        ndr.writeUnsignedLong(Number.parseInt(Buffer.from(objectHash({})).toString('hex').substr(0, 9)));
+        ndr.writeUnsignedLong(this.interfaces.length);
 
-        uuid.parse('00000000-0000-0000-c000-000000000046');
-
-        try {
-            uuid.encode(ndr,ndr.buf);
-        } catch (error) {
-            throw new Error(String('RemActivation - write - ' + error));
-        }
-
+        //uuid.parse('00000000-0000-0000-c000-000000000046');
+        
+        for (let i = 0; i < this.interfaces.length; i++) {
+            try {
+                this.interfaces[i].encode(ndr, ndr.buf);
+            } catch (error) {
+                throw new Error(String('RemActivation - write - ' + error));
+            }
+        };
         ndr.writeUnsignedLong(1);
         ndr.writeUnsignedLong(1);
         ndr.writeUnsignedShort(7);
 
         let address = (new Session().getLocalHostAsIpString()).split('.');
+        for (let i = 0; i < address.length; i++) {
+            address[i] = Number.parseInt(address[i]);
+            
+        }
 
         ndr.writeUnsignedShort(address[0]);
         ndr.writeUnsignedShort(address[1]);

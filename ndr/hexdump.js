@@ -121,7 +121,6 @@ function toHexStringByte (src, srcIndex, size){
  */
 function toHexChars (val, dst, dstIndex, size){
   while (size > 0){
-    console.log(val, dst, dstIndex, size);
     var i = dstIndex + size - 1;
     if (i < dst.length){
       dst[i] = HEX_DIGITS[val & 0x000F];

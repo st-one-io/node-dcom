@@ -72,10 +72,10 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
 }
 
 NdrBuffer.prototype.writeOctetArray = function (b, i, l){
-  var temp = this.buf.slice(this.index, (this.index + l));
-  var temp_index= i;
+  var temp = b.slice(i, l);
+  var temp_index= this.index;
   while (temp.length > 0){
-    b.splice(temp_index++, 0, temp.shift());
+    this.buf.splice(temp_index++, 0, temp.shift());
     i++;
   }
   this.advance(l);

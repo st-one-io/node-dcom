@@ -52,35 +52,35 @@ class ConnectionOrientedEndpoint {
     return this.syntax;
   }
 
-  call(semantics, object, opnum, ndrobj, info){
+  async call(semantics, object, opnum, ndrobj, info){
     this.bind(info);
-    var request = new RequestCoPdu();
+    let request = new RequestCoPdu();
     request.setContextId(this.contextIdToUse);
 
-    var b = [1024];
-    var buffer = new NdrBuffer(b, 0);
-    var ndr = new NetworkDataRepresentation();
+    let b = new Array(1024);
+    let buffer = new NdrBuffer(b, 0);
+    let ndr = new NetworkDataRepresentation();
 
     ndrobj.encode(ndr, buffer);
-    var stub = [buffer.getLength()];
-    var aux = buffer.buf.slice(0, stub.length);
-    var aux_i = 0;
+    let stub = new Array(buffer.getLength());
+    let aux = buffer.buf.slice(0, stub.length);
+    let aux_i = 0;
     while (aux.length > 0)
-      stub.splice(aux_i++, 0, aux.shift());
+      stub.splice(aux_i++, 1, aux.shift());
 
     request.setStub(stub);
     request.setAllocationHint(buffer.getLength());
     request.setOpnum(opnum);
     request.setObject(object);
-    console.log(request.getStub(), request.getAllocationHint(), request.getOpnum());
+
     if ((semantics & this.MAYBE) != 0){
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
 
-    this.send(request);
+    this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
-    var rply = this.receive();
+    var rply = await this.receive();
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
 

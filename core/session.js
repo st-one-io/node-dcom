@@ -8,14 +8,13 @@ var Ip = require('ip');
 var Os = require('os');;
 var Oxid = require('./oxid.js');
 
-let oxidResolverPort = -1;
-let localhost = [127, 0, 0, 1];
-let localhostStr = "127.0.0.1";
-let localhostStr2 = "LOCALHOST";
-
 class Session
 {
   constructor(){
+    this.oxidResolverPort = -1;
+    this.localhost = [127, 0, 0, 1];
+    this.localhostStr = "127.0.0.1";
+    this.localhostStr2 = "LOCALHOST";
     this.sessionIdentifier = -1;
     this.username = null;
     this.password = null;
@@ -110,15 +109,15 @@ class Session
   }
 
   notSure(){
-    localhost = ip.address();
-    localhostStr = String(ip.address());
-    localhostStr2 = String(os.hostname());
+    this.localhost = ip.address();
+    this.localhostStr = String(ip.address());
+    this.localhostStr2 = String(os.hostname());
 
     this.cleanUp();
 
     ComOxidRuntime.startResolver();
     ComOxidRuntime.startResolverTimer();
-    oxidResolverPort = ComOxidRuntime.getOxidResolverPort();
+   this. oxidResolverPort = ComOxidRuntime.getOxidResolverPort();
 
     // TODO: see how to do a timer
     this.releaseRefsTimer;
@@ -197,20 +196,20 @@ class Session
     } else {
       this.targetServer = targetServer;
 
-      if (localhostStr == "127.0.0.1" || localhostStr == "0.0.0.0") {
-        localhostStr = this.getLocalHost(targetServer);
+      if (this.localhostStr == "127.0.0.1" || this.localhostStr == "0.0.0.0") {
+        this.localhostStr = this.getLocalHost(targetServer);
       }
     }
   }
 
   getLocalHostAddressAsIp()
   {
-    return localhost;
+    return this.localhost;
   }
 
   getLocalHostAsIpString()
   {
-    return localhostStr;
+    return this.localhostStr;
   }
 
   getLocalHostCanonicalAddressAsString()

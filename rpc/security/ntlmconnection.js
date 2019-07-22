@@ -6,6 +6,7 @@ var NTLMFlags = require('./ntlmflags.js');
 var Security = require('../security.js');
 var Type1Message = require('./messages/type1message.js');
 var Type2Message = require('./messages/type2message.js');
+var Type3Message = require('./messages/type3message.js');
 
 /**
  * NTLM Connection for secure communication
@@ -83,8 +84,8 @@ class NTLMConnection extends DefaultConnection
       }
     } else if (this.ntlm instanceof Type3Message) {
       return new AuthenticationVerifier(
-        new NTLMAuthenticationVerifier().AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
-        this.contextId, [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+        new NTLMAuthentication(info).AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
+        this.contextId, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     } else {
       throw new Error("Unrecognized NTLM message.");
     }

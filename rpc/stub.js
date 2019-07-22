@@ -73,11 +73,11 @@ class Stub {
     //});
   }
 
-  call(semantics, ndrobj){
+  async call(semantics, ndrobj, info){
     this.attach();
     var object = this.getObject();
     var uuid = (object = null) ? null : new UUID(object);
-    this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj);
+    await this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj, info);
   }
 
   getSyntax(){

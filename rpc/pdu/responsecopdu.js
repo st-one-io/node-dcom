@@ -61,9 +61,9 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
   }
 
   readBody(ndr){
-    this.rallocationHint(ndr.readUnsignedLong());
-    this.rcontextId(ndr.readUnsignedShort());
-    this.rcancelCount(ndr.readUnsignedSmall());
+    this.setAllocationHint(ndr.readUnsignedLong());
+    this.setContextId(ndr.readUnsignedShort());
+    this.setCancelCount(ndr.readUnsignedSmall());
   }
 
   writeBody(ndr){

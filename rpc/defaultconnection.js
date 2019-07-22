@@ -327,7 +327,7 @@ class DefaultConnection
           console.log("Received REQUEST");
           logMsg = false;
         }
-
+        
         if (this.security != null){
           var ndr2 = new NetworkDataRepresentation();
           ndr2.setBuffer(buffer);
@@ -376,7 +376,11 @@ class DefaultConnection
           console.log("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
-        
+      case (new RequestCoPdu().REQUEST_TYPE):
+        if (logMsg) {
+          console.log("Sending REQUEST");
+          logMsg = false;
+        }       
         var verifier = this.outgoingRebind(info);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
@@ -408,12 +412,6 @@ class DefaultConnection
         }
         if (security != null) {
           this.signAndSeal(this.ndr);
-        }
-        break;
-      case (new RequestCoPdu().REQUEST_TYPE):
-        if (logMsg) {
-          console.log("Sending REQUEST");
-          logMsg = false;
         }
         break;
       case (new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE):

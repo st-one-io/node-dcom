@@ -3,6 +3,7 @@ var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class BindNoAcknowledgePdu extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.BIND_NO_ACKNOWLEDGE_TYPE = 0x0d;
     this.REASON_NOT_SPECIFIED = 0;
     this.TEMPORARY_CONGESTION = 1;
