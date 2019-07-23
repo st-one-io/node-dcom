@@ -67,26 +67,25 @@ class Responses
     /**
      * 
      * @param {String} password 
-     * @param {Array} challenge 
-     * @param {Array} clientNonce 
+     * @param {Buffer} challenge 
+     * @param {Buffer} clientNonce 
      */
     getNTLM2SessionResponse(password, challenge, clientNonce)
     {
         console.log('getNTLM2SessionResponse');
         
-        let ntlmHash = this.ntlmHash(password);
+        // create a hash of the given password
+        let ntlm = this.ntlmHash(password);
         let md5 = Crypto.createHash('md5');
         
-        md5.update(Buffer.from(challenge));
-        md5.update(Buffer.from(clientNonce));
+        // concatenate the challenge with the nonce and create an md5 hash
+        clientNonce = Buffer.concat([challenge, clientNonce], (challenge.length + clientNonce.length));
+        md5.update(clientNonce);
         
-        let sessionHash = new Array(8);
+        // create a sessionHash with the first 8 bytes of the md5 hash
+        let sessionHash = md5.digest().slice(0, 8);
 
-        let aux = [...md5.digest()].slice(0, 8);
-        let aux_i = 0;
-        while (aux.length > 0) sessionHash.splice(aux_i++, 1, aux.shift());
-
-        return this.lmResponse([...ntlmHash], sessionHash);
+        return this.lmResponse(ntlm, sessionHash);
     }
 
     /**
@@ -131,8 +130,9 @@ class Responses
      */
     ntlmHash (password)
     {
-        let unicodePassword = LegacyEncoding.encode(password, "utf16-le");
-        let md4 = Crypto.createHmac('md4', '');
+        let unicodePassword = Buffer.from(password, 'utf16le');
+
+        let md4 = Crypto.createHash('md4');
 
         md4.update(unicodePassword);
         
@@ -155,38 +155,34 @@ class Responses
 
     /**
      * 
-     * @param {Array} hash 
+     * @param {Buffer} hash 
      * @param {Array} challenge 
      */
     lmResponse (hash, challenge)
     {
-        let keyBytes = new Array(21);
-
-        let aux = hash.slice(0, 16);
-        let aux_i = 0;
-        while (aux.length > 0) keyBytes.splice(aux_i++, 1, aux.shift());
-
+        let keyBytes = Buffer.from([0, 0, 0, 0, 0], 'utf16le');
+        keyBytes = Buffer.concat([hash, keyBytes], (hash.length + keyBytes.length));
+        
         let lowKey = this.createDESKey(keyBytes, 0);
         let middleKey = this.createDESKey(keyBytes, 7);
         let highKey = this.createDESKey(keyBytes, 14);
         
-        let des = Crypto.createCipheriv("des-ecb", Buffer.from(lowKey), '');
-        des.update(Buffer.from(challenge));
-        let lowResponse = [...des.final()];
-        
-        des = Crypto.createCipheriv("des-ecb", Buffer.from(middleKey), '');
-        des.update(Buffer.from(challenge))
-        let middleResponse = [...des.final()];
+        let des = Crypto.createCipheriv("des-ecb", lowKey,'');
+        let lowResponse = des.update(challenge);
+        des.final();
 
-        des = Crypto.createCipheriv("des-ecb", Buffer.from(highKey), '');
-        des.update(Buffer.from(challenge))
-        let highResponse = [...des.final()];
+        des = Crypto.createCipheriv("des-ecb", middleKey, '');
+        let middleResponse = des.update(challenge)
+        des.final();
 
-        let lmResponse = new Array();
-        lmResponse = lmResponse.concat(lowResponse);
-        lmResponse = lmResponse.concat(middleResponse);
-        lmResponse = lmResponse.concat(highResponse);
-        
+        des = Crypto.createCipheriv("des-ecb", highKey, '');
+        let highResponse = des.update(challenge);
+        des.final();
+
+        let lmResponse;
+        lmResponse = Buffer.concat([lowResponse, middleResponse, highResponse], (
+            lowResponse.length + middleResponse.length + highResponse.length));
+        console.log(lmResponse);
         return lmResponse;
     }
 
@@ -305,23 +301,22 @@ class Responses
 
     /**
      * 
-     * @param {Array} bytes 
+     * @param {Buffer} bytes 
      * @param {Number} offset 
      */
     createDESKey (bytes, offset)
     {
-        let keyBytes = new Array();
-        keyBytes.concat(bytes.slice(offset, 7));
-
-        let material = new Array(8);
+        let keyBytes = bytes.slice(offset, 7 + offset);
+        
+        let material = Buffer.alloc(8);
         material[0] = keyBytes[0];
-        material[1] = ((keyBytes[0] << 7  | ((keyBytes[1] & 0xff) >>>1)) >> (8 * 0)) && 0xff;
-        material[2] = ((keyBytes[1] << 6  | ((keyBytes[2] & 0xff) >>>2)) >> (8 * 0)) && 0xff;
-        material[3] = ((keyBytes[2] << 5  | ((keyBytes[3] & 0xff) >>>3)) >> (8 * 0)) && 0xff;
-        material[4] = ((keyBytes[3] << 4  | ((keyBytes[4] & 0xff) >>>4)) >> (8 * 0)) && 0xff;
-        material[5] = ((keyBytes[4] << 3  | ((keyBytes[5] & 0xff) >>>5)) >> (8 * 0)) && 0xff;
-        material[6] = ((keyBytes[5] << 2  | ((keyBytes[6] & 0xff) >>>6)) >> (8 * 0)) && 0xff;
-        material[7] = ((keyBytes[6] << 1) >> (8 * 0)) && 0xff;
+        material[1] = ((keyBytes[0] << 7) & 0xff  | ((keyBytes[1] & 0xff) >>>1));
+        material[2] = ((keyBytes[1] << 6) & 0xff  | ((keyBytes[2] & 0xff) >>>2));
+        material[3] = ((keyBytes[2] << 5) & 0xff  | ((keyBytes[3] & 0xff) >>>3));
+        material[4] = ((keyBytes[3] << 4) & 0xff  | ((keyBytes[4] & 0xff) >>>4));
+        material[5] = ((keyBytes[4] << 3) & 0xff  | ((keyBytes[5] & 0xff) >>>5));
+        material[6] = ((keyBytes[5] << 2) & 0xff  | ((keyBytes[6] & 0xff) >>>6));
+        material[7] = ((keyBytes[6] << 1));
 
         this.oddParity(material);
         return material;
@@ -329,7 +324,7 @@ class Responses
     
     /**
      * 
-     * @param {Array} bytes 
+     * @param {Buffer} bytes 
      */
     oddParity (bytes)
     {

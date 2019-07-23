@@ -68,13 +68,14 @@ class NtlmMessage
     dst[ offset + 1 ] = ( ushort >> 8 & 0xff );
   }
 
-  writeSecurityBuffer (dst, offset, src) {
+  writeSecurityBuffer (dst, offset, src, bodyOffset) {
     var length = ( src != null ) ? src.length : 0;
     if ( length == 0 ) {
         return offset + 4;
     }
     this.writeUShort(dst, offset, length);
     this.writeUShort(dst, offset + 2, length);
+    this.writeULong(dst, offset + 4, bodyOffset);
     return offset + 4;
   }
 

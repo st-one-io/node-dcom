@@ -205,7 +205,7 @@ class NTLMAuthentication
       
       try {
         ntResponse = new Responses().getNTLM2SessionResponse(
-            this.credentials.password, challenge, clientNonce);
+            this.credentials.password, Buffer.from(challenge), Buffer.from(clientNonce));
       } catch (e) {
         throw new Error('Exception occured while forming Session Security Type3Response',e);
       }

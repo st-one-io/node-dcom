@@ -353,17 +353,17 @@ class Type3Message extends NtlmMessage {
     this.writeULong(type3, pos, this.TYPE3);
     pos += 4;
     
-    const lmOff = this.writeSecurityBuffer(type3, 12, lmResponseBytes);
+    const lmOff = this.writeSecurityBuffer(type3, 12, lmResponseBytes, 64);
     pos += 8;
-    const ntOff = this.writeSecurityBuffer(type3, 20, ntResponseBytes);
+    const ntOff = this.writeSecurityBuffer(type3, 20, ntResponseBytes, 130);
     pos += 8;
-    const domOff = this.writeSecurityBuffer(type3, 28, domainBytes);
+    const domOff = this.writeSecurityBuffer(type3, 28, domainBytes, 64);
     pos += 8;
-    const userOff = this.writeSecurityBuffer(type3, 36, userBytes);
+    const userOff = this.writeSecurityBuffer(type3, 36, userBytes, 76);
     pos += 8;
-    const wsOff = this.writeSecurityBuffer(type3, 44, workstationBytes);
+    const wsOff = this.writeSecurityBuffer(type3, 44, workstationBytes, 84);
     pos += 8;
-    const skOff = this.writeSecurityBuffer(type3, 52, sessionKeyBytes);
+    const skOff = this.writeSecurityBuffer(type3, 52, sessionKeyBytes, 154);
     pos += 8;
 
     this.writeULong(type3, pos, this.getFlags());
@@ -386,7 +386,7 @@ class Type3Message extends NtlmMessage {
     }
     
     pos += this.writeSecurityBufferContent(type3, pos, lmOff, lmResponseBytes);
-    pos += this.writeSecurityBufferContent(type3, pos, ntOff, ntResponseBytes);
+    pos += this.writeSecurityBufferContent(type3, pos, ntOff, [...ntResponseBytes]);
     pos += this.writeSecurityBufferContent(type3, pos, domOff, domainBytes);
     pos += this.writeSecurityBufferContent(type3, pos, userOff, userBytes);
     pos += this.writeSecurityBufferContent(type3, pos, wsOff, workstationBytes);
