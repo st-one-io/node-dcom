@@ -1,11 +1,11 @@
 //@ts-check
+const ComValue = require('./comvalue');
 const Flags = require('./flags');
 const Variant = require('./variant');
 const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 
 const types = require('./types');
-const ComValue = require('./comvalue');
 
 /**
  * we don't have a "hashCode()" for objects, so let's generate
@@ -62,7 +62,7 @@ class Pointer {
             this._isNull = true;
         }
 
-        if (value.value !== null && value.value !== undefined){
+        if (value.getValue() !== null && value.getValue() !== undefined){
             this.referentId = randomInt();
         }
     }

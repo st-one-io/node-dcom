@@ -4,7 +4,7 @@ const types = require('./types');
 const ComArray = require('./comarray');
 const ComObject = require('./comobject');
 const ComString = require('./string');
-const Pointer = require('./pointer');
+const Pointer = require('./pointer.js');
 const Struct = require('./struct');
 const Union = require('./union');
 const Variant = require('./variant');
@@ -77,9 +77,6 @@ class ComValue {
             case types.DISPATCH:
                 //if (!(obj instanceof ComArray)) throw new Error("Value of type DISPATCH must be instance of ComArray");
                 break;
-            case types.POINTER:
-                if (!(obj instanceof Pointer)) throw new Error("Value of type POINTER must be instance of Pointer");
-                break;
             case types.STRUCT:
                 if (!(obj instanceof Struct)) throw new Error("Value of type STRUCT must be instance of Struct");
                 break;
@@ -92,16 +89,20 @@ class ComValue {
             case types.DUALSTRINGARRAY:
                 //if (!(obj instanceof ComArray)) throw new Error("Value of type DUALSTRINGARRAY must be instance of ComArray");
                 break;
+            case types.POINTER:
+                // there is a circular dependency between Pointer and ComValue, this achieves the same thing but withou breaking it with instanceof
+                if (!(obj.constructor.name == "Pointer")) throw new Error("Value of type POINTER must be instance of Pointer");
+                break;
             default:
                 throw new Error(`Unrecognized type ${this._type}`);
         }
     }
 
-    get value(){
-        return this.value;
+    getValue(){
+        return this._obj;
     }
 
-    get type(){
+    getType(){
         return this._type;
     }
 

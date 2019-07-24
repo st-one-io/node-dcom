@@ -1,7 +1,7 @@
 //@ts-check
 const ErrorCodes = require('../common/errorcodes.js');
 const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const ComArray = require('./comarray');
+const ComArray = require('./comarray.js');
 const ComObject = require('./comobject');
 const Variant = require('./variant');
 const ComString = require('./string');
@@ -37,15 +37,15 @@ class Struct {
     }
 
     value = value || new ComValue(0, types.INTEGER);
-    let member = value.value;
+    let member = value.getValue();
 
     //An array has already been added , now a new member cannot be added
     if (this.arrayAdded && (position == this.listOfMembers.length) && !(member instanceof ComArray)) {
       throw new Error("STRUCT_ARRAY_AT_END" + ErrorCodes.STRUCT_ARRAY_AT_END);
     }
 
-    //arrays can only be the last element of this struct.
-    if (member instanceof ComArray) {
+    // arrays can only be the last element of this struct.
+    if (member != undefined && member.constructor.name == "ComArray") {
       if (position != this.listOfMembers.length) {
         throw new Error("STRUCT_ARRAY_ONLY_AT_END" + ErrorCodes.STRUCT_ARRAY_ONLY_AT_END);
       }
@@ -96,15 +96,17 @@ class Struct {
         }
       }
     }
-
-    if (member instanceof Pointer && !member.isReference()) {
-      member.setDeffered(true);
-    } else if (member instanceof Variant) {
-      member.setDeffered(true);
-    } else if (member instanceof ComString) {
-      member.setDeffered(true);
-    } else if (member instanceof ComObject) {
-      member.internal_setDeffered(true);
+    
+    if (member != undefined) {
+      if ((member.constructor.name == "Pointer") && !member.isReference()) {
+        member.setDeffered(true);
+      } else if (member instanceof Variant) {
+        member.setDeffered(true);
+      } else if (member instanceof ComString) {
+        member.setDeffered(true);
+      } else if (member instanceof ComObject) {
+        member.internal_setDeffered(true);
+      }
     }
     this.listOfMembers.splice(position, 0, value);
   }

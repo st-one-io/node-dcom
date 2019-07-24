@@ -63,7 +63,7 @@ class ComArray {
 		
 		if (obj === null || obj === undefined){
 			return; //returns an unitialized ComArray
-		} else if (Array.isArray(obj.value)){ //cases 5, 6, 7
+		} else if (Array.isArray(obj.getValue())){ //cases 5, 6, 7
 			// @ts-ignore
 			isConformant = upperBounds;
 			upperBounds = undefined;
@@ -76,22 +76,22 @@ class ComArray {
 			this._isVarying = isVarying;
 			this._isVaryingProxy = isVarying;
 
-			this.clazz = obj.type;
-			this.init(obj.value);
+			this.clazz = obj.getType();
+			this.init(obj.getValue());
 
-		} else if (obj.value === null || obj.value === undefined) { //cases 1, 2
-			this.clazz = obj.type;
+		} else if (obj.getValue() === null || obj.getValue() === undefined) { //cases 1, 2
+			this.clazz = obj.getType();
 			this.init2(upperBounds, dimension, isConformant, !!isVarying);
 
 		} else { //cases 3, 4
-			if (!(obj.type == types.STRUCT || obj.type == types.UNION
-				|| obj.type == types.POINTER || obj.type == types.COMSTRING)){
+			if (!(obj.getType() == types.STRUCT || obj.getType() == types.UNION
+				|| obj.getType() == types.POINTER || obj.getType() == types.COMSTRING)){
 				throw new Error("ComArrays with template values must be of type STRUCT, UNION, POINTER or COMSTRING");
 			}
 
-			this.clazz = obj.type;
-			this.template = obj.value; 
-			if (System.getComVersion().getMinorVersion() == 6 && this.template instanceof Pointer && this.template.getReferent() instanceof ComObject) {
+			this.clazz = obj.getType();
+			this.template = obj.getValue(); 
+			if (new System().getComVersion().getMinorVersion() == 6 && this.template instanceof Pointer && this.template.getReferent() instanceof ComObject) {
 				//in this case this pointer will be a reference type pointer and not deffered one.
 				//change in MS specs since DCOM 5.4
 				this.isArrayOfCOMObjects_5_6_DCOM = true;
