@@ -1,14 +1,15 @@
 //@ts-check
 
-const types = require('./types');
-const ComArray = require('./comarray');
-const ComObject = require('./comobject');
-const ComString = require('./string');
-const Pointer = require('./pointer.js');
-const Struct = require('./struct');
-const Union = require('./union');
-const Variant = require('./variant');
-const UUID = require('../rpc/core/uuid');
+let types;
+let ComArray;
+let ComObject;
+let ComString;
+let Pointer;
+let Struct;
+let Union;
+let Variant;
+let UUID;
+let inited = false;
 
 /**
  * Stores a value and it's related COM type
@@ -24,6 +25,7 @@ class ComValue {
         this._obj = obj;
         this._type = type;
 
+        this._init();
         // We may want to indicate just the type, so skip check if no object
         if (this._obj === null || this._obj === undefined) return;
 
@@ -63,7 +65,7 @@ class ComValue {
                 if (!(obj instanceof Variant)) throw new Error("Value of type VARIANT must be instance of Variant");
                 break;
             case types.COMARRAY:
-                if (!(obj instanceof ComArray)) throw new Error("Value of type COMARRAY must be instance of ComArray");
+                if (!(obj.constructor.name == 'ComArray')) throw new Error("Value of type COMARRAY must be instance of ComArray");
                 break;
             case types.COMOBJECT:
                 if (!(obj instanceof ComObject)) throw new Error("Value of type COMOBJECT must be instance of ComObject");
@@ -91,7 +93,7 @@ class ComValue {
                 break;
             case types.POINTER:
                 // there is a circular dependency between Pointer and ComValue, this achieves the same thing but withou breaking it with instanceof
-                if (!(obj.constructor.name == "Pointer")) throw new Error("Value of type POINTER must be instance of Pointer");
+                if (!(obj instanceof Pointer)) throw new Error("Value of type POINTER must be instance of Pointer");
                 break;
             default:
                 throw new Error(`Unrecognized type ${this._type}`);
@@ -108,6 +110,21 @@ class ComValue {
 
     toString() {
         return `ComValue:[${types.descr[this._type]} : ${this._obj}]`;
+    }
+    _init() {
+        if (inited) return;
+
+        types = require('./types');
+        ComArray = require('./comarray');
+        ComObject = require('./comobject');
+        ComString = require('./string');
+        Pointer = require('./pointer.js');
+        Struct = require('./struct');
+        Union = require('./union');
+        Variant = require('./variant');
+        UUID = require('../rpc/core/uuid');
+
+        inited = true;
     }
 }
 

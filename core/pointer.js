@@ -1,11 +1,12 @@
-//@ts-check
-const ComValue = require('./comvalue');
-const Flags = require('./flags');
-const Variant = require('./variant');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
-
-const types = require('./types');
+/* eslint-disable indent */
+// @ts-check
+let Flags;
+let Variant;
+let ComValue;
+let MarshalUnMarshalHelper;
+let NetworkDataRepresentation;
+let types;
+let inited = false;
 
 /**
  * we don't have a "hashCode()" for objects, so let's generate
@@ -39,22 +40,27 @@ function getObjectHash(obj) {
     }
 }
 
+/**
+ * Pointer Class
+ */
 class Pointer {
 
     /**
-     * 
+     *
      * @param {ComValue} [value]
      * @param {boolean} [isReferenceTypePtr]
      */
     constructor(value, isReferenceTypePtr) {
-        /**@type {ComValue} */
+        this._init();
+
+        /** @type {ComValue} */
         this.referent = value;
         this.isReferenceTypePtr = isReferenceTypePtr;
         this.isDeffered = false;
         this.referentId = -1;
         this._isNull = false;
         this.flags = Flags.FLAG_NULL;
-        this.nullSpecial = false
+        this.nullSpecial = false;
 
         if (value === null || value === undefined) {
             value = new ComValue(0, types.INTEGER);
@@ -265,6 +271,18 @@ class Pointer {
 
     toString() {
         return this.referent == null ? "[null]" : "[" + this.referent.toString() + "]";
+    }
+
+    _init() {
+        if (inited) return;
+        Flags = require('./flags');
+        Variant = require('./variant');
+        ComValue = require('./comvalue.js');
+        MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+        NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+        types = require('./types');
+
+        inited = true;
     }
 }
 

@@ -152,7 +152,7 @@ class RemActivation extends NdrObject {
     read(ndr) {
         this.oprthat = new orpcThat().decode(ndr);
 
-        this.oxid = new MarshalUnMarshalHelper().readOctetArrayLE(ndr, 8);
+        this.oxid = MarshalUnMarshalHelper.readOctetArrayLE(ndr, 8);
 
         let skipdual = ndr.readUnsignedLong();
 
@@ -174,13 +174,14 @@ class RemActivation extends NdrObject {
 
         this.comVersion = new ComVersion();
         this.comVersion.setMajorVersion(ndr.readUnsignedShort());
-        this.comVersion.setMinorVersion(ndr.readUnsingedShort());
+        this.comVersion.setMinorVersion(ndr.readUnsignedShort());
 
+        this.hresult = ndr.readUnsignedLong();
         if (this.hresult != 0) {
             throw new Error("Exception from server: " + this.hresult);
         }
 
-        let array = new ComArray(new ComValue(new IntefacePointer(),types.INTERFACEPOINTER), null, 1, true);
+        let array = new ComArray(new ComValue(new InterfacePointer(),types.INTERFACEPOINTER), null, 1, true);
         let listOfDefferedPointers = new Array();
 
         array = new MarshalUnMarshalHelper().deSerialize(ndr, array, listOfDefferedPointers, new Flags().FLAG_NULL, new HashMap());

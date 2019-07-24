@@ -362,9 +362,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
             case types.INTERFACEPOINTER:
             case types.VARIANT:
             case types.VARIANTBODY:
-                obj.decode(ndr, defferedPointers, flag, additionalData);
-                break;
-
+                return obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.DATE:
                 ndr.getBuffer().align(8);
                 let date = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));
