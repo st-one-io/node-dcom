@@ -15,6 +15,9 @@ const DualStringArray = require('./dualstringarray.js');
 const types = require('./types.js');
 const ComValue = require('./comvalue.js');
 const NdrObject = require('../ndr/ndrobject.js');
+const InterfacePointer = require('./interfacepointer.js');
+const ComArray = require('./comarray.js');
+const Flags = require('./flags.js');
 
 /**
  * Remote Activation class
@@ -181,15 +184,15 @@ class RemActivation extends NdrObject {
             throw new Error("Exception from server: " + this.hresult);
         }
 
-        let array = new ComArray(new ComValue(new InterfacePointer(),types.INTERFACEPOINTER), null, 1, true);
+        let array = new ComArray(new ComValue(new InterfacePointer(), types.INTERFACEPOINTER), null, 1, true);
         let listOfDefferedPointers = new Array();
 
-        array = new MarshalUnMarshalHelper().deSerialize(ndr, array, listOfDefferedPointers, new Flags().FLAG_NULL, new HashMap());
+        array = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(array,types.COMARRAY), listOfDefferedPointers, Flags.FLAG_NULL, new HashMap());
 
         let x = 0;
         while (x < listOfDefferedPointers.length) {
             let newList = new Array();
-            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, listOfDefferedPointers[x],newList, new Flags().FLAG_NULL, null);
+            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, listOfDefferedPointers[x],newList, Flags.FLAG_NULL, null);
 
             listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
             x++;
@@ -209,8 +212,8 @@ class RemActivation extends NdrObject {
             this.dispRefs = ptr.getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
         }
 
-        array = new ComArray(new ComValue(new Number(), types.INTEGER), null, 1, true);
-        new MarshalUnMarshalHelper().deSerialize(ndr, array, null, new Flags().FLAG_NULL);
+        array = new ComArray(new ComValue(Number(), types.INTEGER), null, 1, true);
+        MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(array, types.COMARRAY), null, Flags.FLAG_NULL);
 
         this.activationsuccessful = true;
     }

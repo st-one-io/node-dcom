@@ -40,13 +40,14 @@ class ComValue {
             case types.UNSIGNEDBYTE:
             case types.UNSIGNEDINTEGER:
             case types.UNSIGNEDSHORT:
-                if (typeof obj !== 'number') throw new Error(`Value of type ${this._type} must be a number`);
+                console.log(typeof obj);
+                if (typeof obj != 'number') throw new Error(`Value of type ${this._type} must be a number`);
                 break;
             case types.BOOLEAN:
-                if (typeof obj !== 'boolean') throw new Error("Value of type BOOLEAN must be a boolean");
+                if (typeof obj != 'boolean') throw new Error("Value of type BOOLEAN must be a boolean");
                 break;
             case types.STRING:
-                if (typeof obj !== 'string') throw new Error("Value of type STRING must be a string");
+                if (typeof obj != 'string') throw new Error("Value of type STRING must be a string");
                 break;
             case types.DATE:
                 if (!(obj instanceof Date)) throw new Error("Value of type DATE must be instance of Date");

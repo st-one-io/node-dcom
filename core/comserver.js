@@ -274,7 +274,8 @@ class ComServer extends Stub {
       } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
         await this.attach(this.getSyntax());
-
+        attachcomplete = true;
+        
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
         await this.getEndpoint().rebindEndpoint(this.info);

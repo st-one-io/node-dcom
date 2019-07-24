@@ -1,17 +1,18 @@
 //@ts-check
-const Struct = require('./struct');
-const Union = require('./union');
-const Flags = require('./flags');
-const Pointer = require('./pointer');
-const ComString = require('./string');
-const ComObject = require('./comobject');
-const System = require('../common/system');
-const ErrorCodes = require('../common/errorcodes');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+let inited = false;
+let Struct = require('./struct');
+let Union = require('./union');
+let Flags = require('./flags');
+let Pointer = require('./pointer');
+let ComString = require('./string');
+let ComObject = require('./comobject');
+let System = require('../common/system');
+let ErrorCodes = require('../common/errorcodes');
+let MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+let NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 
-const types = require('./types');
-const ComValue = require('./comvalue');
+let types = require('./types');
+let ComValue = require('./comvalue');
 
 
 /**<p>Represents a C++ array which can display both <i>conformant and standard</i> 
@@ -61,6 +62,7 @@ class ComArray {
         this.isArrayOfCOMObjects_5_6_DCOM = false; //boolean
 		this.sizeOfNestedArrayInBytes = 0; //used in both encoding and decoding. //int
 		
+		this._init();
 		if (obj === null || obj === undefined){
 			return; //returns an unitialized ComArray
 		} else if (Array.isArray(obj.getValue())){ //cases 5, 6, 7
@@ -79,7 +81,8 @@ class ComArray {
 			this.clazz = obj.getType();
 			this.init(obj.getValue());
 
-		} else if (obj.getValue() === null || obj.getValue() === undefined) { //cases 1, 2
+		} else if (!(obj.getType() == types.STRUCT || obj.getType() == types.UNION
+		|| obj.getType() == types.POINTER || obj.getType() == types.COMSTRING)) { //cases 1, 2
 			this.clazz = obj.getType();
 			this.init2(upperBounds, dimension, isConformant, !!isVarying);
 
@@ -552,6 +555,27 @@ class ComArray {
 	toString()
 	{
 		return `[Type: ${types.descr[this.clazz]} , ${this.memberArray || 'memberArray is null'} ${this._isConformant ? ', conformant' : ''} ${this._isVarying ? ', varying' : ''} ]`;
+	}
+
+	_init() {
+		if (inited) return;
+
+		inited = false;
+		Struct = require('./struct');
+		Union = require('./union');
+		Flags = require('./flags');
+		Pointer = require('./pointer');
+		ComString = require('./string');
+		ComObject = require('./comobject');
+		System = require('../common/system');
+		ErrorCodes = require('../common/errorcodes');
+		MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+		NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+
+		types = require('./types');
+		ComValue = require('./comvalue');
+
+		inited = true;
 	}
 }
 
