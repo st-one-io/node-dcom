@@ -40,7 +40,6 @@ class ComValue {
             case types.UNSIGNEDBYTE:
             case types.UNSIGNEDINTEGER:
             case types.UNSIGNEDSHORT:
-                console.log(typeof obj);
                 if (typeof obj != 'number') throw new Error(`Value of type ${this._type} must be a number`);
                 break;
             case types.BOOLEAN:
@@ -66,7 +65,7 @@ class ComValue {
                 if (!(obj instanceof Variant)) throw new Error("Value of type VARIANT must be instance of Variant");
                 break;
             case types.COMARRAY:
-                if (!(obj.constructor.name == 'ComArray')) throw new Error("Value of type COMARRAY must be instance of ComArray");
+                if (!(obj instanceof ComArray)) throw new Error("Value of type COMARRAY must be instance of ComArray");
                 break;
             case types.COMOBJECT:
                 if (!(obj instanceof ComObject)) throw new Error("Value of type COMOBJECT must be instance of ComObject");

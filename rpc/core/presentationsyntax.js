@@ -49,7 +49,6 @@ class PresentationSyntax{
   };
 
   encode(ndr, dst) {
-    console.log("encoding presentation syntax");
     this.uuid.encode(ndr, dst);
     dst.enc_ndr_long(this.version);
   };

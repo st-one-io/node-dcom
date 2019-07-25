@@ -53,9 +53,7 @@ class Type3Message extends NtlmMessage {
       } else {
         this.parse(tc);
       }
-    } else if (arguments.length == 8 || arguments.length == 9) {
-      console.log(type2);
-      
+    } else if (arguments.length == 8 || arguments.length == 9) {      
       this.setFlags(flags | this.getDefaultFlags(tc, type2));
       this.setWorkstation(workstation);
       this.setDomain(domain);

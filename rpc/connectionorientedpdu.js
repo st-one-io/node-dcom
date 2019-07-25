@@ -100,7 +100,7 @@ class ConnectionOrientedPdu {
   }
 
   getFragmentLength(){
-    return this.fragmentLength;
+    return this.fragLength;
   }
 
   setFragmentLength(fragLength){

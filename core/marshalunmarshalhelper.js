@@ -8,8 +8,14 @@ const Pointer = require('./pointer');
 const ComArray = require('./comarray');
 const ComObject = require('./comobject');
 const ComObjectImpl = require('./comobjcimpl');
+const ComString = require('./string.js');
 const CallBuilder = require('./callbuilder');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+const InterfacePointer = require('./interfacepointer');
+const InterfacePointerBody = require('./interfacepointerbody');
+const Union = {};
+const Variant = {};
+const VariantBody = {};
 
 const types = require('./types');
 const ComValue = require('./comvalue');
@@ -21,7 +27,7 @@ const ComValue = require('./comvalue');
  */
 function readOctetArrayLE(ndr, length)
 {
-    let bytes = Buffer.alloc(8);
+    let bytes = [...Buffer.alloc(8)];
     ndr.readOctetArray(bytes, 0, 8);
     for (let i = 0; i < 4; i++)
     {
@@ -29,7 +35,7 @@ function readOctetArrayLE(ndr, length)
         bytes[i] = bytes[7 - i];
         bytes[7 - i] = t;
     }
-    return bytes;
+    return Buffer.from(bytes);
 }
 
 /**
@@ -332,7 +338,7 @@ function alignMemberWhileDecoding(ndr, c, obj)
     if (align !== undefined) {
         let i = Math.round(index % align)
         i = (i == 0) ? 0 : align - i;
-        ndr.readOctetArray(Buffer.alloc(i), 0, i);
+        ndr.readOctetArray([...Buffer.alloc(i)], 0, i);
     }
 }
 
@@ -356,13 +362,19 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
 
         switch (c) {
             case types.COMSTRING:
+                return (!obj) ? new ComString().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.POINTER:
+                return (!obj) ? new Pointer().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.STRUCT:
+                return (!obj) ? new Struct().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.UNION:
+                return (!obj) ? new Union().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.INTERFACEPOINTER:
+                return (!obj) ? new InterfacePointer().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.VARIANT:
+                return (!obj) ? new Variant().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.VARIANTBODY:
-                return obj.decode(ndr, defferedPointers, flag, additionalData);
+                return (!obj) ? new VariantBody().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.DATE:
                 ndr.getBuffer().align(8);
                 let date = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));

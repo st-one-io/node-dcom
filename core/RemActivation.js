@@ -162,7 +162,7 @@ class RemActivation extends NdrObject {
         if (skipdual != 0) {
             ndr.readUnsignedLong();
 
-            this.getDualStringArrayForOxid = new DualStringArray().decode(ndr);
+            this.dualStringArrayForOxid = new DualStringArray().decode(ndr);
         }
 
         try {
@@ -192,7 +192,8 @@ class RemActivation extends NdrObject {
         let x = 0;
         while (x < listOfDefferedPointers.length) {
             let newList = new Array();
-            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, listOfDefferedPointers[x],newList, Flags.FLAG_NULL, null);
+            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER)
+                ,newList, Flags.FLAG_NULL, null);
 
             listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
             x++;

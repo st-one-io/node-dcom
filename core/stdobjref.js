@@ -1,10 +1,11 @@
 //@ts-check
 
-const Oxid = require('./oxid');
-const ObjectId = require('./objectid');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const UUID = require('../rpc/core/uuid');
+let inited = false;
+let Oxid;
+let ObjectId;
+let NetworkDataRepresentation;
+let MarshalUnMarshalHelper;
+let UUID;
 
 class StdObjRef {
 
@@ -15,6 +16,7 @@ class StdObjRef {
      * @param {ObjectId} [oid] 
      */
     constructor(ipid, oxid, oid) {
+        this._init();
         this.flags = 0x0; //int
         this.publicRefs = -1; //int
         this.oxid = null; //byte[]
@@ -85,6 +87,16 @@ class StdObjRef {
 
     toString() {
         return `StdObjRef[IPID: ${this.ipidOfthisObjectRef}]`;
+    }
+
+    _init() {
+        if (inited) return;
+        Oxid = require('./oxid');
+        ObjectId = require('./objectid');
+        NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+        MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+        UUID = require('../rpc/core/uuid');
+        inited = true;
     }
 }
 

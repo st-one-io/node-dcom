@@ -1,14 +1,15 @@
 //@ts-check
 
-const Pointer = require('./pointer');
-const Flags = require('./flags');
-const InterfacePointerBody = require('./interfacepointerbody');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
-const DualStringArray = require('./dualstringarray');
+let inited = false;
+let Pointer;
+let Flags;
+let InterfacePointerBody;
+let MarshalUnMarshalHelper;
+let NetworkDataRepresentation;
+let DualStringArray;
 
-const types = require('./types');
-const ComValue = require('./comvalue');
+let types;
+let ComValue;
 
 const OBJREF_SIGNATURE = [0x4d, 0x45, 0x4f, 0x57];  // 'MEOW'
 const OBJREF_STANDARD = 0x1;  // standard marshaled objref
@@ -40,6 +41,7 @@ class InterfacePointer {
     constructor(iid, port, objref){
         /** @type {Pointer} */
         this.member = null;
+        this._init();
         if (iid !== null && iid !== undefined){
             this.member = new Pointer(new ComValue(new InterfacePointerBody(iid, port, objref), types.INTERFACEPOINTERBODY), false);
         }
@@ -91,7 +93,7 @@ class InterfacePointer {
     }
 
     getObjectType() {
-        return this.member.getReferent().value.getObjectType();
+        return this.member.getReferent().getObjectType();
     }
 
     /**
@@ -99,49 +101,49 @@ class InterfacePointer {
      * @return
      */
     getObjectReference(objectType) {
-        return this.member.getReferent().value.getObjectReference(objectType);
+        return this.member.getReferent().getObjectReference(objectType);
     }
 
     /**
      * @returns {string}
      */
     getIID() {
-        return this.member.getReferent().value.getIID();
+        return this.member.getReferent().getIID();
     }
 
     /**
      * @returns {string}
      */
     getIPID() {
-        return this.member.getReferent().value.getIPID();
+        return this.member.getReferent().getIPID();
     }
 
     /**
      * @returns {number[]}
      */
     getOID() {
-        return this.member.getReferent().value.getObjectReference(InterfacePointer.OBJREF_STANDARD).getObjectId();
+        return this.member.getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getObjectId();
     }
 
     /**
      * @returns {number[]}
      */
     getOXID() {
-        return this.member.getReferent().value.getObjectReference(InterfacePointer.OBJREF_STANDARD).getOxid();
+        return this.member.getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getOxid();
     }
 
     /**
      * @returns {DualStringArray}
      */
     getStringBindings() {
-        return this.member.getReferent().value.getStringBindings();
+        return this.member.getReferent().getStringBindings();
     }
 
     /**
      * @returns {number}
      */
     getLength() {
-        return this.member.getReferent().value.getLength();
+        return this.member.getReferent().getLength();
     }
 
     /**
@@ -181,6 +183,19 @@ class InterfacePointer {
             && srcOxid.every((e, i) => e == tgtOxid[i]);
     }
 
+    _init(){
+        if (inited) return;
+        Pointer = require('./pointer');
+        Flags = require('./flags');
+        InterfacePointerBody = require('./interfacepointerbody');
+        MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+        NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+        DualStringArray = require('./dualstringarray');
+        
+        types = require('./types');
+        ComValue = require('./comvalue');
+        inited = true;
+    }
 }
 
 // export constants

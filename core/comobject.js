@@ -22,9 +22,9 @@ class ComObject {
 
   internal_getInterfacePointer(){};
 
-  get associatedSession(){};
+  getAssociatedSession(){};
 
-  get interfaceIdentifier(){};
+  getInterfaceIdentifier(){};
 
   isDispatchSupported(){};
 
@@ -36,7 +36,7 @@ class ComObject {
 
   registerUnreferencedHandler(unreferenced){};
 
-  get unreferencedHandler(){};
+  getUnreferencedHandler(){};
 
   unregisterUnreferencedHandler(){};
 
@@ -44,9 +44,9 @@ class ComObject {
 
   islocalReference(){};
 
-  get customObject(){};
+  getCustomObject(){};
 
-  get lengthOfInterfacePointer(){};
+  getLengthOfInterfacePointer(){};
 }
 
 module.exports = ComObject;

@@ -5,6 +5,7 @@ const ComObjectImpl = require('./comobjcimpl');
 const Flags = require('./flags');
 const System = require('../common/system');
 const ErrorCodes = require('../common/errorcodes');
+const InterfacePointer = require('./interfacepointer');
 
 /** Returns an Interface Pointer representation from raw bytes.
  *
@@ -64,8 +65,8 @@ function instantiateComObject2(session, ptr) {
     }
 
     let retval;
-    let stubPtr = sesstion.getStub().getServerInterfacePointer();
-    if (!InterfacePointer.isOxidEqual(stubPtr, ptr)) {
+    let stubPtr = session.getStub().getServerInterfacePointer();
+    if (!new InterfacePointer().isOxidEqual(stubPtr, ptr)) {
         //NEW SESSION IDENTIFIED ! for ptr
 
         //first check if a session for this OXID does not already exist and thus its stub

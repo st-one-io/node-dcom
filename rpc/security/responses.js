@@ -71,9 +71,7 @@ class Responses
      * @param {Buffer} clientNonce 
      */
     getNTLM2SessionResponse(password, challenge, clientNonce)
-    {
-        console.log('getNTLM2SessionResponse');
-        
+    {        
         // create a hash of the given password
         let ntlm = this.ntlmHash(password);
         let md5 = Crypto.createHash('md5');
@@ -182,7 +180,7 @@ class Responses
         let lmResponse;
         lmResponse = Buffer.concat([lowResponse, middleResponse, highResponse], (
             lowResponse.length + middleResponse.length + highResponse.length));
-        console.log(lmResponse);
+        
         return lmResponse;
     }
 

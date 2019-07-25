@@ -81,12 +81,11 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
       stub = [length];
       ndr.readOctetArray(stub, 0, length);
     }
-    this.getStub(stub);
+    this.setStub(stub);
   }
 
   writeStub(ndr){
     ndr.getBuffer().align(8, 0);
-    console.log("Asdfasdf");
     var stub = getStub();
     if (stub != null) ndr.writeOctetArray(stub, 0, stub.length);
   }

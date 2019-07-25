@@ -68,7 +68,9 @@ class StringBinding {
             buffer.push(String.fromCharCode(retVal));
         }
 
-        stringBinding.networkAddress = buffer.join();
+        let temp = buffer;
+        stringBinding.networkAddress = "";
+        while (temp.length > 0) stringBinding.networkAddress += temp.shift();
         // 2 bytes for tower id, each character is 2 bytes (short) and last 2 bytes for null termination
         stringBinding.length = 2 + stringBinding.networkAddress.length * 2 + 2;
 

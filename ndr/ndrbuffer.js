@@ -82,10 +82,10 @@ NdrBuffer.prototype.writeOctetArray = function (b, i, l){
 }
 
 NdrBuffer.prototype.readOctetArray = function (b, i, l){
-  var temp = b.slice(this.index, (this.index + l));
+  var temp = this.buf.slice(this.index, (this.index + l));
   var temp_index= i;
   while (temp.length > 0){
-    buff.splice(temp_index++, 0, temp.shift());
+    b.splice(temp_index++, 0, temp.shift());
     i++;
   }
   this.advance(l);

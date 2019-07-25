@@ -1,12 +1,13 @@
-var HashMap = require('hashmap');
+const HashMap = require('hashmap');
 //var Random = require('random');
-var ObjHash = require('object-hash');
-var AuthInfo = require('../common/authinfo.js');
-var DNS = require('dns');
-var Net = require('net');
-var Ip = require('ip');
-var Os = require('os');;
-var Oxid = require('./oxid.js');
+const ObjHash = require('object-hash');
+const AuthInfo = require('../common/authinfo.js');
+const DNS = require('dns');
+const Net = require('net');
+const Ip = require('ip');
+const Os = require('os');;
+const Oxid = require('./oxid.js');
+const ObjectId = require('./objectid');
 
 class Session
 {
@@ -350,6 +351,17 @@ class Session
     session.stub2 = null;
   }
 
+  /**
+   * 
+   * @param {String} IPID
+   * @param {CallBuilder} obj
+   * @param {Number} refcount 
+   */
+  addRef_ReleaseRef(IPID, obj, refcount){
+    this.updateReferenceForIPID(IPID, refcount);
+    this.getStub2().addRef_ReleaseRef(obj);
+  }
+
   postDestroy(session)
   {
     for (var i = 0; i < session.links.length; i++) {
@@ -397,7 +409,7 @@ class Session
   addRef_ReleaseRef(IPID, obj, refcount)
   {
     this.updateReferenceForIPID(IPID, refcount);
-    this.getStub2.addRef_ReleaseRef(obj);
+    this.getStub2().addRef_ReleaseRef(obj);
   }
 
   updateReferenceForIPID(ipid, refcount)
@@ -450,8 +462,8 @@ class Session
 
   addToSession(IPID, oid, dontping)
   {
-    var joid = ObjectId(oid, dontping);
-    ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
+    var joid = new ObjectId(oid, dontping);
+    //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
     console.log("addToSession] Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
   }
 

@@ -1,13 +1,24 @@
-var HashMap = require('hashmap');
-var Unreferenced = require('../common/unreferenced.js');
-var ErroCodes = require('../common/errorcodes.js');
-var System = require('../common/system.js');
-var ComObject = require('./comobject.js');
+// @ts-check
+let inited = false;
+let HashMap;
+let Unreferenced;
+let ErroCodes;
+let System;
+let CallBuilder;
+let Flags;
+let ComArray;
+let UUID;
+let ComValue;
+let types;
+
+const ComObject = require('./comobject');
 
 class ComObjectImpl extends ComObject
 {
   constructor(session, ptr, isLocal)
   {
+    super();
+    this._init();
     this.serialVersionUID =  "-1661750453596032089L";
 
     this.isDual = false;
@@ -29,7 +40,7 @@ class ComObjectImpl extends ComObject
 
   checkLocal()
   {
-    if (session == null) {
+    if (this.session == null) {
       throw new Error(ErroCodes.SESSION_NOT_ATTACHED);
     }
 
@@ -47,13 +58,14 @@ class ComObjectImpl extends ComObject
   addRef()
   {
     this.checkLocal();
-    var obj = new CallBuilder(true);
+    let obj = new CallBuilder(true);
     obj.setParentIpid(this.ptr.getIPID());
     obj.setOpnum(1);
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    var array = new IArray([UUID(this.ptr.getIPID())], true);
+    let tempArray = new ComArray(new ComValue(new UUID(this.ptr.getIPID()), types.UUID));
+    var array = new ComArray(new ComValue(tempArray,types.COMARRAY), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     // TODO: build caching mechanism to exhausts 5 refs before asking for more
     obj.addInParamAsInt(5, Flags.FLAG_NULL);
@@ -62,8 +74,8 @@ class ComObjectImpl extends ComObject
     obj.addOutParamAsType(Number, Flags.FLAG_NULL);
     obj.addOutParamAsType(Number, Flags.FLAG_NULL);
 
-    session.debug_addIpids(this.ptr.getIPID(), 5);
-    session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
+    //this.session.debug_addIpids(this.ptr.getIPID(), 5);
+    this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
 
     if (obj.getResultAsIntAt(1) != 0) {
       throw new Error("Exception:" + String(obj.getResultAsIntAt(1)));
@@ -246,6 +258,22 @@ class ComObjectImpl extends ComObject
   getLengthOfInterfacePointer()
   {
     return this.ptr.getLength();
+  }
+
+  _init() {
+    if (inited) return;
+    HashMap = require('hashmap');
+    Unreferenced = require('../common/unreferenced.js');
+    ErroCodes = require('../common/errorcodes.js');
+    System = require('../common/system.js');
+    CallBuilder = require('./callbuilder');
+    Flags = require('./flags');
+    ComArray = require('./comarray');
+    UUID = require('../rpc/core/uuid');
+    types = require('./types');
+    ComArray = require('./comarray');
+    ComValue = require('./comvalue');
+    inited = true;
   }
 }
 

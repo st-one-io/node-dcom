@@ -11,7 +11,14 @@ const UUID = require('../rpc/core/uuid.js');
 const CallBuilder = require('./callbuilder.js');
 const System = require('../common/system.js');
 const RemActivation = require('./RemActivation.js');
+const RemUnknownServer = require('./remunknownserver');
+const ComObject = require('./comobject');
+const ComObjetImpl = require('./comobjcimpl');
+const FrameworkHelper = require('./frameworkhelper');
 
+/**
+ * This class represents the basic server object
+ */
 class ComServer extends Stub {
   constructor(){
     super();
@@ -26,16 +33,44 @@ class ComServer extends Stub {
     this.interfacePtrCtor = null;
     this.listOfIps = new Array();
     this.info;
-
+    this.stub;
+    this.interfacePointer;
+    this.address;
+    this.args = arguments;
+    this.callType = 0;
+    
+    // we can create a server with different types of arguments
     if (arguments.length == 3) {
-      if (arguments[0] instanceof Session)
-        this.comServerSession(arguments[0], arguments[1], arguments[2]);
-      else if (arguments[0] instanceof Stub)
-        this.comServerProgId(arguments[0], arguments[1], arguments[2]);
-      else if (arguments[0] instanceof Clsid)
-        this.comServerClsid(arguments[0], arguments[1], arguments[2]);
-    }else if (arguments.length == 2) {
+      if (arguments[0] instanceof Session){
+        this.callType = 0;
+      } else if (arguments[0] instanceof Stub) {
+        // TODO: inti values for progid calls
+      } else if (arguments[0] instanceof Clsid) {
+        this.callType = 2;
+      }
+    }
+  }
 
+  /**
+   * starts the ComServer
+   */
+  async init(){
+    if (this.callType == 0){
+      this.session = this.args[0];
+      this.interfacePointer = this.args[1];
+      this.address = this.args[2];
+      this.comServerSession(this.session, this.interfacePointer, this.address);
+      return;
+    } 
+    else if (this.clsid = undefined && this.session == undefined) {
+      this.comServerProgId(this.args[0], this.args[1], this.args[2]);
+    } 
+    else if (this.callType == 2) {
+      this.clsid = this.args[0];
+      this.address = this.args[1];
+      this.session = this.args[2];
+      
+      let created = await this.comServerClsid(this.clsid, this.address, this.session);
     }
   }
 
@@ -178,11 +213,18 @@ class ComServer extends Stub {
 		this.interfacePtrCtor = interfacePointer;
 		this.session.setStub(this);
     this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress()));
+    return 1;
   }
 
-  async comServerClsid(progId, address, session)
+  /**
+   *
+   * @param {Clsid} clsid
+   * @param {String} address
+   * @param {Session} session
+   */
+  async comServerClsid(clsid, address, session)
   {
-    if (progId == null || address == null || session == null) {
+    if (clsid == null || address == null || session == null) {
       throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
     }
 
@@ -200,7 +242,8 @@ class ComServer extends Stub {
     });
     this.info = {domain: session.domain, username: session.username, password: session.password};
     address = "ncacn_ip_tcp:"+ address + "[135]";
-    await this.initialize(progId, address, session);
+    await this.initialize(clsid, address, session);
+    return 1;
   }
 
   async initialize(clsid, address, session)
@@ -275,7 +318,7 @@ class ComServer extends Stub {
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
         await this.attach(this.getSyntax());
         attachcomplete = true;
-        
+
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
         await this.getEndpoint().rebindEndpoint(this.info);
@@ -296,8 +339,55 @@ class ComServer extends Stub {
 
     this.syntax = "00000143-0000-0000-c000-000000000046:0.0";
     if(this.serverActivation != null){
-      var bindings = this.serverActivation.getDualStringArrayForOxid().getStringBindings();
-      var i = 0;
+      let bindings = this.serverActivation.getDualStringArrayForOxid().getStringBindings();
+      let i = 0;
+      let binding = null;
+      let nameBinding = null;
+      let targetAddress = this.getAddress();
+      targetAddress = targetAddress.substring(targetAddress.indexOf(':') +1, targetAddress.indexOf('['));
+
+      while (i < bindings.length) {
+        binding = bindings[i];
+        if (binding.getTowerId() != 0x07) {
+          i++;
+          continue;
+        }
+
+        let index = binding.getNetworkAddress().indexOf('.');
+        if (index != -1) {
+          try {
+            index = binding.getNetworkAddress().indexOf('[');
+            if (index != -1 && binding.getNetworkAddress().substring(0, index).toUpperCase() == targetAddress) {
+              break;
+            }
+          } catch (e) {
+            
+          }
+        } else {
+          nameBinding = binding;
+          index = binding.getNetworkAddress().indexOf('[');
+          if (binding.getNetworkAddress().substring(0, index).toUpperCase() == targetAddress) {
+            break;
+          }
+        }
+        i++;
+      }
+
+      if (binding == null) {
+        binding = nameBinding;
+      }
+
+      let address = binding.getNetworkAddress();
+      let index = address.indexOf('[');
+      let hostname = binding.getNetworkAddress().substring(0, index);
+      let ipAddr = new System().getIPForHostName(hostname);
+      if (ipAddr != null) {
+        address = String(ipAddr) + address.substring(index);
+      }
+
+      this.setAddress("ncacn_ip_tcp:" + address);
+      this.remunknownIPID = this.serverActivation.getIPID();
+
     } else {
       console.error("Not able to create server");
     }
@@ -332,6 +422,36 @@ class ComServer extends Stub {
 
   getSyntax(){
     return this.syntax;
+  }
+
+  /**
+   * Creates a new object isntance
+   */
+  createInstance() {
+    if (this.interfacePtrCtor != null) {
+      throw new Erro(String(new ErroCodes().JI_COMSTUB_WRONGCALLGETINSTANCE));
+    }
+    let comObject = null;
+
+    if (this.serverInstantiated) {
+      throw new Erro(new ErroCodes().JI_OBJECT_ALREADY_INSTANTIATED, null);
+    }
+
+    comObject = FrameworkHelper.instantiateComObject(this.session,
+        this.serverActivation.getMInterfacePointer());
+    if (this.serverActivation.isDual){
+      this.session.releaseRef(this.serverActivation.getDispIpid(),
+          this.serverActivation.getDispRefs());
+      this.serverActivation.setDispIpid(null);
+      comObject.setIsDual(true);
+    } else {
+      comObject.setIsDual(false);
+    }
+
+    comObject.addRef();
+    this.serverInstantiated = true;
+
+    return comObject;
   }
 }
 

@@ -154,7 +154,7 @@ class InterfacePointerBody {
      * @exclude @return
      */
     getObjectType() {
-        return objectType;
+        return this.objectType;
     }
 
     /**
@@ -163,7 +163,7 @@ class InterfacePointerBody {
      */
     getObjectReference(objectType) {
         if (objectType == new InterfacePointer().OBJREF_STANDARD) {
-            return stdObjRef;
+            return this.stdObjRef;
         } else {
             return null;
         }
@@ -175,35 +175,35 @@ class InterfacePointerBody {
      * @return String representation of 128 bit uuid.
      */
     getIID() {
-        return iid;
+        return this.iid;
     }
 
     /**
      * @exclude @return
      */
     getIPID() {
-        return stdObjRef.getIpid();
+        return this.stdObjRef.getIpid();
     }
 
     /**
      * @exclude @return
      */
     getOID() {
-        return stdObjRef.getObjectId();
+        return this.stdObjRef.getObjectId();
     }
 
     /**
      * @exclude @return
      */
     getStringBindings() {
-        return resolverAddr;
+        return this.resolverAddr;
     }
 
     /**
      * @exclude @return
      */
     getLength() {
-        return length;
+        return this.length;
     }
 
     encode(ndr, FLAGS) {

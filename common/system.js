@@ -113,7 +113,7 @@ class System
 
   getIPForHostName(hostname)
   {
-    return String(mapOfHostnamesVsIPs.get(String(hostname).trim().toUpperCase()));
+    return this.mapOfHostnamesVsIPs.get(String(hostname).trim().toUpperCase());
   }
 }
 

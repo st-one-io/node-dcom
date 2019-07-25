@@ -65,7 +65,6 @@ class Stub {
       var address = self.address;
       if (address == null) throw new Error("No address specified.");
 
-      console.log();
       let promise = await (self.getTransportFactory().createTransport(address).attach(new PresentationSyntax(syntax), info));
       self.setEndpoint(promise);
       //.then(function(resolve){self.setEndpoint(resolve);
@@ -77,7 +76,7 @@ class Stub {
     this.attach();
     var object = this.getObject();
     var uuid = (object = null) ? null : new UUID(object);
-    await this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj, info);
+    return await this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj, info);
   }
 
   getSyntax(){

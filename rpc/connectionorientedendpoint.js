@@ -161,7 +161,6 @@ class ConnectionOrientedEndpoint {
   }
 
   async receive(){
-    console.log("batata");
     return await this.context.getConnection().receive(this.getTransport());
   }
 
