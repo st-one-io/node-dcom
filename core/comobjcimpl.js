@@ -55,7 +55,7 @@ class ComObjectImpl extends ComObject
     return session.getStub().getInterface(iid, this.ptr.getIPID());
   }
 
-  addRef()
+  async addRef()
   {
     this.checkLocal();
     let obj = new CallBuilder(true);
@@ -64,8 +64,8 @@ class ComObjectImpl extends ComObject
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    let tempArray = new ComArray(new ComValue(new UUID(this.ptr.getIPID()), types.UUID));
-    var array = new ComArray(new ComValue(tempArray,types.COMARRAY), true);
+    let array = new ComArray(new ComValue([new UUID(this.ptr.getIPID())], types.UUID), true);
+    //var array = new ComArray(new ComValue(tempArray,types.COMARRAY), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     // TODO: build caching mechanism to exhausts 5 refs before asking for more
     obj.addInParamAsInt(5, Flags.FLAG_NULL);
@@ -75,9 +75,9 @@ class ComObjectImpl extends ComObject
     obj.addOutParamAsType(Number, Flags.FLAG_NULL);
 
     //this.session.debug_addIpids(this.ptr.getIPID(), 5);
-    this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
-
-    if (obj.getResultAsIntAt(1) != 0) {
+    await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
+    
+    if (obj.getResultAt(1) != 0) {
       throw new Error("Exception:" + String(obj.getResultAsIntAt(1)));
     }
   }

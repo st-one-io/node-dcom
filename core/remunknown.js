@@ -21,7 +21,7 @@ class RemUnknown extends NdrObject {
      */
     constructor(ipidOfUnknown, requestIID){
         super();
-        this.IID_Unknown = "00000143-0000-0000-c000-000000000046";
+        this.IID_Unknown = "00000131-0000-0000-c000-000000000046";
         this.ipidOfUnknown = ipidOfUnknown;
         this.requestIID = requestIID;
         this.iidPtr = null;

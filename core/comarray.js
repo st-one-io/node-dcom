@@ -156,9 +156,8 @@ class ComArray {
 		
 		let upperBounds2 = [];
 		let subArray = array;
-		let elm0 = array[0];
 		this.numElementsInAllDimensions = 1;
-		while (Array.isArray(elm0)) {
+		while (Array.isArray(array)) {
 
 			let x = subArray.length;
 			upperBounds2.push(x);
@@ -171,8 +170,8 @@ class ComArray {
 			{
 				break;
 			}
-			subArray = elm0;
-			elm0 = elm0[0];
+			subArray = subArray[0];
+			array = array[0];
 			this.dimension++;
 		}
 		
@@ -274,8 +273,8 @@ class ComArray {
 		if (this._isConformantProxy)
 		{
 			//first write the max counts ...First to last dimension.
-			for (const elm of this.conformantMaxCounts) {
-				MarshalUnMarshalHelper.serialize(ndr, new ComValue(elm, types.INTEGER), defferedPointers, flag);
+			for (let i = 0; i < this.conformantMaxCounts.length; i++) {
+				MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.conformantMaxCounts[i], types.INTEGER), defferedPointers, flag);
 			}
 			this._isConformantProxy = false; //this is since encode is recursive.
 		}

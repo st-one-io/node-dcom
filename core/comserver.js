@@ -272,7 +272,7 @@ class ComServer extends Stub {
     }
     if (this.serverActivation != null) {
       this.session.setStub(this);
-      this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress()));
+      this.session.setStub2(new RemUnknownServer(session, this.remunknownIPID, this.getAddress(), this.info));
     }
   }
 
@@ -337,7 +337,7 @@ class ComServer extends Stub {
       }
     }
 
-    this.syntax = "00000143-0000-0000-c000-000000000046:0.0";
+    this.syntax = "00000131-0000-0000-c000-000000000046:0.0";
     if(this.serverActivation != null){
       let bindings = this.serverActivation.getDualStringArrayForOxid().getStringBindings();
       let i = 0;
@@ -427,7 +427,7 @@ class ComServer extends Stub {
   /**
    * Creates a new object isntance
    */
-  createInstance() {
+  async createInstance() {
     if (this.interfacePtrCtor != null) {
       throw new Erro(String(new ErroCodes().JI_COMSTUB_WRONGCALLGETINSTANCE));
     }
@@ -448,7 +448,7 @@ class ComServer extends Stub {
       comObject.setIsDual(false);
     }
 
-    comObject.addRef();
+    await comObject.addRef();
     this.serverInstantiated = true;
 
     return comObject;

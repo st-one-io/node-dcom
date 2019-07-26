@@ -59,8 +59,8 @@ function writeOctetArrayLE(ndr, b)
  * @param {number} flag 
  */
 function serialize(ndr, val, defferedPointers, flag) {
-    let c = val.type;
-    let value = val.value;
+    let c = val.getType();
+    let value = val.getValue();
 
     if (value instanceof ComArray) {
         value.encode(ndr, value.getArrayInstance(), defferedPointers, flag);
@@ -297,7 +297,7 @@ function alignMemberWhileEncoding(ndr, c, obj)
     if (align !== undefined) {
         let i = Math.round(index % align)
         i = (i == 0) ? 0 : align - i;
-        ndr.writeOctetArray(Buffer.alloc(i), 0, i);
+        ndr.writeOctetArray([...Buffer.alloc(i)], 0, i);
     }
 }
 
@@ -528,8 +528,8 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
  */
 function getLengthInBytes(val, flag)
 {
-    let c = val.type;
-    let obj = val.value;
+    let c = val.getType();
+    let obj = val.getValue();
 
     if (obj instanceof ComArray) {
         return obj.getSizeOfAllElementsInBytes();

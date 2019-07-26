@@ -19,7 +19,7 @@ class RemUnknownServer extends Stub {
      * @param {String} remUnknownIpid 
      * @param {String} address 
      */
-    constructor(session, remUnknownIpid, address){
+    constructor(session, remUnknownIpid, address, info){
         super();
         this.session = session;
         super.setTransportFactory(new ComTransportFactory().getSingleTon());
@@ -39,7 +39,7 @@ class RemUnknownServer extends Stub {
         this.remunknownIPID = remUnknownIpid;
         this.mutex = new Object();
         this.timeoutModifiedfrom0 = false;
-
+        this.info = info;
         this.session.setStub2(this);
     }
     
@@ -70,14 +70,15 @@ class RemUnknownServer extends Stub {
         }
 
         try {
-            await this.attach();
-            if (!this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID) {
+            await this.attach(this.getSyntax(), this.info);
+
+            if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
                 this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
                 this.getEndpoint().getSyntax().setVersion(0, 0);
-                this.getEndpoint().rebindEndPoint();
+                await this.getEndpoint().rebindEndpoint(this.info);
             }
             this.setObject(obj.getParentIpid());
-            super.call(new Endpoint().IDEMPOTENT, obj);
+            await super.call(new Endpoint().IDEMPOTENT, obj, this.info);
         } catch (e) {
             
         }
@@ -89,7 +90,7 @@ class RemUnknownServer extends Stub {
      * 
      * @param {CallBuilder} obj
      */
-    addRef_ReleaseRef(obj) {
+    async addRef_ReleaseRef(obj) {
         if (this.remunknownIPID == null) {
             return;
         }
@@ -97,7 +98,7 @@ class RemUnknownServer extends Stub {
         obj.setParentIpid(this.remunknownIPID);
         obj.attachSession(this.session);
         try {
-            super.call(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout());
+            await this.call(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout());
         } catch (e) {
             throw new Error(e);
         }

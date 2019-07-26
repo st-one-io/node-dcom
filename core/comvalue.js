@@ -29,6 +29,9 @@ class ComValue {
         // We may want to indicate just the type, so skip check if no object
         if (this._obj === null || this._obj === undefined) return;
 
+        // if the obj is an array, get a sample to use as current obj instance so we can check the class
+        if (obj instanceof Array) obj = obj[0];
+
         // some safety checks, preventing errors downstream
         switch (this._type) {
             case types.DOUBLE:

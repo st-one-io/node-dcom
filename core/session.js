@@ -406,10 +406,10 @@ class Session
     this.updateReferenceForIPID(comObject.getIpid(), refCount);
   }
 
-  addRef_ReleaseRef(IPID, obj, refcount)
+  async addRef_ReleaseRef(IPID, obj, refcount)
   {
     this.updateReferenceForIPID(IPID, refcount);
-    this.getStub2().addRef_ReleaseRef(obj);
+    await this.getStub2().addRef_ReleaseRef(obj);
   }
 
   updateReferenceForIPID(ipid, refcount)

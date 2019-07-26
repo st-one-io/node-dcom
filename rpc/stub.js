@@ -17,9 +17,15 @@ class Stub {
   }
 
   setAddress(address){
-    if ((address == null) ? this.address = null : (address == this.address));
+    if ((address == null) ? this.address == null : (address == this.address))
       return;
-    detatch();
+    this.address = address;
+    try {
+      this.detach();
+    } catch(e) {
+      throw new Error(e);
+    }
+
   }
 
   getObject(){
