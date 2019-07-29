@@ -37,7 +37,7 @@ class RemActivation extends NdrObject {
         this.monikerName = null;
         this.clsid = new UUID(clsid);
         // interfaces = ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
-        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046"];
+        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
         this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
@@ -111,7 +111,7 @@ class RemActivation extends NdrObject {
         if (this.monikerName == null) {
             ndr.writeUnsignedLong(0);
         } else {
-            ndr.writeCharacterArrayk(this.monikerName.toCharArray(), 0, this.monikerName.length);
+            ndr.writeCharacterArray(this.monikerName.toCharArray(), 0, this.monikerName.length);
         }
 
         ndr.writeUnsignedLong(0);

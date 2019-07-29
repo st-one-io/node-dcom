@@ -15,7 +15,7 @@ class BindPdu extends ConnectionOrientedPdu{
   }
 
   resetCallIdCounter(){
-    super.resetCallIdCounter;
+    super.resetCallIdCounter();
   }
 
   getType(){

@@ -52,6 +52,7 @@ class NTLMConnectionContext
   {
     console.log("init");
     var pdu = this.init2(context, info);
+    pdu.resetCallIdCounter();
     return pdu;
   }
 

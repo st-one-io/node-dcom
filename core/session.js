@@ -8,6 +8,7 @@ const Ip = require('ip');
 const Os = require('os');;
 const Oxid = require('./oxid.js');
 const ObjectId = require('./objectid');
+const InterfacePointer = require('./interfacepointer');
 
 class Session
 {
@@ -414,7 +415,7 @@ class Session
 
   updateReferenceForIPID(ipid, refcount)
   {
-    var value = Number(this.mapOfIPIDsVsRefcounts.get(ipid));
+    var value = this.mapOfIPIDsVsRefcounts.get(ipid);
     if (value == null) {
       if (refcount < 0) {
         console.log("[updateReferenceForIPID] Released IPID not found: " + ipid);
@@ -462,9 +463,20 @@ class Session
 
   addToSession(IPID, oid, dontping)
   {
-    var joid = new ObjectId(oid, dontping);
-    //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
-    console.log("addToSession] Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
+    if (!dontping) {
+      if (this.sessionInDestroy) return;
+
+      this.addWeakReference(IPID, oid);
+
+      //this.addToSession(IPID.getIpid(), oid,
+      // IPID.internal_getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD)).getFlags() == 0x00001000);
+      let refcount = IPID.internal_getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
+      this.updateReferenceForIPID(IPID.getIpid(), refcount);
+    } else {
+      let joid = new ObjectId(oid, dontping);
+      //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
+      console.log("addToSession] Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
+    }
   }
 
   releaseRefs(IPID, numinstances){

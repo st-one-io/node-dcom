@@ -56,7 +56,7 @@ class RemUnknownServer extends Stub {
      * @param {String} targetIID
      * @param {String} socketTimeout
      */
-    async call(obj, targetIID, socketTimeout) {
+    async callUnknown(obj, targetIID, socketTimeout) {
         if (this.session.isSessionInDestroy() && !obj.fromDestroySession) {
             throw new Error(String(new ErrorCodes().SESSION_DESTROYED));
         }
@@ -80,7 +80,7 @@ class RemUnknownServer extends Stub {
             this.setObject(obj.getParentIpid());
             await super.call(new Endpoint().IDEMPOTENT, obj, this.info);
         } catch (e) {
-            
+            console.log(e);
         }
 
         return obj.getResults();
@@ -98,7 +98,7 @@ class RemUnknownServer extends Stub {
         obj.setParentIpid(this.remunknownIPID);
         obj.attachSession(this.session);
         try {
-            await this.call(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout());
+            await this.callUnknown(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout());
         } catch (e) {
             throw new Error(e);
         }

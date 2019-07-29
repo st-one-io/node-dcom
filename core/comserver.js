@@ -11,6 +11,7 @@ const UUID = require('../rpc/core/uuid.js');
 const CallBuilder = require('./callbuilder.js');
 const System = require('../common/system.js');
 const RemActivation = require('./RemActivation.js');
+const RemUnknown = require('./remunknown');
 const RemUnknownServer = require('./remunknownserver');
 const ComObject = require('./comobject');
 const ComObjetImpl = require('./comobjcimpl');
@@ -452,6 +453,47 @@ class ComServer extends Stub {
     this.serverInstantiated = true;
 
     return comObject;
+  }
+
+  /**
+   *
+   * @param {String} iid
+   * @param {String} ipidOfTheTargetUnknown
+   */
+  async getInterface(iid, ipidOfTheTargetUnknown) {
+    let retVal = null;
+
+    this.setObject(this.remunknownIPID);
+
+    let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid);
+
+    try {
+      await this.session.getStub2().call(new Endpoint().IDEMPOTENT, reqUnknown, this.info);
+    } catch (e) {
+      throw new Error(e);
+    }
+
+    retval = FrameworkHelper.instantiateComObject(session, reqUnknown.getInterfacePointer());
+
+    if (!iid.toLowerCase() == "00020400-0000-0000-c000-000000000046") {
+      let success = true;
+
+      let dispatch = new RemUnknown(retval.getIpid(), "00020400-0000-0000-c000-000000000046");
+
+      try {
+        await this.session.getStub2().call(new Endpoint().IDEMPOTENT, dispatch, this.info);
+      } catch (e) {
+        console.log(e);
+        success = false;
+        retVal.setIsDual(false);
+      }
+
+      if (success) {
+        this.session.releaseRef(dispatch.getInterfacePointer().getIPID(),(dispatch.getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD)).getPublicRefs());
+      }
+
+      return retVal;
+    }
   }
 }
 

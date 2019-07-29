@@ -20,8 +20,8 @@ class UUID{
     this.timeMid;
     this.timeHighAndVersion;
     this.clockSeqHighAndReserved;
-    this.clockSewLow;
-    this.node = [6];
+    this.clockSeqLow;
+    this.node = new Array(6);
     //this.node1;
     //this.node2;
     //this.node3;
@@ -51,15 +51,12 @@ class UUID{
     this.timeHighAndVersion = src.dec_ndr_short();
     this.clockSeqHighAndReserved = src.dec_ndr_small();
     this.clockSewLow = src.dec_ndr_small();
-    this.ndoe1 = src.dec_ndr_short();
-    this.ndoe2 = src.dec_ndr_short();
-    this.ndoe3 = src.dec_ndr_short();
 
-    //var temp = this.node.slice(0, 6);
-    //var temp_index= dst.index;
-    //while(temp.length > 0)
-    //  dst.buf.splice(temp_index++, 0, temp.shift());
-    //dst.index += 6;
+    var temp = src.buf.slice(src.index, (src.index + 6));
+    var temp_index= 0;
+    while(temp.length > 0)
+      this.node.splice(temp_index++, 1, temp.shift());
+    src.index += 6;
   }
 
   toString(){

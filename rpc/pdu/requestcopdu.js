@@ -13,6 +13,9 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     this.contextId = 0;
     this.opnum = 0;
     this.object;
+    // this is done fragment by fragment on the original lib
+    this.callIdCounter++;
+    this.callId = this.callIdCounter;
   }
 
   getType(){
@@ -52,12 +55,12 @@ class RequestCoPdu extends ConnectionOrientedPdu {
   }
 
   getObject(){
-    return object;
+    return this.object;
   }
 
   setObject(object){
     this.object = object;
-    this.getFlag(this.PFC_OBJECT_UUID, object != null);
+    this.setFlag(this.PFC_OBJECT_UUID, object != null);
   }
 
   readPdu(ndr){
@@ -91,9 +94,9 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     dst.enc_ndr_long(this.getAllocationHint());
     dst.enc_ndr_short(this.getContextId());
     dst.enc_ndr_short(this.getOpnum());
-
+    
     if (this.getFlag(this.PFC_OBJECT_UUID)){
-      object().encode(ndr.ndr.getBuffer());
+      this.getObject().encode(ndr,ndr.getBuffer());
     }
   }
 

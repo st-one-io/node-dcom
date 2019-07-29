@@ -42,7 +42,7 @@ class InterfacePointerBody {
      * @returns {boolean}
      */
     isCustomObjRef() {
-        return this.objectType == InterfacePointer.OBJREF_CUSTOM;
+        return this.objectType == new InterfacePointer().OBJREF_CUSTOM;
     }
 
     /**

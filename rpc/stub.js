@@ -80,8 +80,8 @@ class Stub {
 
   async call(semantics, ndrobj, info){
     this.attach();
-    var object = this.getObject();
-    var uuid = (object = null) ? null : new UUID(object);
+    let object = this.getObject();
+    let uuid = (object == null) ? null : new UUID(object);
     return await this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj, info);
   }
 

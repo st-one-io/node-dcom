@@ -1,6 +1,8 @@
 var Format = require("../ndr/format.js");
 var NetworkDataRepresentation = require("../ndr/networkdatarepresentation.js");
 
+var callIdCounter = 0;
+
 class ConnectionOrientedPdu {
   constructor(){
     this.CONNECTION_ORIENTED_MAJOR_VERSION = 5;
@@ -36,9 +38,7 @@ class ConnectionOrientedPdu {
 
     this.flags = (this.PFC_FIRST_FRAG | this.PFC_LAST_FRAG);
 
-    this.callIdCounter = 0;
-
-    this.callId = this.callIdCounter;
+    this.callId = callIdCounter;
 
     this.useCallIdCounter = true;
 
@@ -87,7 +87,7 @@ class ConnectionOrientedPdu {
   }
 
   setFlag(flag, value){
-    setFlags(value ? (this.getFlags() | flag) : this.getFlags() & ~flag);
+    this.setFlags(value ? (this.getFlags() | flag) : this.getFlags() & ~flag);
   }
 
   getCallId(){
@@ -175,7 +175,7 @@ class ConnectionOrientedPdu {
 
     ndr.writeUnsignedShort(0); //frag length, to be later overriden
     ndr.writeUnsignedShort(0); //auth length, to be later overriden
-    ndr.writeUnsignedLong(this.useCallIdCounter ? this.callIdCounter : this.callId);
+    ndr.writeUnsignedLong(this.useCallIdCounter ? callIdCounter++ : this.callId);
 
   }
 
@@ -190,6 +190,10 @@ class ConnectionOrientedPdu {
   getType(){
     throw new Error("Should never be called, PDUs implementation must override");
   };
+
+  resetCallIdCounter() {
+    callIdCounter = 0;
+  }
 }
 
 module.exports = ConnectionOrientedPdu;

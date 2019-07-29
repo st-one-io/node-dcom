@@ -41,7 +41,7 @@ class CallBuilder extends NdrObject {
 
 		this.opnum = -1; //int
 		this.results = null; //Object[]
-		this.dispatchNotSupported = false; //boolean
+		this.dispatchNotSupported = dispatchNotSupported || false; //boolean
 		this.enclosingParentsIPID = null; //String
 		this.inparamFlags = []; //ArrayList
 		this.outparamFlags = []; //ArrayList
@@ -492,7 +492,7 @@ class CallBuilder extends NdrObject {
 	//	only valid before the interpretation of read, after that has actual values
 	getResults() {
 		//this.checkIfCalled();
-		return this.results;
+		return this.outParams;
 	}
 
 	getResultAt(index) {

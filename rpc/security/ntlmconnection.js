@@ -8,6 +8,8 @@ var Type1Message = require('./messages/type1message.js');
 var Type2Message = require('./messages/type2message.js');
 var Type3Message = require('./messages/type3message.js');
 
+
+var contextSerial = 0;
 /**
  * NTLM Connection for secure communication
  */
@@ -16,7 +18,6 @@ class NTLMConnection extends DefaultConnection
   constructor(info)
   {
     super();
-    this.contextSerial = 0;
     console.log("ntlmconnection constructor");
     this.authentication = new NTLMAuthentication(info);
     this.ntlm;
@@ -70,7 +71,8 @@ class NTLMConnection extends DefaultConnection
   outgoingRebind(info)
   {
     if (this.ntlm == null) {
-      this.contextId = ++this.contextSerial;
+      this.contextId = ++contextSerial;
+      //console.log("=====================CONTEXT SERIAL========================", contextSerial);
       this.ntlm = this.authentication.createType1(info.domain);
     } else if (this.ntlm instanceof Type1Message) {
       this.ntlm = this.authentication.createType2(this.ntlm);
