@@ -19,12 +19,13 @@ class RemUnknown extends NdrObject {
      * @param {String} ipidOfUnknown
      * @param {String} requestIID
      */
-    constructor(ipidOfUnknown, requestIID){
+    constructor(ipidOfUnknown, requestIID, refs){
         super();
         this.IID_Unknown = "00000131-0000-0000-c000-000000000046";
         this.ipidOfUnknown = ipidOfUnknown;
         this.requestIID = requestIID;
         this.iidPtr = null;
+        this.refs = refs;
     }
 
     getOpnum() {
@@ -46,6 +47,7 @@ class RemUnknown extends NdrObject {
             throw new Error('RemUnknown - write ' + e);
         }
 
+        ndr.writeUnsignedLong(this.refs);
         ndr.writeUnsignedShort(1);// interfaces
         ndr.writeUnsignedShort(0);// aligment
         ndr.writeUnsignedLong(1);// length of the array

@@ -94,6 +94,7 @@ class ComTransport
         if (self.recvPromise != null) {
           self.recvPromise.reject();
         }
+        console.log("IM CLOSING BECAUSE REASONS!");
       });
 
       channel.connect(Number.parseInt(self.port),  self.host, () => {

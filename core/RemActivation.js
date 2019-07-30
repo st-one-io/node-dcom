@@ -37,7 +37,7 @@ class RemActivation extends NdrObject {
         this.monikerName = null;
         this.clsid = new UUID(clsid);
         // interfaces = ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
-        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
+        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046"];
         this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
@@ -209,7 +209,7 @@ class RemActivation extends NdrObject {
             this.isDual = true;
             let ptr = arrayObjs[1];
             this.dispIpid = ptr.getIPID();
-            this.dispIpid = ptr.getOID();
+            this.dispOid = ptr.getOID();
             this.dispRefs = ptr.getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
         }
 

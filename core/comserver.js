@@ -16,6 +16,8 @@ const RemUnknownServer = require('./remunknownserver');
 const ComObject = require('./comobject');
 const ComObjetImpl = require('./comobjcimpl');
 const FrameworkHelper = require('./frameworkhelper');
+const Flags = require('./flags');
+const types = require('./types');
 
 /**
  * This class represents the basic server object
@@ -468,7 +470,7 @@ class ComServer extends Stub {
     let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid);
 
     try {
-      await this.session.getStub2().call(new Endpoint().IDEMPOTENT, reqUnknown, this.info);
+      await this.session.getStub2().call(new Endpoint().IDEMPOTENT, reqUnknown, this.info, 5);
     } catch (e) {
       throw new Error(e);
     }

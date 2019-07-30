@@ -1,18 +1,29 @@
-const HashMap = require('hashmap');
-//var Random = require('random');
-const ObjHash = require('object-hash');
-const AuthInfo = require('../common/authinfo.js');
-const DNS = require('dns');
-const Net = require('net');
-const Ip = require('ip');
-const Os = require('os');;
-const Oxid = require('./oxid.js');
-const ObjectId = require('./objectid');
-const InterfacePointer = require('./interfacepointer');
+// @ts-check
+let HashMap;
+let ObjHash;
+let AuthInfo;
+let DNS;
+let Net;
+let Ip;
+let Os;
+let Oxid;
+let ObjectId;
+let InterfacePointer;
+let CallBuilder;
+let Flags;
+let ComArray;
+let ComValue
+let UUID;
+let types;
+let inited = false;
 
+/**
+ * This class defines a basic session
+ */
 class Session
 {
   constructor(){
+    this._init();
     this.oxidResolverPort = -1;
     this.localhost = [127, 0, 0, 1];
     this.localhostStr = "127.0.0.1";
@@ -43,6 +54,28 @@ class Session
     this.mapOfIPIDsVsRefcounts = new HashMap();
     this.mapOfIPIDsvsWeakReferences = new HashMap();
     this.referenceQueueOfCOMObjects; // wait and see if is necessary
+  }
+
+  _init(){
+    if (inited) return;
+    UUID = require('../rpc/core/uuid');
+    ComValue = require('./comvalue');
+    ComArray = require('./comarray');
+    Flags = require('./flags');
+    HashMap = require('hashmap');
+    ObjHash = require('object-hash');
+    AuthInfo = require('../common/authinfo.js');
+    DNS = require('dns');
+    Net = require('net');
+    Ip = require('ip');
+    Os = require('os');;
+    Oxid = require('./oxid.js');
+    ObjectId = require('./objectid');
+    InterfacePointer = require('./interfacepointer');
+    CallBuilder = require('./callbuilder');
+    types = require('./types');
+
+    inited = true;
   }
 
   // TODO: how to do a constant running function in nodejs
@@ -176,18 +209,18 @@ class Session
           this.listOfDeferencedIpids.splice(index, 1);
         }
 
-        if (listToKIll.length > 0) {
+        if (listToKill.length > 0) {
           var array = new IArray(listToKIll, true);
         }
         try {
           session.releaseRefs(array, false);
         } catch(e){
-          console.log("JISession - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+          console.log("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
         }
         i++;
       }
     } catch (e){
-      console.log("ISession - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+      console.log("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
     }
   }
 
@@ -276,7 +309,7 @@ class Session
       return;
     }
 
-    if (session.stub = null) {
+    if (session.stub == null) {
       this.mapofSessionIdsVsSessions.delete(Number(session.getSessionIdentifier()));
       this.listOfSessions.remove(session);
 
@@ -496,6 +529,28 @@ class Session
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
     console.log("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
     addRef_ReleaseRef(IPID, obj, -5);
+  }
+
+  /**
+   *
+   * @param {String} IPID
+   * @param {Number} numinstances
+   */
+  releaseRef(IPID, numinstances) {
+    let obj = new CallBuilder(true);
+
+    obj.setParentIpid(IPID);
+    obj.setOpnum(2);
+    
+    obj.addInParamAsShort(1, Flags.FLAG_NULL);
+
+    let array = new ComArray(new ComValue([new UUID(IPID)], types.UUID), true);
+    obj.addInParamAsArray(array, Flags.FLAG_NULL);
+
+    obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
+    obj.addInParamAsInt(0, Flags.FLAG_NULL);
+
+    this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
   addDeferencedIpids(IPID)
