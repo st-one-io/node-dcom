@@ -47,7 +47,6 @@ class StdObjRef {
         let ipid2 = new UUID();
         ipid2.decode(ndr, ndr.getBuffer());
         objRef.ipidOfthisObjectRef = ipid2.toString();
-
         return objRef;
     }
 

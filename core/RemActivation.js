@@ -37,7 +37,7 @@ class RemActivation extends NdrObject {
         this.monikerName = null;
         this.clsid = new UUID(clsid);
         // interfaces = ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
-        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046"];
+        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
         this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
@@ -196,6 +196,7 @@ class RemActivation extends NdrObject {
                 ,newList, Flags.FLAG_NULL, null);
 
             listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
+            console.log("remactivation listofdeffered loop");
             x++;
             
             let aux_i = x;

@@ -27,7 +27,7 @@ class DualStringArray {
         this.length = this.stringBinding[0].getLength();
         this.length += this.stringBinding[1].getLength() + 2; //null termination
 
-        this.secOffset = length;
+        this.secOffset = this.length;
 
         this.securityBinding[0] = new SecurityBinding(0x0a, 0xffff, "");
         this.length += this.securityBinding[0].getLength();

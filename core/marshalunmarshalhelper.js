@@ -353,7 +353,6 @@ function alignMemberWhileDecoding(ndr, c, obj)
 function deSerialize(ndr, val, defferedPointers, flag, additionalData)
 {
     let c = val.getType();
-    console.log(c);
     let obj = val.getValue();
     if (obj instanceof ComArray) {
         return obj.decode(ndr, obj.getArrayClass(), obj.getDimensions(), defferedPointers, flag, additionalData);

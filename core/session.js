@@ -249,7 +249,7 @@ class Session
 
   getLocalHostCanonicalAddressAsString()
   {
-    return localhostStr2;
+    return this.localhostStr2;
   }
 
   getTargetServer()
@@ -383,17 +383,6 @@ class Session
     this.postDestroy(session);
     session.stub = null;
     session.stub2 = null;
-  }
-
-  /**
-   * 
-   * @param {String} IPID
-   * @param {CallBuilder} obj
-   * @param {Number} refcount 
-   */
-  addRef_ReleaseRef(IPID, obj, refcount){
-    this.updateReferenceForIPID(IPID, refcount);
-    this.getStub2().addRef_ReleaseRef(obj);
   }
 
   postDestroy(session)
@@ -536,7 +525,7 @@ class Session
    * @param {String} IPID
    * @param {Number} numinstances
    */
-  releaseRef(IPID, numinstances) {
+  async releaseRef(IPID, numinstances) {
     let obj = new CallBuilder(true);
 
     obj.setParentIpid(IPID);
@@ -550,7 +539,7 @@ class Session
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
 
-    this.addRef_ReleaseRef(IPID, obj, -5);
+    await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
   addDeferencedIpids(IPID)

@@ -6,6 +6,8 @@ const Flags = require('./flags');
 const System = require('../common/system');
 const ErrorCodes = require('../common/errorcodes');
 const InterfacePointer = require('./interfacepointer');
+const NetworkDataRepresentation = require("../ndr/networkdatarepresentation");
+const NdrBuffer = require('../ndr/ndrbuffer');
 
 /** Returns an Interface Pointer representation from raw bytes.
  *

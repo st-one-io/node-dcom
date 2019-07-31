@@ -9,6 +9,7 @@ const OrpcThis = require('./orpcthis');
 const OrpcThat = require('./orpcthat');
 const InterfacePointer = require('./interfacepointer');
 const Flags = require('./flags');
+const StdObjRef = require('./stdobjref');
 
 /**
  * RemUnknown class
@@ -70,16 +71,19 @@ class RemUnknown extends NdrObject {
         let orpcthat = new OrpcThat().decode(ndr);
         ndr.readUnsignedLong();
 
-        let hresult1 = ndr.readUnsignedLong();
-        if (hresult1 != 0) {
-            throw new Error(hresult1);
-        }
+        let size = ndr.readUnsignedLong();
+        for (let i = 0; i < size; i++) {
+            let hresult1 = ndr.readUnsignedLong();
+            if (hresult1 != 0) {
+                throw new Error(hresult1);
+            }
 
-        ndr.readUnsignedLong();
-        
-        this.iidPtr = new InterfacePointer().decode(ndr, new Array(), Flags.FLAG_NULL, new HashMap());
-    
-        hresult1 = ndr.readUnsignedLong();
+            ndr.readUnsignedLong();
+            
+            this.iidPtr = new InterfacePointer(this.requestIID, -1, new StdObjRef().decode(ndr));
+            //this.iidPtr = new InterfacePointer().decode(ndr, new Array(), Flags.FLAG_NULL, new HashMap());
+        }
+        let hresult1 = ndr.readUnsignedLong();
         if (hresult1 != 0 ) {
             throw new Error(hresult1);
         }

@@ -1,3 +1,4 @@
+// @ts-check
 const Stub = require('../rpc/stub.js');
 const Session = require('./session.js');
 const ErrorCodes = require('../common/errorcodes.js');
@@ -401,7 +402,7 @@ class ComServer extends Stub {
    */
   getInstance() {
     if (!this.interfacePtrCtor) {
-      throw new Error(System.getLocalizedMessage(ErrorCodes.JI_COMSTUB_WRONGCALLGETINSTANCE));
+      throw new Error(new System().getLocalizedMessage(new ErrorCodes()._COMSTUB_WRONGCALLGETINSTANCE));
     }
 
     let comObject;
@@ -432,18 +433,18 @@ class ComServer extends Stub {
    */
   async createInstance() {
     if (this.interfacePtrCtor != null) {
-      throw new Erro(String(new ErroCodes().JI_COMSTUB_WRONGCALLGETINSTANCE));
+      throw new Error(String(new ErroCodes().JI_COMSTUB_WRONGCALLGETINSTANCE));
     }
     let comObject = null;
 
     if (this.serverInstantiated) {
-      throw new Erro(new ErroCodes().JI_OBJECT_ALREADY_INSTANTIATED, null);
+      throw new Error(new ErroCodes().JI_OBJECT_ALREADY_INSTANTIATED, null);
     }
 
     comObject = FrameworkHelper.instantiateComObject(this.session,
         this.serverActivation.getMInterfacePointer());
     if (this.serverActivation.isDual){
-      this.session.releaseRef(this.serverActivation.getDispIpid(),
+      await this.session.releaseRef(this.serverActivation.getDispIpid(),
           this.serverActivation.getDispRefs());
       this.serverActivation.setDispIpid(null);
       comObject.setIsDual(true);
@@ -467,7 +468,7 @@ class ComServer extends Stub {
 
     this.setObject(this.remunknownIPID);
 
-    let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid);
+    let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid, 5);
 
     try {
       await this.session.getStub2().call(new Endpoint().IDEMPOTENT, reqUnknown, this.info, 5);
@@ -475,7 +476,9 @@ class ComServer extends Stub {
       throw new Error(e);
     }
 
-    retval = FrameworkHelper.instantiateComObject(session, reqUnknown.getInterfacePointer());
+    retVal = FrameworkHelper.instantiateComObject(this.session, reqUnknown.getInterfacePointer());
+
+    await retVal.addRef();
 
     if (!iid.toLowerCase() == "00020400-0000-0000-c000-000000000046") {
       let success = true;
@@ -491,11 +494,10 @@ class ComServer extends Stub {
       }
 
       if (success) {
-        this.session.releaseRef(dispatch.getInterfacePointer().getIPID(),(dispatch.getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD)).getPublicRefs());
+        await this.session.releaseRef(dispatch.getInterfacePointer().getIPID(),(dispatch.getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD)).getPublicRefs());
       }
-
-      return retVal;
     }
+    return retVal;
   }
 }
 

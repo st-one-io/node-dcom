@@ -101,6 +101,9 @@ class Pointer {
 	 * @returns {ComValue}
 	 */
     getReferent() {
+        if (this.referent instanceof ComValue) {
+            return this._isNull? null : this.referent.getValue();
+        }
         return this._isNull ? null : this.referent;
     }
 

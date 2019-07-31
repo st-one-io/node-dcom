@@ -520,7 +520,6 @@ class CallBuilder extends NdrObject {
 	}
 
 	checkIfCalled() {
-		console.log("azul", this.executed);
 		if (!this.executed) {
 			throw new Error("API Incorrectly called");
 		}

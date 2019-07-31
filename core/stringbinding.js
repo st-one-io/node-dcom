@@ -20,9 +20,9 @@ class StringBinding {
         let hostaddress = null;
         if (!hostname) {
             //single binding with our IP address
-            hostaddress = Session.getLocalHostAsIpString();
+            hostaddress = new Session().getLocalHostAsIpString();
         } else {
-            hostaddress = Session.getLocalHostCanonicalAddressAsString();
+            hostaddress = new Session().getLocalHostCanonicalAddressAsString();
         }
 
         if (port == -1) {

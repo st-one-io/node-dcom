@@ -21,7 +21,7 @@ class Stub {
       return;
     this.address = address;
     try {
-      //this.detach();
+      this.detach();
     } catch(e) {
       throw new Error(e);
     }
