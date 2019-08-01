@@ -112,13 +112,14 @@ class ConnectionOrientedEndpoint {
     if (this.context != null) {
       this.bound = true;
       
-      let cid = Number.parseInt(this.uidsVsContextIds.get(this.getSyntax()));
-      let pdu = this.context.alter(new PresentationSyntax(cid == null? ++this.contextIdCounter : cid,
+      let vsctxt = this.uuidsVsContextIds.get(this.getSyntax().toHexString().toUpperCase());
+      let cid = vsctxt == undefined? vsctxt : Number.parseInt(vsctxt);
+      let pdu = this.context.alter(new PresentationContext(cid == null? ++this.contextIdCounter : cid,
         this.getSyntax()));
         let sendAlter = false;
 
       if (cid == null){
-        this.uuidsVsContextIds.put(this.getSyntax(), Number.parseInt(this.contextIdCounter));
+        this.uuidsVsContextIds.set(this.getSyntax(), Number.parseInt(this.contextIdCounter));
         this.contextIdToUse = this.contextIdCounter;
         sendAlter = true;
       } else{

@@ -1,7 +1,9 @@
 var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 var PresentationContext = require("../core/presentationcontext.js");
-class AlterContextPdu {
+
+class AlterContextPdu  extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.ALTER_CONTEXT_TYPE = 0x0e;
 
     this.contextList;
@@ -13,7 +15,7 @@ class AlterContextPdu {
   }
 
   getType(){
-    return this.ALTER_CONTEX_TYPE;
+    return this.ALTER_CONTEXT_TYPE;
   }
 
   getMaxTransmitFramgent(){
@@ -62,18 +64,18 @@ class AlterContextPdu {
   }
 
   writeBody(ndr){
-    var maxTransmitFramgent = maxTransmitFramgent();
-    var maxReceiveFragment = maxReceiveFragment();
+    var maxTransmitFramgent = this.getMaxTransmitFramgent();
+    var maxReceiveFragment = this.getMaxReceiveFragment();
     ndr.writeUnsignedShort((maxTransmitFramgent == -1) ?
-        ndr.getBuffer().getCapacity() : maxTransmitFramgent());
+        ndr.getBuffer().getCapacity() : this.getMaxTransmitFramgent());
     ndr.writeUnsignedShort((maxReceiveFragment == -1) ?
-        ndr.getBuffer().getCapacity() : maxReceiveFragment());
-    ndr.writeUnsignedLong(associationGroupId());
-    var contextList = contextList();
+        ndr.getBuffer().getCapacity() : this.getMaxReceiveFragment());
+    ndr.writeUnsignedLong(this.getAssociationGroupId());
+    var contextList = this.getContextList();
     var count = contextList.length;
     ndr.writeUnsignedSmall(count);
     for (var i = 0; i < count; i++){
-      contextList[i] = write(ndr);
+      contextList[i].write(ndr);
     }
   }
 }

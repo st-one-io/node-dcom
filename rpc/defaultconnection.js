@@ -389,6 +389,8 @@ class DefaultConnection
           console.log("Sending ALTER_CTX");
           logMsg = false;
         }
+        var verifier = this.outgoingRebind(info);
+        if (verifier != null) this.attachAuthentication(verifier);
         break;
       case (new FaultCoPdu().FAULT_TYPE):
         if (logMsg){

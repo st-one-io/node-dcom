@@ -50,7 +50,7 @@ NdrBuffer.prototype.setIndex = function (index){
 }
 
 NdrBuffer.prototype.getCapacity = function (){
-  return this.buf.length - start;
+  return this.buf.length - this.start;
 }
 
 NdrBuffer.prototype.getBuffer = function (){

@@ -326,8 +326,8 @@ class ComServer extends Stub {
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
         await this.getEndpoint().rebindEndpoint(this.info);
-        this.serverActivation = new RemActivation(this.clsid);
-        await this.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
+        this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"]);
+        await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
       //}
     } catch(e) {
 
@@ -498,6 +498,53 @@ class ComServer extends Stub {
       }
     }
     return retVal;
+  }
+
+  /**
+   *
+   * @param {CallBuilder} obj
+   * @param {String} targetIID
+   * @param {Number} socketTimeout
+   */
+  async call(obj, targetIID, socketTimeout) {
+    if (this.session.isSessionInDestroy() && !obj.fromDestroySession) {
+      throw new Error("Sessions destroyed");
+    }
+
+    if (socketTimeout != 0) {
+      this.setSocketTimeout(socketTimeout);
+    } else {
+      if (this.timeoutModifiedfrom0) {
+        this.setSocketTimeout(socketTimeout);
+      }
+    }
+
+    try {
+      this.attach();
+      if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
+        this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
+        this.getEndpoint().getSyntax().setVersion(0, 0);
+        await this.getEndpoint().rebindEndpoint(this.info);
+      }
+      this.setObject(obj.getParentIpid());
+      await super.call(new Endpoint().IDEMPOTENT, obj, this.info);
+    } catch(e) {
+      console.log(e);
+    }
+
+    return obj.getResults();
+  }
+
+  /**
+   *
+   * @param {Number} timeout
+   */
+  setSocketTimeout(timeout) {
+    if (timeout == 0) {
+      this.timeoutModifiedfrom0 = false;
+    } else {
+      this.timeoutModifiedfrom0 = true;
+    }
   }
 }
 

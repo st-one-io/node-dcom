@@ -60,7 +60,7 @@ class PresentationSyntax{
   };
 
   toHexString() {
-    return this.getUUID.toString() + ":" + this.getMajorVersion() + "." +
+    return this.getUUID().toString() + ":" + this.getMajorVersion() + "." +
       this.getMinorVersion();
   };
 
