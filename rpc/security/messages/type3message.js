@@ -384,7 +384,7 @@ class Type3Message extends NtlmMessage {
     }
     
     pos += this.writeSecurityBufferContent(type3, pos, lmOff, lmResponseBytes);
-    pos += this.writeSecurityBufferContent(type3, pos, ntOff, [...ntResponseBytes]);
+    pos += this.writeSecurityBufferContent(type3, pos, ntOff, (ntResponseBytes == null ? [] : [...ntResponseBytes]));
     pos += this.writeSecurityBufferContent(type3, pos, domOff, domainBytes);
     pos += this.writeSecurityBufferContent(type3, pos, userOff, userBytes);
     pos += this.writeSecurityBufferContent(type3, pos, wsOff, workstationBytes);

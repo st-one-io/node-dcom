@@ -781,7 +781,8 @@ class CallBuilder extends NdrObject {
 
 			comObjects.length = 0;
 		}
-
+		
+		this.outParams = results;
 		this.results = results;
 		this.executed = true;
 	}

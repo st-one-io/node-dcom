@@ -172,13 +172,13 @@ class Pointer {
                 // just return
                 retVal._isNull = true;
                 retVal.isDeffered = false;
-                return retVal;
+                return new ComValue(retVal, types.POINTER);
             }
 
             retVal.isDeffered = false;
             retVal.isReferenceTypePtr = true;
             defferedPointers.push(retVal);
-            return retVal;
+            return new ComValue(retVal, types.POINTER);
         }
 
         if (!this.isReferenceTypePtr) {
@@ -189,13 +189,13 @@ class Pointer {
                 //null pointer
                 // just return
                 retVal._isNull = true;
-                return retVal;
+                return new ComValue(retVal, types.POINTER);
             }
         }
 
 
         retVal.referent = MarshalUnMarshalHelper.deSerialize(ndr, this.referent, defferedPointers, flag, additionalData);
-        return retVal;
+        return new ComValue(retVal, types.POINTER);
     }
 
     /**
@@ -251,10 +251,10 @@ class Pointer {
      * @param {Pointer} replacement
      */
     replaceSelfWithNewPointer(replacement) {
-        this.isDeffered = replacement.isDeffered;
-        this._isNull = replacement._isNull;
-        this.isReferenceTypePtr = replacement.isReferenceTypePtr;
-        this.referent = replacement.referent;
+        this.isDeffered = replacement.getValue().isDeffered;
+        this._isNull = replacement.getValue()._isNull;
+        this.isReferenceTypePtr = replacement.getValue().isReferenceTypePtr;
+        this.referent = replacement.getValue().referent;
     }
 
 	/** Returns status if this pointer is <code>null</code>.

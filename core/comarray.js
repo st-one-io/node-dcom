@@ -1,18 +1,18 @@
 //@ts-check
 let inited = false;
-let Struct = require('./struct');
-let Union = require('./union');
-let Flags = require('./flags');
-let Pointer = require('./pointer');
-let ComString = require('./string');
-let ComObject = require('./comobject');
-let System = require('../common/system');
-let ErrorCodes = require('../common/errorcodes');
-let MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-let NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+let Struct;
+let Union;
+let Flags;
+let Pointer;
+let ComString;
+let ComObject;
+let System;
+let ErrorCodes;
+let MarshalUnMarshalHelper;
+let NetworkDataRepresentation;
 
-let types = require('./types');
-let ComValue = require('./comvalue');
+let types;
+let ComValue;
 
 
 /**<p>Represents a C++ array which can display both <i>conformant and standard</i> 
@@ -31,13 +31,13 @@ let ComValue = require('./comvalue');
  */
 class ComArray {
 	
-	//case 1: JIArray(Class clazz, int[] upperBounds,int dimension, boolean isConformant)
-	//case 2: JIArray(Class clazz, int[] upperBounds,int dimension, boolean isConformant, boolean isVarying)
-	//case 3: JIArray(Object template, int[] upperBounds, int dimension, boolean isConformant)
-	//case 4: JIArray(Object template, int[] upperBounds, int dimension, boolean isConformant, boolean isVarying)
-	//case 5: JIArray(Object array, boolean isConformant)
-	//case 6: JIArray(Object array, boolean isConformant, boolean isVarying)
-	//case 7: JIArray(Object array)
+	//case 1: ComArray(Class clazz, int[] upperBounds,int dimension, boolean isConformant)
+	//case 2: ComArray(Class clazz, int[] upperBounds,int dimension, boolean isConformant, boolean isVarying)
+	//case 3: ComArray(Object template, int[] upperBounds, int dimension, boolean isConformant)
+	//case 4: ComArray(Object template, int[] upperBounds, int dimension, boolean isConformant, boolean isVarying)
+	//case 5: ComArray(Object array, boolean isConformant)
+	//case 6: ComArray(Object array, boolean isConformant, boolean isVarying)
+	//case 7: ComArray(Object array)
 	/**
 	 * 
 	 * @param {ComValue} [obj] Class or Object templace or Object Array

@@ -107,11 +107,11 @@ class ComTransport
     });
   }
 
-  close()
+  async close()
   {
     try {
       if (this.channelWrapper != null) {
-        this.channelWrapper.end();
+        await this.channelWrapper.end();
       }
     } finally {
       this.attached = false;

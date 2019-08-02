@@ -1,21 +1,22 @@
 //@ts-check
-const ErrorCodes = require('../common/errorcodes.js');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
-const ComArray = require('./comarray.js');
-const ComObject = require('./comobject');
-const Variant = require('./variant');
-const ComString = require('./string');
-const Pointer = require('./pointer');
-const Flags = require('./flags');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+let ErrorCodes;
+let MarshalUnMarshalHelper;
+let ComArray;
+let ComObject;
+let Variant;
+let ComString;
+let Pointer;
+let Flags;
+let NetworkDataRepresentation;
 
-const types = require('./types');
-const ComValue = require('./comvalue');
+let types;
+let ComValue;
+let inited = false;
 
 class Struct {
 
   constructor() {
-    
+    this._init();
     /**@type {ComValue[]} */
     this.listOfMembers = new Array();
     /**@type {number[]} */
@@ -24,6 +25,23 @@ class Struct {
     this.listOfDimensions = new Array();
     this.arrayAdded = false;
     this.MEMBER_IS_EMPTY = Struct.MEMBER_IS_EMPTY;
+  }
+
+  _init(){
+    if (inited) return;
+    ErrorCodes = require('../common/errorcodes.js');
+    MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+    ComArray = require('./comarray.js');
+    ComObject = require('./comobject');
+    Variant = require('./variant');
+    ComString = require('./string');
+    Pointer = require('./pointer');
+    Flags = require('./flags');
+    NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+
+    types = require('./types');
+    ComValue = require('./comvalue');
+    inited = true;
   }
 
   /**
@@ -36,7 +54,9 @@ class Struct {
       position = this.listOfMembers.length;
     }
 
-    value = value || new ComValue(0, types.INTEGER);
+    if (!(value instanceof ComValue)) {
+      value = new ComValue(value, types.INTEGER);
+    }
     let member = value.getValue();
 
     //An array has already been added , now a new member cannot be added
@@ -201,7 +221,7 @@ class Struct {
 
     while (i < this.listOfMembers.length) {
       let value = this.listOfMembers[i]
-      let o = value.value;
+      let o = value.getValue();
       let maxCountTemp = null;
       if (o instanceof ComArray) {
         if (o.isConformant() || o.isVarying()) {
@@ -218,10 +238,10 @@ class Struct {
           o.setMaxCountAndUpperBounds(maxCountTemp);
         }
       }
-      retVal.addMember(o1);
+      retVal. addMember(o1);
       i++;
     }
-    return retVal;
+    return new ComValue(retVal, types.STRUCT);
   }
 
   getLength() {
@@ -240,7 +260,7 @@ class Struct {
     let alignment = 0;
 
     for (const member of this.listOfMembers) {
-      switch (member.type){
+      switch (member._type){
         case types.SHORT:
         case types.UNSIGNEDSHORT:
           alignment = Math.max(alignment, 2);
@@ -261,7 +281,7 @@ class Struct {
           break;
         case types.STRUCT:
         case types.UNION:
-          alignment = Math.max(alignment, member.value.getAlignment());
+          alignment = Math.max(alignment, member.getValue().getAlignment());
       }
       if (alignment == 8) break;
     }

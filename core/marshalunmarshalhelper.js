@@ -336,7 +336,7 @@ function alignMemberWhileDecoding(ndr, c, obj)
     }
 
     if (align !== undefined) {
-        let i = Math.round(index % align)
+        let i = Math.round(index % align);
         i = (i == 0) ? 0 : align - i;
         ndr.readOctetArray([...Buffer.alloc(i)], 0, i);
     }

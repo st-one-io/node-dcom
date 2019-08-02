@@ -21,7 +21,7 @@ class Stub {
       return;
     this.address = address;
     try {
-      //this.detach();
+      this.detach();
     } catch(e) {
       throw new Error(e);
     }
@@ -52,11 +52,11 @@ class Stub {
     this.endpoint = endpoint;
   }
 
-  detach(){
+  async detach(){
     var endpoint = this.getEndpoint();
     if (endpoint == null) return;
     try{
-      endpoint.detach();
+      await endpoint.detach();
     } finally {
       this.endpoint = null;
     }
@@ -71,8 +71,7 @@ class Stub {
       var address = self.address;
       if (address == null) throw new Error("No address specified.");
 
-      let promise = await (self.getTransportFactory().createTransport(address).attach(new PresentationSyntax(syntax), info));
-      self.setEndpoint(promise);
+      this.endpoint = await (self.getTransportFactory().createTransport(address).attach(new PresentationSyntax(syntax), info));
       //.then(function(resolve){self.setEndpoint(resolve);
       //});
     //});

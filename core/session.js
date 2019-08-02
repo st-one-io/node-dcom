@@ -13,6 +13,7 @@ let CallBuilder;
 let Flags;
 let ComArray;
 let ComValue
+let Struct;
 let UUID;
 let types;
 let inited = false;
@@ -74,6 +75,7 @@ class Session
     InterfacePointer = require('./interfacepointer');
     CallBuilder = require('./callbuilder');
     types = require('./types');
+    Struct = require('./struct');
 
     inited = true;
   }
@@ -274,7 +276,7 @@ class Session
       session.isSSO = true;
 
       this.mapofSessionIdsVsSessions.put(new Number(session.sessionIdentifier), session);
-      this.listOfSessions(session);
+      this.listOfSessions.push(session);
 
       return session;
     } else if (arguments.length == 1) {
@@ -303,7 +305,7 @@ class Session
     return this.isSSO;
   }
 
-  destroySession(session)
+  async destroySession(session)
   {
     if (session == null) {
       return;
@@ -361,28 +363,46 @@ class Session
       listOfFreeIPIDs = [];
 
       if (list.length > 0) {
-        var array = new IArray(list.toArray(), true);
+        let temp = new ComValue(list, types.STRUCT);
+        var array = new ComArray(temp, true);
         try {
-          session.stub.closeStub();
-          session.releaseRefs(array, true);
-        } catch (e) {}
+          await session.stub.closeStub();
+          let self = this;
+          await session.releaseRefs(array, true).then(function(data){
+            self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
+            self.removeSession(session);
+
+            if (session.stub.getServerInterfacePointer() != null) {
+              self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
+            }
+            session.stub.closeStub();
+            session.stub2.closeStub();
+
+            self.postDestroy(session);
+            session.stub = null;
+            session.stub2 = null;
+          });
+        } catch (e) {
+          throw new Error(e)
+        }
       }
-
-      ComOxidRuntime.clearIPIDsforSession(session);
-
-    } finally {
-      this.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
-      this.listOfSessions.delete(session);
-
-      if (session.stub.getServerInterfacePointer() != null) {
-        this.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
-      }
-      session.stub.closeStub();
-      session.stub2.closeStub();
+      //ComOxidRuntime.clearIPIDsforSession(session);
+    } catch(e) {
+      throw new Error(e);
     }
-    this.postDestroy(session);
-    session.stub = null;
-    session.stub2 = null;
+  }
+
+  /**
+   *
+   * @param {Session} session
+   */
+  removeSession(session) {
+    let delId = session.getSessionIdentifier();
+    for (let i = 0; i < this.listOfSessions.length; i++) {
+      if(this.listOfSessions[i].getSessionIdentifier() == delId) {
+        this.listOfSessions.splice(i, 1);
+      }
+    }
   }
 
   postDestroy(session)
@@ -501,7 +521,7 @@ class Session
     }
   }
 
-  releaseRefs(IPID, numinstances){
+  async releaseRefs(IPID, numinstances){
     numinstances = (numinstances == undefined) ? 5 : numinstances;
 
     console.log("releaseRef:Reclaiming from Session: " + this.getSessionIdentifier()
@@ -512,12 +532,12 @@ class Session
     obj.setOpnum(2);
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    var array = new IArray([new UUID(IPID)], true);
+    var array = new ComArray([new UUID(IPID)], true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
     console.log("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
-    addRef_ReleaseRef(IPID, obj, -5);
+    await addRef_ReleaseRef(IPID, obj, -5);
   }
 
   /**
@@ -550,7 +570,7 @@ class Session
     }
   }
 
-  releaseRefs(arrayOfStructs, fromDestroy)
+  async releaseRefs(arrayOfStructs, fromDestroy)
   {
     	console.log("In releaseRefs for session : " + this.getSessionIdentifier()
         + " , array length is: " + Number(arrayOfStructs.getArrayInstance()).length);
@@ -561,7 +581,7 @@ class Session
       obj.addInParamAsShort(arrayOfStructs.getArrayInstance().length, Flags.FLAG_NULL);
       obj.addInParamAsArray(arrayOfStructs, Flags.FLAG_NULL);
       obj.fromDestroySession = fromDestroy;
-      this.stub.addRef_ReleaseRef(obj);
+      await this.stub.addRef_ReleaseRef(obj);
   }
 
   prepareForReleaseRef(IPID, refcount)
@@ -575,7 +595,7 @@ class Session
     }
 
     var remInterface = new Struct();
-    remInterface.addMember(new UUID(IPID));
+    remInterface.addMember(new ComValue(new UUID(IPID), types.UUID));
     remInterface.addMember(refcount);
     remInterface.addMember(0);
     console.log("prepareForReleaseRef: Releasing " + refcount + "references of IPID: "

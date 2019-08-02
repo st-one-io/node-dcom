@@ -43,7 +43,8 @@ class InterfacePointer {
         this.member = null;
         this._init();
         if (iid !== null && iid !== undefined){
-            this.member = new Pointer(new ComValue(new InterfacePointerBody(iid, port, objref), types.INTERFACEPOINTERBODY), false);
+            let pointer = new Pointer(new ComValue(new InterfacePointerBody(iid, port, objref), types.INTERFACEPOINTERBODY), false);
+            this.member = new ComValue(pointer, types.POINTER);
         }
     }
 
@@ -51,14 +52,14 @@ class InterfacePointer {
      * @returns {boolean}
      */
     isCustomObjRef() {
-        return this.member.getReferent().value.isCustomObjRef();
+        return this.member.getValue().getReferent().value.isCustomObjRef();
     }
 
     /**
      * @returns {string}
      */
     getCustomCLSID() {
-        return this.member.getReferent().value.getCustomCLSID();
+        return this.member.getValue().getReferent().value.getCustomCLSID();
     }
 
     /**
@@ -66,7 +67,7 @@ class InterfacePointer {
      * @param {boolean} deffered 
      */
     setDeffered(deffered) {
-        this.member.setDeffered(true);
+        this.member.getValue().setDeffered(true);
     }
 
     /**
@@ -86,14 +87,14 @@ class InterfacePointer {
             ptr.member = MarshalUnMarshalHelper.deSerialize(ndr, iBodyPtr, defferedPointers, flag, additionalData);
         }
         //the pointer is null, no point of it's wrapper being present, so return null from here as well
-        if (ptr.member.isNull()) {
+        if (ptr.member.getValue().isNull()) {
             ptr = null;
         }
         return ptr;
     }
 
     getObjectType() {
-        return this.member.getReferent().getObjectType();
+        return this.member.getValue().getReferent().getObjectType();
     }
 
     /**
@@ -101,49 +102,49 @@ class InterfacePointer {
      * @return
      */
     getObjectReference(objectType) {
-        return this.member.getReferent().getObjectReference(objectType);
+        return this.member.getValue().getReferent().getObjectReference(objectType);
     }
 
     /**
      * @returns {string}
      */
     getIID() {
-        return this.member.getReferent().getIID();
+        return this.member.getValue().getReferent().getIID();
     }
 
     /**
      * @returns {string}
      */
     getIPID() {
-        return this.member.getReferent().getIPID();
+        return this.member.getValue().getReferent().getIPID();
     }
 
     /**
      * @returns {number[]}
      */
     getOID() {
-        return this.member.getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getObjectId();
+        return this.member.getValue().getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getObjectId();
     }
 
     /**
      * @returns {number[]}
      */
     getOXID() {
-        return this.member.getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getOxid();
+        return this.member.getValue().getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getOxid();
     }
 
     /**
      * @returns {DualStringArray}
      */
     getStringBindings() {
-        return this.member.getReferent().getStringBindings();
+        return this.member.getValue().getReferent().getStringBindings();
     }
 
     /**
      * @returns {number}
      */
     getLength() {
-        return this.member.getReferent().getLength();
+        return this.member.getValue().getReferent().getLength();
     }
 
     /**
@@ -159,7 +160,7 @@ class InterfacePointer {
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(0, types.INTEGER), defferedPointers, flag);
             return;
         }
-        MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.member, types.POINTER), defferedPointers, flag);
+        MarshalUnMarshalHelper.serialize(ndr, this.member, defferedPointers, flag);
     }
 
     toString() {

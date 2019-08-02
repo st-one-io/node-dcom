@@ -68,7 +68,7 @@ class NTLMConnection extends DefaultConnection
    * @param {Object} info
    * @return {NtlmMessage}
    */
-  outgoingRebind(info)
+  outgoingRebind(info, pduType)
   {
     if (this.ntlm == null) {
       this.contextId = ++contextSerial;
@@ -85,9 +85,21 @@ class NTLMConnection extends DefaultConnection
         this.setSecurity(this.authentication.getSecurity());
       }
     } else if (this.ntlm instanceof Type3Message) {
-      return new AuthenticationVerifier(
-        new NTLMAuthentication(info).AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
-        this.contextId, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      if (pduType == 0x00) {
+        return new AuthenticationVerifier(
+          new NTLMAuthentication(info).AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
+          this.contextId, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        } else if( pduType == 0x0e) {
+          let auth = [0x4e, 0x54, 0x4c, 0x4d, 0x53, 0x53, 0x50, 0x00, 0x03, 0x00, 0x00, 0x00];
+          let empty_body = [...Buffer.alloc(40, 0)];
+          let noKeysNoFlags = [0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00];
+
+          let verifier = auth.concat(empty_body);
+          verifier = verifier.concat(noKeysNoFlags);
+          return new AuthenticationVerifier(
+            new NTLMAuthentication(info).AUTHENTICATION_SERVICE_NTLM, new Security().PROTECTION_LEVEL_CONNECT,
+            this.contextId, verifier);
+        }
     } else {
       throw new Error("Unrecognized NTLM message.");
     }

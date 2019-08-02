@@ -1,13 +1,14 @@
 //@ts-check
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
-const Variant = require('./variant');
-const Pointer = require('./pointer');
-const Flags = require('./flags');
-const ErrorCodes = require('../common/errorcodes');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+let MarshalUnMarshalHelper;
+let Variant;
+let Pointer;
+let Flags;
+let ErrorCodes;
+let NetworkDataRepresentation;
 
-const types = require('./types');
-const ComValue = require('./comvalue');
+let types;
+let ComValue;
+let inited = false;
 
 class ComString {
 
@@ -20,6 +21,7 @@ class ComString {
 	 * @see Flags.FLAG_REPRESENTATION_STRING_LPWSTR
      */
     constructor(str, type) {
+        this._init();
         this.variant = null;
         this.variantByRef = null;
         this.member = null;
@@ -64,6 +66,20 @@ class ComString {
         }
 
         this.member.setFlags(this.type | Flags.FLAG_REPRESENTATION_VALID_STRING);
+    }
+
+    _init() {
+        if (inited) return;
+        MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
+        Variant = require('./variant');
+        Pointer = require('./pointer');
+        Flags = require('./flags');
+        ErrorCodes = require('../common/errorcodes');
+        NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+
+        types = require('./types');
+        ComValue = require('./comvalue');
+        inited = true;
     }
 
 	/** String encapsulated by this object. The encoding scheme for <code>LPWSTR</code> and <code>BSTR</code> strings is "UTF-16LE".

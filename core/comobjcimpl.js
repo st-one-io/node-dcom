@@ -197,16 +197,16 @@ class ComObjectImpl extends ComObject
     this.session.unregisterUnreferencedHandler(this.getIpid());
   }
 
-  call(obj, socketTimetout)
+  async call(obj, socketTimetout)
   {
     this.checkLocal();
     obj.attachSession(this.session);
     obj.setParentIpid(this.ptr.getIPID());
 
     if (socketTimetout != 0) {
-      return this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout);
+      return await this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout);
     } else {
-      return this.session.getStub().call(obj, this.ptr.getIID());
+      return await this.session.getStub().call(obj, this.ptr.getIID());
     }
   }
 

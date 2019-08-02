@@ -355,7 +355,8 @@ class DefaultConnection
     this.ndr.getBuffer().setIndex((new ConnectionOrientedPdu).TYPE_OFFSET);
     var logMsg = true;
 
-    switch (this.ndr.readUnsignedSmall()) {
+    let pduType = this.ndr.readUnsignedSmall();
+    switch (pduType) {
       case (new BindPdu().BIND_TYPE):
         if (logMsg){
           console.log("Sending BIND");
@@ -381,7 +382,7 @@ class DefaultConnection
           console.log("Sending REQUEST");
           logMsg = false;
         }       
-        var verifier = this.outgoingRebind(info);
+        var verifier = this.outgoingRebind(info, pduType);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
       case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
@@ -389,7 +390,7 @@ class DefaultConnection
           console.log("Sending ALTER_CTX");
           logMsg = false;
         }
-        var verifier = this.outgoingRebind(info);
+        var verifier = this.outgoingRebind(info, pduType);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
       case (new FaultCoPdu().FAULT_TYPE):

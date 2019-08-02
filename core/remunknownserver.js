@@ -107,9 +107,9 @@ class RemUnknownServer extends Stub {
     /**
      * Close the current connection stub
      */
-    closeStub() {
+    async closeStub() {
         try {
-            super.detach();
+            await super.detach();
         } catch (e) {
             throw new Error(e);
         }

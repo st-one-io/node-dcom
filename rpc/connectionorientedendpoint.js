@@ -53,7 +53,7 @@ class ConnectionOrientedEndpoint {
   }
 
   async call(semantics, object, opnum, ndrobj, info){
-    this.bind(info);
+    await this.bind(info);
     let request = new RequestCoPdu();
     request.setContextId(this.contextIdToUse);
 
@@ -165,10 +165,10 @@ class ConnectionOrientedEndpoint {
     return await this.context.getConnection().receive(this.getTransport());
   }
 
-  detach(){
+  async detach(){
     this.bound = false;
     this.context = null;
-    this.getTransport().close();
+    await this.getTransport().close();
   }
 
   async connect(info){
@@ -205,7 +205,7 @@ class ConnectionOrientedEndpoint {
             break;
           default:
         }
-        this.send(pdu, this.info);
+        this.send(pdu, info);
       }
     }
   }

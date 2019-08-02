@@ -520,7 +520,7 @@ class ComServer extends Stub {
     }
 
     try {
-      this.attach();
+      await this.attach(this.getSyntax());
       if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
         this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
         this.getEndpoint().getSyntax().setVersion(0, 0);
@@ -533,6 +533,36 @@ class ComServer extends Stub {
     }
 
     return obj.getResults();
+  }
+
+  /**
+   * 
+   * @param {CallBuilder} obj 
+   */
+  async addRef_ReleaseRef(obj) {
+    if (this.remunknownIPID == null) {
+      return;
+    }
+
+    obj.setParentIpid(this.remunknownIPID);
+    obj.attachSession(this.session);
+    try {
+      await this.call(obj, new RemUnknown().IID_Unknown);
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  /**
+   * Close the current active connection
+   */
+  async closeStub(){
+    console.log("Closing stub...");
+    try {
+      await this.detach();
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   /**
