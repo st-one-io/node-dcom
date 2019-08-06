@@ -88,7 +88,7 @@ class ComString {
 	 * @return
 	 */
     getString() {
-        return this.member.getReferent();
+        return this.member.getValue().getReferent();
     }
 
 	/** Type representing this object.

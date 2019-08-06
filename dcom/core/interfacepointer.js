@@ -52,14 +52,14 @@ class InterfacePointer {
      * @returns {boolean}
      */
     isCustomObjRef() {
-        return this.member.getValue().getReferent().value.isCustomObjRef();
+        return this.member.getValue().getReferent().isCustomObjRef();
     }
 
     /**
      * @returns {string}
      */
     getCustomCLSID() {
-        return this.member.getValue().getReferent().value.getCustomCLSID();
+        return this.member.getValue().getReferent().getCustomCLSID();
     }
 
     /**

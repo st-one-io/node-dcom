@@ -10,6 +10,7 @@ const Pointer = require('./core/pointer');
 const Types = require('./core/types');
 const Variant = require('./core/variant');
 const ComArray = require('./core/comarray');
+const Clsid = require('./core/clsid');
 
 module.exports = {
     ComServer,
@@ -22,5 +23,6 @@ module.exports = {
     Pointer,
     Types,
     Variant,
-    ComArray
+    ComArray,
+    Clsid
 };

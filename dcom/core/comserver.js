@@ -84,7 +84,7 @@ class ComServer extends Stub {
       throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
     }
 
-    if (sesson.getStub() != null) {
+    if (session.getStub() != null) {
       throw new Error(ErroCodes.SESSION_ALREADY_ESTABLISHED);
     }
 
