@@ -2,8 +2,9 @@ var Port = require("../core/port.js");
 var PresentationResult = require("../core/presentationresult.js");
 var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
-class AlterContextResponsePdu{
+class AlterContextResponsePdu extends ConnectionOrientedPdu{
   constructor(){
+    super();
     this.ALTER_CONTEXT_RESPONSE_TYPE = 0x0f;
 
     this.resultList;
@@ -69,12 +70,12 @@ class AlterContextResponsePdu{
     this.secondaryAddress = secondaryAddress;
     ndr.getBuffer().align(4);
     var count = ndr.readUnsignedSmall();
-    var resultList = [count];
+    var resultList = new Array(count);
     for (var i = 0; i < count; i++){
       resultList[i] = new PresentationResult();
       resultList[i].read(ndr);
     }
-    this.resultList(resultList);
+    this.setResultList(resultList);
   }
 
   writeBody(){

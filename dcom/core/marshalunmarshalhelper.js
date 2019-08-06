@@ -114,7 +114,8 @@ function serialize(ndr, val, defferedPointers, flag) {
                     value = Number.NaN;
                 }
                 ndr.getBuffer().align(4);
-                Encdec.enc_floatle(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                // TO-DO: it should be enc_floatle but since javascript dont differentiate we'll try use a direct call to uint32le
+                Encdec.enc_uint32le(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(4);
                 break;
 
@@ -508,7 +509,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                     //now we need to ask the session for its marshaller unmarshaller based on the CLSID 
                     comObject.setCustomObject(session.getCustomMarshallerUnMarshallerTemplate(ptr.getCustomCLSID()).decode(comObject, ndr, defferedPointers, flag, additionalData));
                 }
-                additionalData.get(CallBuilder.COMOBJECTS).add(comObject);
+                additionalData.get(CallBuilder.COMOBJECTS).push(comObject);
                 return comObject;
 
             case types.DUALSTRINGARRAY:

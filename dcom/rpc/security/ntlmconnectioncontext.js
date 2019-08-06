@@ -95,8 +95,8 @@ class NTLMConnectionContext
         if (results == null){
           throw new Error("No prsentation context results.");
         }
-        for (var i = reults.length - 1; i >= 0; i--){
-          if (results[i].result != PresentationResult.ACCEPTANCE){
+        for (var i = results.length - 1; i >= 0; i--){
+          if (results[i].result != new PresentationResult().ACCEPTANCE){
             throw new Error("Context rejected.", results[i]);
           }
         }

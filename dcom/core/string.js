@@ -34,9 +34,9 @@ class ComString {
 
         if (str === null || str === undefined) {
             if (type == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR || type == Flags.FLAG_REPRESENTATION_STRING_LPWSTR) {
-                this.member = new Pointer(new ComValue(null, types.STRING), true);
+                this.member = new ComValue(new Pointer(new ComValue(null, types.STRING), true), types.POINTER);
             } else if (type == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
-                this.member = new Pointer(new ComValue(null, types.STRING), false);
+                this.member = new ComValue(new Pointer(new ComValue(null, types.STRING), false), types.POINTER);
             } else {
                 throw new Error("JI_UTIL_FLAG_ERROR" + ErrorCodes.JI_UTIL_FLAG_ERROR);
             }
@@ -50,10 +50,10 @@ class ComString {
             str = str || "";
             this.type = type;
             if (type == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR || type == Flags.FLAG_REPRESENTATION_STRING_LPWSTR) {
-                this.member = new Pointer(new ComValue(str, types.STRING), true);
+                this.member = new ComValue(new Pointer(new ComValue(str, types.STRING), true), types.POINTER);
             } else if (type == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
-                this.member = new Pointer(new ComValue(str, types.STRING), false);
-                this.member.setReferent(0x72657355);//"User" in LEndian.
+                this.member = new ComValue(new Pointer(new ComValue(str, types.STRING), false), types.POINTER);
+                this.member.getValue().setReferent(0x72657355);//"User" in LEndian.
                 let thisComValue = new ComValue(this, types.COMSTRING);
                 this.variant = new Variant(thisComValue);
                 this.variantByRef = new Variant(thisComValue, true);
@@ -61,11 +61,11 @@ class ComString {
                 throw new Error(ErrorCodes.JI_UTIL_FLAG_ERROR);
             }
 
-            this.member.setFlags(type | Flags.FLAG_REPRESENTATION_VALID_STRING);
+            this.member.getValue().setFlags(type | Flags.FLAG_REPRESENTATION_VALID_STRING);
 
         }
 
-        this.member.setFlags(this.type | Flags.FLAG_REPRESENTATION_VALID_STRING);
+        this.member.getValue().setFlags(this.type | Flags.FLAG_REPRESENTATION_VALID_STRING);
     }
 
     _init() {
@@ -110,7 +110,7 @@ class ComString {
      * @param {number} flag
      */
     encode(ndr, defferedPointers, flag) {
-        MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.member, types.POINTER), defferedPointers, this.type | flag);
+        MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.member.getValue(), types.POINTER), defferedPointers, this.type | flag);
     }
 
     /**
@@ -122,7 +122,7 @@ class ComString {
      */
     decode(ndr, defferedPointers, flag, additionalData) {
         let newString = new ComString(this.type);
-        newString.member = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(this.member, types.POINTER), defferedPointers, this.type | flag, additionalData);
+        newString.member = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(this.member.getValue(), types.POINTER), defferedPointers, this.type | flag, additionalData);
         return newString;
     }
 
@@ -136,8 +136,8 @@ class ComString {
         //setting it to true would spoil the logic
         * this is incorrect logic in the bug sent by Kevin , the ONEVENTSTRUCT consists of LPWSTRs which are deffered
         */
-        if (this.member && !this.member.isReference()) {
-            this.member.setDeffered(true);
+        if (this.member && !this.member.getValue().isReference()) {
+            this.member.getValue().setDeffered(true);
         }
     }
 

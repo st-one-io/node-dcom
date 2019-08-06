@@ -1,26 +1,27 @@
 //@ts-check
 const NdrObject = require('../ndr/ndrobject.js');
-const UUID = require('../rpc/core/uuid.js');
-const MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
-const Flags = require('./flags.js');
-const OrpcThis = require('./orpcthis');
-const OrpcThat = require('./orpcthat');
-const Session = require('./session');
-const ComServer = require('./comserver');
-const FrameworkHelper = require('./frameworkhelper');
-const ComVersion = require('../common/comversion');
-const ErrorCodes = require('../common/errorcodes.js');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+let inited = false;
+let UUID;
+let MarshalUnMarshalHelper;
+let Flags;
+let OrpcThis;
+let OrpcThat;
+let Session;
+let ComServer;
+let FrameworkHelper;
+let ComVersion;
+let ErrorCodes;
+let NetworkDataRepresentation;
 
-const ComArray = require('./comarray');
-const ComObject = require('./comobject');
-const ComString = require('./string');
-const Pointer = require('./pointer');
-const Struct = require('./struct');
-const Variant = require('./variant');
+let ComArray;
+let ComObject;
+let ComString;
+let Pointer;
+let Struct;
+let Variant;
 
-const types = require('./types');
-const ComValue = require('./comvalue');
+let types;
+let ComValue;
 
 const CURRENTSESSION = "CURRENTSESSION";
 const COMOBJECTS = "COMOBJECTS";
@@ -38,7 +39,7 @@ class CallBuilder extends NdrObject {
      */
 	constructor(dispatchNotSupported) {
 		super();
-
+		this._init();
 		this.opnum = -1; //int
 		this.results = null; //Object[]
 		this.dispatchNotSupported = dispatchNotSupported || false; //boolean
@@ -57,6 +58,35 @@ class CallBuilder extends NdrObject {
 		this.readOnlyHRESULT = false; //boolean
 		this.splCOMVersion = false; //boolean
 		this.serverAlive2 = null; //ComVersion
+	}
+
+	/**
+	 * requires all libs
+	 */
+	_init(){
+		if (inited) return;
+		UUID = require('../rpc/core/uuid.js');
+		MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
+		Flags = require('./flags.js');
+		OrpcThis = require('./orpcthis');
+		OrpcThat = require('./orpcthat');
+		Session = require('./session');
+		ComServer = require('./comserver');
+		FrameworkHelper = require('./frameworkhelper');
+		ComVersion = require('../common/comversion');
+		ErrorCodes = require('../common/errorcodes.js');
+		NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+		
+		ComArray = require('./comarray');
+		ComObject = require('./comobject');
+		ComString = require('./string');
+		Pointer = require('./pointer');
+		Struct = require('./struct');
+		Variant = require('./variant');
+		
+		types = require('./types');
+		ComValue = require('./comvalue');
+		inited = true;
 	}
 
 	/**
@@ -685,7 +715,7 @@ class CallBuilder extends NdrObject {
 	 * @exclude
      * @param {NetworkDataRepresentation} ndr
 	 */
-	read(ndr) {
+	async read(ndr) {
 		//interpret based on the out params flags
 		if (!this.readOnlyHRESULT) {
 			if (this.splCOMVersion) {
@@ -696,7 +726,7 @@ class CallBuilder extends NdrObject {
 				ndr.readUnsignedLong();
 			} else {
 				let orpcThat = OrpcThat.decode(ndr);
-				this.readPacket(ndr, false);
+				await this.readPacket(ndr, false);
 			}
 		}
 		this.readResult(ndr);
@@ -719,7 +749,7 @@ class CallBuilder extends NdrObject {
      * @param {NetworkDataRepresentation} ndr
      * @param {boolean} fromCallback 
      */
-	readPacket(ndr, fromCallback) {
+	async readPacket(ndr, fromCallback) {
 
 		if (this.session == null) {
 			throw new Error("Programming Error ! Session not attached with this call ! ... Please rectify ! ");
@@ -774,9 +804,9 @@ class CallBuilder extends NdrObject {
 					comObject = FrameworkHelper.instantiateComObject2(this.session, comObjectImpl.internal_getInterfacePointer());
 				}
 
-				comObjectImpl.replaceMembers(comObject);
+				comObjectImpl.replaceMember(comObject);
 				FrameworkHelper.addComObjectToSession(comObjectImpl.getAssociatedSession(), comObjectImpl);
-				comObjectImpl.addRef();
+				await comObjectImpl.addRef();
 			}
 
 			comObjects.length = 0;
@@ -799,7 +829,7 @@ class CallBuilder extends NdrObject {
 			//something exception occured at server, set up results
 			this.resultsOfException = this.results;
 			this.results = null;
-			throw new Error(ErrorCodes.errorDesc[this.hresult] || this.hresult);
+			throw new Error(new ErrorCodes().errorDesc[this.hresult] || this.hresult);
 		}
 	}
 

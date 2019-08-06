@@ -78,7 +78,7 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
     var length = this.getFragmentLength() - ndr.getBuffer().getIndex();
 
     if (length > 0){
-      stub = [length];
+      stub = new Array(length);
       ndr.readOctetArray(stub, 0, length);
     }
     this.setStub(stub);

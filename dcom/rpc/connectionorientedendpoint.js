@@ -85,7 +85,7 @@ class ConnectionOrientedEndpoint {
       ndr.setFormat(rply.getFormat());
 
       buffer = new NdrBuffer(rply.getStub(), 0);
-      ndrobj.decode(ndr, buffer);
+      await ndrobj.decode(ndr, buffer);
     } else if (rply instanceof FaultCoPdu){
       var fault = rply;
       throw new Error("Received fault.",fault.getStatus(), fault.getStub());
@@ -129,9 +129,9 @@ class ConnectionOrientedEndpoint {
       if (sendAlter){
         if (pdu != null)this.send(pdu, info);
         while (!this.context.isEstablished()){
-          let recieved = this.receive();
+          let recieved = await this.receive();
 
-          if ((pdu = this.context.accept(received)) != null){
+          if ((pdu = this.context.accept(recieved)) != null){
             switch (pdu.getType()){
               case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
                 if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){

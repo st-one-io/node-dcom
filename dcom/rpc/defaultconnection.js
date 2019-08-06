@@ -57,35 +57,34 @@ class DefaultConnection
     console.log("receive");
     var fragment = await this.receiveFragment(transport);
 
-    if (!(fragment instanceof Fragmentable) || fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)){
+    if (!this.bytesRemainingInReceiveBuffer){
+      return fragment;
+    } else {
+      let stub = fragment.getStub();
+      do{
+        fragment = await this.receiveFragment(transport);
+
+        let newStub = fragment.getStub();
+
+        if (newStub != null && newStub.length > 0)
+          stub = newStub.concat(stub);
+      }while(this.bytesRemainingInReceiveBuffer);
+
+      let length = stub.length;
+      if (length > 0) {
+        fragment.setStub(stub);
+        fragment.setAllocationHint(length);
+      } else {
+        fragment.setStub(null);
+        fragment.setAllocationHint(0);
+      }
+      
+      fragment.setFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG, true);
+      fragment.setFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG, true);
       return fragment;
     }
 
-    return fragment.assemble((array) =>{
-      var currentFragmetn = fragment;
-      var i = 0;
-
-      return{
-        hasNext: () =>{
-          return (currentFragmetn != null);
-        },
-        next: () =>{
-          if (currentFragmetn == null)
-            throw new Error("No such element.");
-
-          try{
-            return currentFragmetn;
-          }finally{
-            if (currentFragmetn.getFlag(ConnectionOrientedPdu.PFC_LAST_FRAG)){
-              currentFragmetn = null;
-            }else{
-              currentFragment = this.receiveFragment(transport);
-            }
-          }
-        }
-      }
-    });
-  }
+ }
 
   transmitFragment(fragment, transport, info)
   {
@@ -108,14 +107,14 @@ class DefaultConnection
     var read = true;
 
     if (this.bytesRemainingInReceiveBuffer) {
-      if (this.receiveBuffer.length > ConnectionOrientedPdu.TYPE_OFFSET){
-        this.receiveBuffer.setIndex(ConnectionOrientedPdu.TYPE_OFFSET);
+      if (this.receiveBuffer.length > new ConnectionOrientedPdu().TYPE_OFFSET){
+        this.receiveBuffer.setIndex(new ConnectionOrientedPdu().TYPE_OFFSET);
         type = this.receiveBuffer.dec_ndr_small();
 
-        if (isValidType(type)){
-          while (this.receiveBuffer.length <= ConnectionOrientedPdu.FRAG_LENGTH_OFFSET){
+        if (this.isValidType(type)){
+          while (this.receiveBuffer.length <= new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET){
             var tmpBuffer = new NdrBuffer([10], 0);
-            transport.receive(tmpBuffer);
+            await transport.receive(tmpBuffer);
 
             var aux = tmpBuffer.buf.slice(0, tmpBuffer.length);
             var aux_i = 0;
@@ -142,7 +141,10 @@ class DefaultConnection
 
     if (this.receiveBuffer.length > 0){
       this.receiveBuffer.setIndex(new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET);
-      fragmentLength = this.receiveBuffer.dec_ndr_short();
+      let frag = new Array(2);
+      this.receiveBuffer.readOctetArray(frag, 0, frag.length);
+      //fragmentLength = this.receiveBuffer.dec_ndr_short();
+      fragmentLength = ((frag[0] & 0xFF) | ((frag[1] & 0xFF) << 8));
 
       newBuffer = new Array(fragmentLength);
 
@@ -181,14 +183,14 @@ class DefaultConnection
       }
 
       if (trimSize > 0){
-        aux = this.receiveBuffer.buf.slice(this.receiveBuffer.length - trimsize, trimSize);
+        aux = this.receiveBuffer.buf.slice(this.receiveBuffer.length - trimSize, ((this.receiveBuffer.length - trimSize) + trimSize));
         aux_i = 0;
         while (aux.length > 0)
-          this.receiveBuffer.buf.splice(aux_i++, 0, aux.shift());
+          this.receiveBuffer.buf.splice(aux_i++, 1, aux.shift());
         this.receiveBuffer.length = trimSize;
         this.receiveBuffer.index = 0;
         this.receiveBuffer.start = 0;
-        bytesRemainingInReceiveBuffer = true;
+        this.bytesRemainingInReceiveBuffer = true;
       }
 
       var bufferTobeUsed = new NdrBuffer(newBuffer, 0);
@@ -251,18 +253,18 @@ class DefaultConnection
   isValidType(type)
   {
     switch (type) {
-      case AlterContextPdu.ALTER_CONTEXT_TYPE:
-      case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
-      case Auth3Pdu.AUTH3_TYPE:
-      case BindPdu.BIND_TYPE:
-      case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
-      case BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE:
-      case CancelCoPdu.CANCEL_TYPE:
-      case FaultCoPdu.FAULT_TYPE:
-      case OrphanedPdu.ORPHANED_TYPE:
-      case RequestCoPdu.REQUEST_TYPE:
-      case ResponseCoPdu.RESPONSE_TYPE:
-      case ShutdownPdu.SHUTDOWN_TYPE:
+      case new AlterContextPdu().ALTER_CONTEXT_TYPE:
+      case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
+      case new Auth3Pdu().AUTH3_TYPE:
+      case new BindPdu().BIND_TYPE:
+      case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
+      case new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE:
+      case new CancelCoPdu().CANCEL_TYPE:
+      case new FaultCoPdu().FAULT_TYPE:
+      case new OrphanedPdu().ORPHANED_TYPE:
+      case new RequestCoPdu().REQUEST_TYPE:
+      case new ResponseCoPdu().RESPONSE_TYPE:
+      case new ShutdownPdu().SHUTDOWN_TYPE:
         return true;
       default:
         return false;

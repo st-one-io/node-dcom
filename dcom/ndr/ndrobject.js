@@ -18,9 +18,9 @@ NdrObject.prototype.encode = function (ndr, dst){
   this.write(ndr);
 }
 
-NdrObject.prototype.decode = function (ndr, src){
+NdrObject.prototype.decode = async function (ndr, src){
   ndr.buf = src;
-  this.read(ndr);
+  await this.read(ndr);
 }
 
 module.exports = NdrObject;
