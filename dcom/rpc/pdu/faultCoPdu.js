@@ -72,17 +72,17 @@ class FaultCoPdu extends ConnectionOrientedPdu {
   }
 
   readBody(ndr){
-    allocationHint(ndr.readUnsignedLong());
-    contextId(ndr.readUnsignedShort());
-    cancelCount(ndr.readUnsignedSmall());
-    status(Number.parseInt(ndr.readUnsignedLong()));
+    this.setAllocationHint(ndr.readUnsignedLong());
+    this.setContextId(ndr.readUnsignedShort());
+    this.setCancelCount(ndr.readUnsignedSmall());
+    this.setStatus(Number.parseInt(ndr.readUnsignedLong()));
   }
 
   writeBody(ndr){
-    ndr.writeUnsignedLong(allocationHint());
-    ndr.writeUnsignedShort(contextId());
-    ndr.writeUnsignedSmall(cancelCount());
-    ndr.writeUnsignedLong(status());
+    ndr.writeUnsignedLong(this.getAllocationHint());
+    ndr.writeUnsignedShort(this.getcontextId());
+    ndr.writeUnsignedSmall(this.getCancelCount());
+    ndr.writeUnsignedLong(this.getStatus());
   }
 
   readStub(ndr){
@@ -90,13 +90,13 @@ class FaultCoPdu extends ConnectionOrientedPdu {
     buf.align(8);
 
     var stub = null;
-    var length = fragmmentLength() - buf.getIndex();
+    var length = this.getFragmentLength() - buf.getIndex();
 
     if (length > 0){
       stub = [length];
       ndr.readOctetArray(stub, 0, length);
     }
-    stub(stub);
+    this.setStub(stub);
   }
 
   writeStub(ndr){

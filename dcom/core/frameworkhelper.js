@@ -17,7 +17,7 @@ const NdrBuffer = require('../ndr/ndrbuffer');
  * @param {string} ipAddress
  * @returns {ComObject}
  */
-function instantiateComObject(session, obj, ipAddress) {
+async function instantiateComObject(session, obj, ipAddress) {
 
     if (obj instanceof ComObject) {
         if (obj.getAssociatedSession()) {
@@ -50,7 +50,7 @@ function instantiateComObject(session, obj, ipAddress) {
     } else {
         let retval = instantiateComObject(session, InterfacePointer.decode(ndr, [], Flags.FLAG_REPRESENTATION_INTERFACEPTR_DECODE2, new Map()));
         //increasing the reference count.
-        retval.addRef();
+        await retval.addRef();
         return retval;
     }
 }

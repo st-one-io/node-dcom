@@ -441,7 +441,7 @@ class ComServer extends Stub {
       throw new Error(new ErroCodes().JI_OBJECT_ALREADY_INSTANTIATED, null);
     }
 
-    comObject = FrameworkHelper.instantiateComObject(this.session,
+    comObject = await FrameworkHelper.instantiateComObject(this.session,
         this.serverActivation.getMInterfacePointer());
     if (this.serverActivation.isDual){
       await this.session.releaseRef(this.serverActivation.getDispIpid(),
@@ -476,7 +476,7 @@ class ComServer extends Stub {
       throw new Error(e);
     }
 
-    retVal = FrameworkHelper.instantiateComObject(this.session, reqUnknown.getInterfacePointer());
+    retVal = await FrameworkHelper.instantiateComObject(this.session, reqUnknown.getInterfacePointer());
 
     await retVal.addRef();
 

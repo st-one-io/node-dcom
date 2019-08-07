@@ -1,3 +1,4 @@
+// @ts-check
 var ndrBuffer = require("../../ndr/ndrbuffer.js");
 var ndrOjbect = require("../../ndr/ndrobject.js");
 var hexDump = require("../../ndr/hexdump.js");
@@ -50,7 +51,7 @@ class UUID{
     this.timeMid = src.dec_ndr_short();
     this.timeHighAndVersion = src.dec_ndr_short();
     this.clockSeqHighAndReserved = src.dec_ndr_small();
-    this.clockSewLow = src.dec_ndr_small();
+    this.clockSeqLow = src.dec_ndr_small();
 
     var temp = src.buf.slice(src.index, (src.index + 6));
     var temp_index= 0;

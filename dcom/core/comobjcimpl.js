@@ -49,10 +49,10 @@ class ComObjectImpl extends ComObject
     }
   }
 
-  queryInterface(iid)
+  async queryInterface(iid)
   {
     this.checkLocal();
-    return this.session.getStub().getInterface(iid, this.ptr.getIPID());
+    return await this.session.getStub().getInterface(iid, this.ptr.getIPID());
   }
 
   async addRef()
@@ -71,7 +71,7 @@ class ComObjectImpl extends ComObject
     obj.addInParamAsInt(5, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
 
-    obj.addOutParamAsType(types.INTEGER, Flags.FLAG_NULL);
+    obj.addOutParamAsType(types.SHORT, Flags.FLAG_NULL);
     obj.addOutParamAsType(types.INTEGER, Flags.FLAG_NULL);
 
     //this.session.debug_addIpids(this.ptr.getIPID(), 5);

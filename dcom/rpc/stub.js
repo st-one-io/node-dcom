@@ -25,7 +25,6 @@ class Stub {
     } catch(e) {
       throw new Error(e);
     }
-
   }
 
   getObject(){
