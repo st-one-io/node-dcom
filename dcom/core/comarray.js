@@ -93,12 +93,13 @@ class ComArray {
 			}
 
 			this.clazz = obj.getType();
-			this.template = obj.getValue(); 
-			if (new System().getComVersion().getMinorVersion() == 6 && this.template instanceof Pointer && this.template.getReferent() instanceof ComObject) {
+			this.template = obj;
+			let templateObj = obj.getValue();
+			if (new System().getComVersion().getMinorVersion() == 6 && templateObj instanceof Pointer && templateObj.getReferent() instanceof ComObject) {
 				//in this case this pointer will be a reference type pointer and not deffered one.
 				//change in MS specs since DCOM 5.4
 				this.isArrayOfCOMObjects_5_6_DCOM = true;
-				this.template.setIsReferenceTypePtr();
+				templateObj.setIsReferenceTypePtr();
 			}
 
 			this.init2(upperBounds, dimension, isConformant, isVarying);
