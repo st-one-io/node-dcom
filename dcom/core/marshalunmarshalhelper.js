@@ -121,7 +121,7 @@ function serialize(ndr, val, defferedPointers, flag) {
 
             case types.STRING:
                 if ((flag & Flags.FLAG_REPRESENTATION_VALID_STRING) != Flags.FLAG_REPRESENTATION_VALID_STRING) {
-                    throw new Error("UTIL_STRING_INVALID" + ErrorCodes.UTIL_STRING_INVALID);
+                    throw new Error("UTIL_STRING_INVALID" + new ErrorCodes().UTIL_STRING_INVALID);
                 }
 
                 let str = value && value.toString() || "";
@@ -132,7 +132,7 @@ function serialize(ndr, val, defferedPointers, flag) {
                     try {
                         strBytes = Buffer.from(str, "utf16le");
                     } catch (e) {
-                        throw new Error("UTIL_STRING_DECODE_CHARSET" + ErrorCodes.UTIL_STRING_DECODE_CHARSET);
+                        throw new Error("UTIL_STRING_DECODE_CHARSET" + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
                     }
                     //NDR representation Max count , then offset, then, actual count
                     //length of String (Maximum count)
@@ -175,7 +175,7 @@ function serialize(ndr, val, defferedPointers, flag) {
                     try {
                         strBytes = Buffer.from(str, "utf16le");
                     } catch (e) {
-                        throw new Error("UTIL_STRING_DECODE_CHARSET" + ErrorCodes.UTIL_STRING_DECODE_CHARSET);
+                        throw new Error("UTIL_STRING_DECODE_CHARSET" + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
                     }
 
                     //bytes + 1
@@ -256,7 +256,7 @@ function serialize(ndr, val, defferedPointers, flag) {
                 break;
 
             default:
-                throw new Error("UTIL_SERDESER_NOT_FOUND" + ErrorCodes.UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
 }

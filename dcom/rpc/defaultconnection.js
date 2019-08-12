@@ -41,14 +41,49 @@ class DefaultConnection
   {
     console.log("transmit");
 
-    if (!(pdu instanceof Fragmentable)){
+    if (!(pdu instanceof RequestCoPdu)){
       this.transmitFragment(pdu, transport, info);
       return;
     }
 
-    var fragments = pdu.fragment(this.transmitBuffer.getCapacity());
-    while(fragments.hasNext()){
-      this.transmitFragment(fragments.next(), transport, info);
+    let stubSize = this.transmitLength - (pdu.getFlag(pdu.PFC_OBJECT_UUID) ?
+      40 : 24) - 8 - 16;
+    let index = 0;
+    while (index < pdu.getStub().length) {
+      if (index >= pdu.getStub().length) {
+        throw new Error("No such element.");
+      }
+
+      // we cannot rely fully on Object.assign() so do it step by step
+      let fragment = new RequestCoPdu();
+      fragment.setContextId(pdu.getContextId());
+      fragment.setStub(pdu.getStub());
+      fragment.setAllocationHint(pdu.getAllocationHint());
+      fragment.setOpnum(pdu.getOpnum());
+      fragment.setObject(pdu.getObject());
+      fragment.setFlags(pdu.getFlags());
+
+
+
+      let allocation = fragment.getStub().length - index;
+      fragment.setAllocationHint(allocation);
+      if (stubSize < allocation) allocation = stubSize;
+      
+      let fragmentStub = new Array();
+      let aux = pdu.getStub().slice(index, index + allocation);
+      fragmentStub = fragmentStub.concat(aux);
+      fragment.setStub(fragmentStub);
+
+      let flags = pdu.getFlags() & ~(pdu.PFC_FIRST_FRAG | pdu.PFC_LAST_FRAG);
+      if (index == 0) flags |= pdu.PFC_FIRST_FRAG;
+      index += allocation;
+      if (index >= pdu.getStub().length) flags |= pdu.PFC_LAST_FRAG;
+      fragment.setFlags(flags);
+
+      // use the same callid for all fragment of this request
+      fragment.setCallId(pdu.getCallId());
+
+      this.transmitFragment(fragment, transport, info);
     }
   }
 

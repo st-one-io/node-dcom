@@ -132,7 +132,7 @@ class Struct {
   }
 
   removeMember(index) {
-    var member = this.listOfMembers.splice(index, 1)[0].value;
+    var member = this.listOfMembers.splice(index, 1)[0].getValue();
 
     if (member instanceof ComArray) {
       let counts = member.getConformantMaxCounts();
@@ -186,14 +186,14 @@ class Struct {
     while (i < this.listOfMembers.length) {
       let o = this.listOfMembers[i];
 
-      if (o.value instanceof ComArray) {
-        o.value.setConformant(false);
+      if (o.getValue() instanceof ComArray) {
+        o.getValue().setConformant(false);
       }
 
       MarshalUnMarshalHelper.serialize(ndr, o, defferedPointers, flag);
 
-      if (o.value instanceof ComArray) {
-        o.value.setConformant(o.value.isConformant());
+      if (o.getValue() instanceof ComArray) {
+        o.getValue().setConformant(o.getValue().isConformant());
       }
       i++;
     }

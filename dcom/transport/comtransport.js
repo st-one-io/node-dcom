@@ -81,7 +81,7 @@ class ComTransport
         received data to the receiveBuffer and wait for it be called
       */
       channel.on('data', function(data){
-        console.log("data received", self.recvPromise);
+         console.log("data received", self.recvPromise);
         if (self.recvPromise == null) {
           self.receivedBuffer.concat(data);
         } else {
@@ -157,7 +157,8 @@ class ComTransport
         resolve(buffer = self.receivedBuffer);
       } else {
         console.log("waiting for data");
-        self.recvPromise = {resolve: resolve, reject: reject};
+        if (self.recvPromise == null)
+          self.recvPromise = {resolve: resolve, reject: reject};
       }
     });
   }

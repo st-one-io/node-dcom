@@ -116,10 +116,10 @@ class ConnectionOrientedEndpoint {
       let cid = vsctxt == undefined? vsctxt : Number.parseInt(vsctxt);
       let pdu = this.context.alter(new PresentationContext(cid == null? ++this.contextIdCounter : cid,
         this.getSyntax()));
-        let sendAlter = false;
+      let sendAlter = false;
 
       if (cid == null){
-        this.uuidsVsContextIds.set(this.getSyntax(), Number.parseInt(this.contextIdCounter));
+        this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(), Number.parseInt(this.contextIdCounter));
         this.contextIdToUse = this.contextIdCounter;
         sendAlter = true;
       } else{
@@ -177,7 +177,7 @@ class ConnectionOrientedEndpoint {
     this.contextIdCounter = 0;
     this.currentIID = null;
 
-    this.uuidsVsContextIds.set(String(this.getSyntax()), Number.parseInt(this.contextIdCounter));
+    this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(), Number.parseInt(this.contextIdCounter));
     this.context = this.createContext();
 
     var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax()),

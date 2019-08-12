@@ -25,11 +25,13 @@ class NTLMConnection extends DefaultConnection
 
   setTransmitLength(transmitLength)
   {
+    this.transmitLength = transmitLength;
     this.transmitBuffer = new NdrBuffer([transmitLength]);
   }
 
   setReceiveLength(receiveLength)
   {
+    this.receiveLength = receiveLength;
     this.receiveBuffer = new NdrBuffer([receiveLength]);
   }
 

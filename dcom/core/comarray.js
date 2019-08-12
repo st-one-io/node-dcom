@@ -156,8 +156,9 @@ class ComArray {
 		
 		let upperBounds2 = [];
 		let subArray = array;
+		let auxArray = array
 		this.numElementsInAllDimensions = 1;
-		while (Array.isArray(array)) {
+		while (Array.isArray(auxArray)) {
 
 			let x = subArray.length;
 			upperBounds2.push(x);
@@ -171,7 +172,7 @@ class ComArray {
 				break;
 			}
 			subArray = subArray[0];
-			array = array[0];
+			auxArray = auxArray[0];
 			this.dimension++;
 		}
 		
@@ -449,7 +450,7 @@ class ComArray {
 						//not setting the array flag here.
 						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,this.template,defferedPointers,flag,additionalData);	
 					} else	{
-						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,this.template,defferedPointers,flag | Flags.FLAG_REPRESENTATION_ARRAY,additionalData);
+						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(this.template, types.COMSTRING),defferedPointers,flag | Flags.FLAG_REPRESENTATION_ARRAY,additionalData);
 					}
 				}
 			} else {

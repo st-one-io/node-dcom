@@ -829,7 +829,7 @@ class CallBuilder extends NdrObject {
 			//something exception occured at server, set up results
 			this.resultsOfException = this.results;
 			this.results = null;
-			throw new Error(new ErrorCodes().errorDesc[this.hresult] || this.hresult);
+			throw new Error(this.hresult);
 		}
 	}
 
