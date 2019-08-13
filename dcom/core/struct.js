@@ -120,7 +120,7 @@ class Struct {
     if (member != undefined) {
       if ((member.constructor.name == "Pointer") && !member.isReference()) {
         member.setDeffered(true);
-      } else if (member instanceof Variant) {
+      } else if (member instanceof Variant.Variant) {
         member.setDeffered(true);
       } else if (member instanceof ComString) {
         member.setDeffered(true);

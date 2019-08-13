@@ -91,7 +91,7 @@ class ComObjectImpl extends ComObject
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    var array = new IArray([new UUID(this.ptr.getIPID())], true);
+    var array = new ComArray(new ComValue([new UUID(this.ptr.getIPID())], types.UUID), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
 
     obj.addInParamAsInt(5,Flags.FLAG_NULL);
@@ -103,7 +103,7 @@ class ComObjectImpl extends ComObject
   call(obj)
   {
     this.checkLocal();
-    return call(obj, this.timeout);
+    return this.call(obj, this.timeout);
   }
 
   internal_getInterfacePointer(){

@@ -138,7 +138,7 @@ class Pointer {
         }
 
 
-        if (!this._isNull && this.referent.value instanceof Variant && this.referent.value.isArray()) {
+        if (!this._isNull && this.referent.value instanceof Variant.Variant && this.referent.value.isArray()) {
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.referent.value.getObject().length, types.INTEGER), defferedPointers, flag);
         }
 

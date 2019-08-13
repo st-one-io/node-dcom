@@ -451,7 +451,7 @@ class ComArray {
 						//not setting the array flag here.
 						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,this.template,defferedPointers,flag,additionalData);	
 					} else	{
-						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(this.template, types.COMSTRING),defferedPointers,flag | Flags.FLAG_REPRESENTATION_ARRAY,additionalData);
+						array[i] = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(this.template.getValue(), this.template.getType()),defferedPointers,flag | Flags.FLAG_REPRESENTATION_ARRAY,additionalData);
 					}
 				}
 			} else {

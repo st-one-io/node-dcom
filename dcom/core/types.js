@@ -28,6 +28,9 @@ module.exports = Object.freeze({
     UNSIGNEDSHORT: 25,
     UNSIGNEDINTEGER: 26,
     DUALSTRINGARRAY: 27,
+    SCODE: 28,
+    EMPTY: 29,
+    NULL: 30,
     descr: {
         "1": "DATE",
         "2": "CURRENCY",

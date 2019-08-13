@@ -22,7 +22,7 @@ class ComTransport
     this.channelWrapper;
     this.recvPromise = null;
     this.receivedBuffer = new Array();
-
+    this.aux;
     this.parse(address);
   }
 
@@ -87,6 +87,7 @@ class ComTransport
         } else {
           self.recvPromise.resolve(data);
           self.recvPromise = null;
+          console.log(self.aux);
         }
       });
 
@@ -136,8 +137,9 @@ class ComTransport
     }
   }
 
-  receive(buffer)
+  receive()
   {
+    console.log("receiving packet...")
     if (!this.attached) {
       throw new Error("Transport not attached.");
     }
@@ -150,6 +152,7 @@ class ComTransport
      * the 'data' event is fired, with the received buffer
      */
 
+    
     var self = this;
     return new Promise(function(resolve, reject){
       if (self.receivedBuffer.length > 0) {
@@ -157,8 +160,9 @@ class ComTransport
         resolve(buffer = self.receivedBuffer);
       } else {
         console.log("waiting for data");
-        if (self.recvPromise == null)
-          self.recvPromise = {resolve: resolve, reject: reject};
+        if (self.recvPromise == null){
+          self.recvPromise = {resolve: resolve, reject: reject};  
+        }
       }
     });
   }

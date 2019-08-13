@@ -465,7 +465,7 @@ class ComServer extends Stub {
    */
   async getInterface(iid, ipidOfTheTargetUnknown) {
     let retVal = null;
-
+    console.log("kill me");
     this.setObject(this.remunknownIPID);
 
     let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid, 5);

@@ -91,7 +91,6 @@ class DefaultConnection
   {
     console.log("receive");
     var fragment = await this.receiveFragment(transport);
-
     if (!this.bytesRemainingInReceiveBuffer){
       return fragment;
     } else {
@@ -100,9 +99,12 @@ class DefaultConnection
         fragment = await this.receiveFragment(transport);
 
         let newStub = fragment.getStub();
-
-        if (newStub != null && newStub.length > 0)
-          stub = newStub.concat(stub);
+        if (newStub != null && newStub.length > 0){
+          if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG))
+            stub = newStub.concat(stub);
+          else if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG))
+            stub = stub.concat(newStub);
+        }
       }while(this.bytesRemainingInReceiveBuffer);
 
       let length = stub.length;
@@ -154,7 +156,7 @@ class DefaultConnection
             var aux = tmpBuffer.buf.slice(0, tmpBuffer.length);
             var aux_i = 0;
             while (aux.length > 0)
-              this.receiveBuffer.buf.splice(aux_i++, 0, aux.shift());
+              this.receiveBuffer.buf.splice(aux_i++, 1, aux.shift());
             this.receiveBuffer.length = this.receiveBuffer.length + tmpBuffer.length;
           }
           read = false;
@@ -190,7 +192,7 @@ class DefaultConnection
           var aux = this.receiveBuffer.buf.slice(0, lengthOfArrayTobeRead);
           var aux_i = counter;
           while(aux.length > 0)
-            newBuffer.splice(aux_i++, 0, aux.shift());
+            newBuffer.splice(aux_i++, 1, aux.shift());
 
           counter = counter + lengthOfArrayTobeRead;
           if (fragmentLength == counter){
@@ -198,7 +200,8 @@ class DefaultConnection
           }
 
           this.receiveBuffer.reset();
-          transport.receive(this.receiveBuffer);
+          this.receiveBuffer.buf = [...await transport.receive(this.receiveBuffer)];
+          this.receiveBuffer.length = this.receiveBuffer.buf.length;
           if (fragmentLength - counter >= this.receiveBuffer.length){
             lengthOfArrayTobeRead = this.receiveBuffer.length;
           }else{
@@ -219,9 +222,9 @@ class DefaultConnection
 
       if (trimSize > 0){
         aux = this.receiveBuffer.buf.slice(this.receiveBuffer.length - trimSize, ((this.receiveBuffer.length - trimSize) + trimSize));
-        aux_i = 0;
-        while (aux.length > 0)
-          this.receiveBuffer.buf.splice(aux_i++, 1, aux.shift());
+        this.receiveBuffer.buf = aux;
+        //while (aux.length > 0)
+          //this.receiveBuffer.buf.splice(aux_i++, 1, aux.shift());
         this.receiveBuffer.length = trimSize;
         this.receiveBuffer.index = 0;
         this.receiveBuffer.start = 0;

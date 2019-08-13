@@ -65,7 +65,7 @@ class ComValue {
             case types.VARIANTBODY:
                 break;
             case types.VARIANT:
-                if (!(obj instanceof Variant)) throw new Error("Value of type VARIANT must be instance of Variant");
+                if (!(obj instanceof Variant.Variant)) throw new Error("Value of type VARIANT must be instance of Variant");
                 break;
             case types.COMARRAY:
                 if (!(obj instanceof ComArray)) throw new Error("Value of type COMARRAY must be instance of ComArray");
@@ -97,6 +97,12 @@ class ComValue {
             case types.POINTER:
                 // there is a circular dependency between Pointer and ComValue, this achieves the same thing but withou breaking it with instanceof
                 if (!(obj instanceof Pointer)) throw new Error("Value of type POINTER must be instance of Pointer");
+                break;
+            case types.EMPTY:
+                break;
+            case types.NULL:
+                break;
+            case types.SCODE:
                 break;
             default:
                 throw new Error(`Unrecognized type ${this._type}`);

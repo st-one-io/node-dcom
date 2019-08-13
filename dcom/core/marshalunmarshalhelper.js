@@ -14,7 +14,7 @@ const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 const InterfacePointer = require('./interfacepointer');
 const InterfacePointerBody = require('./interfacepointerbody');
 const Union = {};
-const Variant = {};
+const Variant = require('./variant');
 const VariantBody = {};
 
 const types = require('./types');
@@ -373,9 +373,9 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
             case types.INTERFACEPOINTER:
                 return (!obj) ? new InterfacePointer().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.VARIANT:
-                return (!obj) ? new Variant().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
+                return (!obj) ? new Variant.Variant().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.VARIANTBODY:
-                return (!obj) ? new VariantBody().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
+                return (!obj) ? new Variant.VariantBody().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.DATE:
                 ndr.getBuffer().align(8);
                 let date = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));

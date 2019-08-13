@@ -55,8 +55,8 @@ class ComString {
                 this.member = new ComValue(new Pointer(new ComValue(str, types.STRING), false), types.POINTER);
                 this.member.getValue().setReferent(0x72657355);//"User" in LEndian.
                 let thisComValue = new ComValue(this, types.COMSTRING);
-                this.variant = new Variant(thisComValue);
-                this.variantByRef = new Variant(thisComValue, true);
+                this.variant = new Variant.Variant(thisComValue);
+                this.variantByRef = new Variant.Variant(thisComValue, true);
             } else {
                 throw new Error(ErrorCodes.JI_UTIL_FLAG_ERROR);
             }
