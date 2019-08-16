@@ -30,8 +30,13 @@ class ComValue {
         if (this._obj === null || this._obj === undefined) return;
 
         // if the obj is an array, get a sample to use as current obj instance so we can check the class
-        if (obj instanceof Array) obj = obj[0];
-
+        if (obj instanceof Array) {
+            if (obj[0] instanceof ComValue)
+                obj = obj[0].getValue();
+            else
+                obj = obj[0];
+        }
+        
         // some safety checks, preventing errors downstream
         switch (this._type) {
             case types.DOUBLE:
@@ -63,6 +68,7 @@ class ComValue {
             case types.CHARACTER:
                 break;
             case types.VARIANTBODY:
+                if (!(obj instanceof Variant.VariantBody)) throw new Error("Value of type VARIANTBODY must be instance of VariantBody");
                 break;
             case types.VARIANT:
                 if (!(obj instanceof Variant.Variant)) throw new Error("Value of type VARIANT must be instance of Variant");

@@ -10,7 +10,9 @@ let types;
 let ComValue;
 let MarshalUnMarshalHelper;
 let Pointer;
+let Struct;
 let inited;
+let InterfacePointer;
 
 const EMPTY = {};
 const NULL = {};
@@ -23,37 +25,10 @@ class Variant {
    * @param {ComValue} [value]
    * @param {boolean} [isByRef]
    */
-  constructor(value, isByRef, FLAG)
+  constructor(value, isByref, FLAG)
   {
     this._init();
-    if (value) {
-      switch(value.getType()){
-        case types.INTEGER:
-        case types.FLOAT:
-        case types.LONG:
-        case types.DOUBLE:
-        case types.SHORT:
-          this.init(new Number(value.getValue()), isByref? isByRef : false);
-        case types.BOOLEAN:
-          this.init(new Boolean(value.getValue()), isByref? isByRef : false);
-        case types.CHARACTER:
-          this.init(new ComString(value.getValue(), Flags.FLAG_REPRESENTATION_STRING_BSTR), isByref? isByRef : false);
-        case types.STRING:
-          this.init(new ComString(value.getValue(), Flags.FLAG_REPRESENTATION_STRING_BSTR), isByref? isByRef : false);
-        case types.COMSTRING:
-          this.init(value.getValue(), isByref? isByRef : false);
-        case types.COMOBJECT:
-          this.init(value.getValue(), isByRef? isByRef : false);
-          // TO-DO: if IDispatch com is desired it must be implemented here to set the correct flag
-        case types.DATE:
-          this.init(value.getValue(), isByRef? isByRef : false);
-        case types.CURRENCY:
-          this.init(value.getValue(), isByRef? isByRef : false);
-        case types.COMARRAY:
-          this.initArrays(value.getValue(), isByref? isByRef : false, FLAG? FLAG : Flags.FLAG_NULL);
-      }
-    }
-
+    
     this.EMPTY = {};
     this.EMPTY_BYREF = this.EMPTY; // TO-DO; maybe it should be Variant
     this.NULL = {};
@@ -137,35 +112,53 @@ class Variant {
     // TO-DO: evaluate the necessity of unsigned byte, short, and integer (all Number here)
     // TO-DO: same for long, which would require an external module since no suport in JS
 
-    this.supportedTypes.set(Object, new Number(this.VT_VARIANT));
-    this.supportedTypes.set(Variant, new Number(this.VT_VARIANT));
-    this.supportedTypes.set(Boolean, new Number(this.VT_BOOL));
-    this.supportedTypes.set(ComString, new Number(this.VT_BSTR));
-    this.supportedTypes.set(EMPTY, new Number(this.VT_EMPTY));
-    this.supportedTypes.set(SCODE, new Number(this.VT_ERROR));
-    this.supportedTypes.set(NULL, new Number(this.VT_NULL));
-    this.supportedTypes.set(Array, new Number(this.VT_ARRAY));
-    this.supportedTypes.set(Date, new Number(this.VT_DATE));
+    this.supportedTypes.set(Object, this.VT_VARIANT);
+    this.supportedTypes.set(types.VARIANT, this.VT_VARIANT);
+    this.supportedTypes.set(types.BOOLEAN, this.VT_BOOL);
+    this.supportedTypes.set(types.COMSTRING, this.VT_BSTR);
+    this.supportedTypes.set(EMPTY, this.VT_EMPTY);
+    this.supportedTypes.set(SCODE, this.VT_ERROR);
+    this.supportedTypes.set(NULL, this.VT_NULL);
+    this.supportedTypes.set(types.ARRAY, this.VT_ARRAY);
+    this.supportedTypes.set(types.DATE, this.VT_DATE);
+    this.supportedTypes.set(types.INTEGER, this.VT_I4);
+    this.supportedTypes.set(types.FLOAT, this.VT_R4);
+    this.supportedTypes.set(types.DOUBLE, this.VT_R8);
+    this.supportedTypes.set(types.SHORT, this.VT_I2);
+    this.supportedTypes.set(types.BYTE, this.VT_I1);
+    this.supportedTypes.set(types.CHARACTER, this.VT_I1);
+    this.supportedTypes.set(types.COMARRAY, this.VT_ARRAY);
+    this.supportedTypes.set(types.LONG, this.VT_I8);
+    this.supportedTypes.set(types.CURRENCY, this.VT_CY);
+    this.supportedTypes.set(types.UNSIGNEDSHORT, this.VT_UI1);
+    this.supportedTypes.set(types.UNSIGNEDINTEGER, this.VT_UI2);
+    this.supportedTypes.set(types.UNSIGNEDLONG, this.VT_UI4);
     // TO-DO: find a way to dothis.supportedTypes(Currency, new Number(this.VT_CY));
 
     // TO-DO: evaluate what should be done with the missing types
     // and if it will impact on the lib when interacting with a COM server
-    this.supportedTypes_classes.set(new Number(this.VT_DATE), Date);
-    // TO-DO: find a way to do this.supportedTypes_classes(new Number(this.VT_CY), Currency);
-    this.supportedTypes_classes.set(new Number(this.VT_VARIANT), Variant);
-    this.supportedTypes_classes.set(new Number(this.VT_I4), Number);
-    this.supportedTypes_classes.set(new Number(this.VT_INT), Number);
-    this.supportedTypes_classes.set(new Number(this.VT_R4), Number);
-    this.supportedTypes_classes.set(new Number(this.VT_BOOL), Boolean);
-    this.supportedTypes_classes.set(new Number(this.VT_I2), Number);
-    this.supportedTypes_classes.set(new Number(this.VT_I1), String);
-    this.supportedTypes_classes.set(new Number(this.VT_BSTR), String);
+    this.supportedTypes_classes.set(new Number(this.VT_DATE), new ComValue(null, types.DATE));
+    // TO-DO: find a way to do this.supportedTypes_classes.set(new Number(this.VT_CY), Currency); properly
+    this.supportedTypes_classes.set(new Number(this.VT_CY), new ComValue(null, types.CURRENCY));
+    this.supportedTypes_classes.set(new Number(this.VT_VARIANT), new ComValue(null, types.VARIANT));
+    this.supportedTypes_classes.set(new Number(this.VT_I4), new ComValue(null, types.LONG));
+    this.supportedTypes_classes.set(new Number(this.VT_INT), new ComValue(null, types.INTEGER));
+    this.supportedTypes_classes.set(new Number(this.VT_R4), new ComValue(null, types.SHORT));
+    this.supportedTypes_classes.set(new Number(this.VT_BOOL), new ComValue(null, types.BOOLEAN));
+    this.supportedTypes_classes.set(new Number(this.VT_I2), new ComValue(null, types.INTEGER));
+    this.supportedTypes_classes.set(new Number(this.VT_I1), new ComValue(null, types.BYTE));
+    this.supportedTypes_classes.set(new Number(this.VT_BSTR), new ComValue(null, types.COMSTRING));
     this.supportedTypes_classes.set(new Number(this.VT_ERROR), SCODE);
     this.supportedTypes_classes.set(new Number(this.VT_EMPTY), EMPTY);
     this.supportedTypes_classes.set(new Number(this.VT_NULL), NULL);
-    this.supportedTypes_classes.set(new Number(this.VT_ARRAY), Array);
-    this.supportedTypes_classes.set(new Number(this.VT_UNKNOWN), ComObject);
-    this.supportedTypes_classes.set(new Number(this.VT_DISPATCH), ComObject);
+    this.supportedTypes_classes.set(new Number(this.VT_ARRAY), new ComValue(null, types.ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_UNKNOWN), new ComValue(null, types.COMOBJECT));
+    this.supportedTypes_classes.set(new Number(this.VT_DISPATCH), new ComValue(null, types.COMOBJECT));
+    this.supportedTypes_classes.set(new Number(this.VT_UI1),new ComValue(null, types.SHORT));
+    this.supportedTypes_classes.set(new Number(this.VT_UI2),new ComValue(null, types.INTEGER));
+    this.supportedTypes_classes.set(new Number(this.VT_UI4),new ComValue(null, types.LONG));
+    this.supportedTypes_classes.set(new Number(this.VT_I8), new ComValue(null, types.INTEGER));
+    this.supportedTypes_classes.set(new Number(this.VT_R8), new ComValue(null, types.DOUBLE));
 
     // init Arrays
     this.arryInits = new Array();
@@ -175,6 +168,34 @@ class Variant {
     // TO-DO: if IDispatch support is desired: this.arryInits.push(Dispatch);
     // this.arryInits.push(Unknown);
     this.arryInits.push(ComObject);
+
+    if (value) {
+      switch(value.getType()){
+        case types.INTEGER:
+        case types.FLOAT:
+        case types.LONG:
+        case types.DOUBLE:
+        case types.SHORT:
+          this.init(value, isByref? isByref : false);
+        case types.BOOLEAN:
+          this.init(value, isByref? isByref : false);
+        case types.CHARACTER:
+          this.init(value, isByref? isByref : false);
+        case types.STRING:
+          this.init(value, isByref? isByref : false);
+        case types.COMSTRING:
+          this.init(value, isByref? isByref : false);
+        case types.COMOBJECT:
+          this.init(value, isByref? isByref : false);
+          // TO-DO: if IDispatch com is desired it must be implemented here to set the correct flag
+        case types.DATE:
+          this.init(value, isByref? isByref : false);
+        case types.CURRENCY:
+          this.init(value, isByref? isByref : false);
+        case types.COMARRAY:
+          this.initArrays(value, isByref? isByref : false, FLAG? FLAG : Flags.FLAG_NULL);
+      }
+    }
   }
 
   _init(){
@@ -191,6 +212,8 @@ class Variant {
     ComValue = require('./comvalue');
     MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
     Pointer = require('./pointer');
+    Struct = require('./struct');
+    InterfacePointer = require('./interfacepointer');
     inited = true;
   }
 
@@ -200,9 +223,7 @@ class Variant {
     if (!isArray) {
       variant = this.makeVariant(outTypeMap.get(c), true);
 
-      if (c instanceof Dispatch) {
-        return this.OUT_DISPATCH();
-      } else if (c instanceof ComObject) {
+      if (c instanceof ComObject) {
         return this.OUT_UNKNOWN();
       } else if (c instanceof Variant) {
         return this.EMPTY_BYREF();
@@ -214,22 +235,17 @@ class Variant {
       if (oo != null) {
         var x = new Array(1);
         x[0] = oo;
-        variant = new Variant(new IArray(x, true), true);
+        variant = new Variant(new ComArray(x, true), true);
       }
 
-      if (c instanceof Dispatch) {
+      if (c instanceof ComObject) {
         var arry = [new ComObjectImpl(null, new InterfacePointer(null, -1, null))];
-        variant = new Variant(new IArray(arry, true), true);
-        variant.setFlag(Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT |
-          Flags.FLAG_REPRESENTATION_SET_INTERFACEPTR_NULL_FOR_VARIANT);
-      } else if (c instanceof ComObject) {
-        var arry = [new ComObjectImpl(null, new InterfacePointer(null, -1, null))];
-        variant = new Variant(new IArray(arry, true), true);
+        variant = new Variant(new ComArray(arry, true), true);
         variant.setFlag(FLags.FLAG_REPRESENTATION_UNKNOWN_NULL_FOR_OUT |
           Flags.FLAG_REPRESENTATION_SET_INTERFACEPTR_NULL_FOR_VARIANT);
       } else if (c instanceof Variant) {
         return VARIANTARRAY();
-      } else if (c instanceof IString || c instanceof String) {
+      } else if (c instanceof ComString || c instanceof String) {
         return BSTRARRAY();
       }
     }
@@ -275,22 +291,18 @@ class Variant {
 
   getSupportedType(c, FLAG)
   {
-    var retVal = this.supportedTypes.get(c);
+    var retVal = this.supportedTypes.get(c.getType());
 
-    if (retVal == null && c instanceof ComObject) {
-      retVal = new Number(this.VT_UNKNOWN);
+    if (retVal == null && c == types.COMOBJECT) {
+      retVal = this.VT_UNKNOWN;
     }
 
-    if (retVal == null && c instanceof Dispatch) {
-      retVal = new Number(this.VT_DISPATCH);
-    }
-
-    if (retVl == this.VT_I4 && (FLAG & Flags.FLAG_REPRESENTATION_VT_INT) ==
+    if (retVal == this.VT_I4 && (FLAG & Flags.FLAG_REPRESENTATION_VT_INT) ==
       Flags.FLAG_REPRESENTATION_VT_INT) {
-      retVal = new Number(this.VT_INT);
+      retVal = this.VT_INT;
     } else if (retVal == this.VT_UI4 &&
       (FLAG & Flags.FLAG_REPRESENTATION_VT_UINT) == Flags.FLAG_REPRESENTATION_VT_UINT) {
-      retVal = new Number(this.VT_UINT);
+      retVal = this.VT_UINT;
     }
 
     return retVal;
@@ -300,10 +312,6 @@ class Variant {
   {
     var c = o.constructor;
     var retVal = this.supportedTypes.get(c);
-
-    if (retVal == null && o instanceof Dispatch) {
-      retval = new Number(this.VT_DISPATCH);
-    }
 
     if (retVal == null && o instanceof ComObject) {
       retval = new Number(this.VT_UNKNOWN);
@@ -324,7 +332,7 @@ class Variant {
 
   OUT_UNKNOWN()
   {
-    var retVal = new Variant(new ComObjectImpl(null, new InterfacePointer(null, -1, null)), true);
+    var retVal = new Variant(new ComValue(new ComObjectImpl(null, new InterfacePointer(null, -1, null)), types.COMOBJECT), true);
     retval.setFlag(Flags.FLAG_REPRESENTATION_UNKNOWN_NULL_FOR_OUT |
       Flags.FLAG_REPRESENTATION_SET_INTERFACEPTR_NULL_FOR_VARIANT);
       return retval;
@@ -358,25 +366,30 @@ class Variant {
     return new Variant(new IArray([Variant.EMPTY()], true), true);
   }
 
+  /**
+   * 
+   * @param {ComValue} obj 
+   * @param {Boolean} isByref 
+   */
   init(obj, isByref)
   {
     isByref = (isByref == undefined) ? false : isByref;
 
-    if (obj != null && obj instanceof Array) {
+    if (obj != null && obj.getType() == types.ARRAY) {
       throw new Error("Ilegal Argument: " + ErrorCodes.VARIANT_ONLY_JIARRAY_EXCEPTED);
     }
 
-    if (obj != null && obj instanceof InterfacePointer) {
+    if (obj != null && obj.getType() == types.INTERFACEPOINTER) {
       throw new Error("Ilegal Argument:" + ErrorCodes.VARIANT_TYPE_INCORRECT);
     }
 
-    if (obj instanceof VariantBody) {
-      this.member = new Pointer(obj);
+    if (obj.getType() == types.VARIANTBODY) {
+      this.member = new ComValue(new Pointer(obj), types.POINTER);
     }else {
-      var variantBody = new VariantBody(obj, isByref);
-      this.member = new Pointer(variantBody);
+      var variantBody = new VariantBody(1, {obj, isByref});
+      this.member = new ComValue(new Pointer(new ComValue(variantBody, types.VARIANTBODY)), types.POINTER);
     }
-    this.member.setReferent(0x72657355);
+    this.member.getValue().setReferent(0x72657355);
   }
 
   setDeffered(deffered)
@@ -467,11 +480,7 @@ class Variant {
     else if (value instanceof ComObject)
     {
       this.init(value, isByref);
-      if (value instanceof Dispatch) {
-        this.setFlag(Flags.FLAG_REPRESENTATION_USE_DISPATCH_IID);
-      } else {
-        this.setFlag(Flags.FLAG_REPRESENTATION_UNKNOWN_IID);
-      }
+      this.setFlag(Flags.FLAG_REPRESENTATION_UNKNOWN_IID);
     }
   }
 
@@ -488,7 +497,7 @@ class Variant {
   {
     var variant2 = null;
     var array2 = null;
-    var c= NULL;
+    var c = NULL;
     var newArrayObj = null;
     var is2Dim = false;
 
@@ -498,25 +507,104 @@ class Variant {
     }
 
     var dimension = 1;
-    if (array.length == 1 && (array[0] instanceof Array)) {
+    if (array.getValue().getDimensions() == 1 && (array.getValue().memberArray[0] instanceof Array)) {
       dimension = 2;
     }
 
-    switch (array.length) {
+    switch (array.getValue().getDimensions()) {
       case 1:
-        var obj = array.getArrayInstance();
-        newArrayObj = obj;
-        c = obj[0].constructor;
+        var obj = array.getValue().getArrayInstance();
+        newArrayObj = (obj.length == 0)? null : obj;
+        c = (obj[0])? obj[0].getType() : 9;
         break;
       case 2:
-        var obj2 = array.getArrayInstance();
+        var obj2 = array.getValue().getArrayInstance();
 
-        var name = typeof obj2[0][0].constructor;
+        var name = typeof obj2[0][0].getType();
         var subArray = obj2;
         name = name.substring(1);
+
+        let firstDim = subArray.length;
+        subArray = subArray[0];
+        let secondDim = subArray.length;
+
+        let k = 0;
+        newArrayObj = new Array(array.getNumElementsInAllDimensions());
+				for (let i = 0; i < secondDim; i++)	{
+					for (let j = 0;j < firstDim; j++)	{
+						newArrayObj[k++] = obj2[j][i];
+					}
+				}
+
+				c = subArray[0].getType();
+				is2Dim = true;
         break;
       default:
+          throw new Error(new ErrorCodes().JI_VARIANT_VARARRAYS_2DIMRES);
     }
+    array2 = new ComArray(new ComValue(newArrayObj, c),true); //should always be conformant since this is part of a safe array.
+    let safeArray = new Struct();
+    try {
+      safeArray.addMember(new ComValue(array.getValue().getDimensions(), types.SHORT));//dim
+      let elementSize = -1;
+      let flags = new Variant().FADF_HAVEVARTYPE;
+      if (c == types.VARIANT) {
+        flags = (flags | new Variant().FADF_VARIANT);
+        elementSize = 16; //(Variant is pointer whose size is 16)
+      }
+      else if (this.arryInits.includes(c)) {
+        if (c == types.STRING) {
+          flags = (flags | new Variant().FADF_BSTR);
+        } else if (c == types.COMOBJECT) {
+          flags = (flags | new Variant().FADF_UNKNOWN);
+          FLAG |= Flags.FLAG_REPRESENTATION_USE_IUNKNOWN_IID;
+        } else
+          elementSize = 4; //Since all these are pointers inherently
+      } else {
+        //JStruct and JIUnions are expected to be encapsulated within pointers...they usually are :)
+        elementSize = MarshalUnMarshalHelper.getLengthInBytes(new ComValue(null, c), null, c == types.BOOLEAN ? Flags.FLAG_REPRESENTATION_VARIANT_BOOL : Flags.FLAG_NULL); //All other types, basic types
+      }
+
+      let safeArrayBound = null;
+
+      let upperBounds = array.getValue().getUpperBounds();
+      let arrayOfSafeArrayBounds = [new Struct(array.getValue().getDimensions())];
+      for (let i = 0; i < array.getValue().getDimensions(); i++) {
+        safeArrayBound = new Struct();
+        safeArrayBound.addMember(upperBounds[i]);
+        safeArrayBound.addMember(new ComValue(0, types.INTEGER)); //starts at 0
+        arrayOfSafeArrayBounds[i] = new ComValue(safeArrayBound, types.STRUCT);
+      }
+
+      let arrayOfSafeArrayBounds2 = new ComArray(new ComValue(arrayOfSafeArrayBounds, types.STRUCT),true);
+
+      safeArray.addMember(new ComValue(flags, types.SHORT));//flags
+      if (elementSize > 0) {
+        safeArray.addMember(new ComValue(elementSize, types.INTEGER));
+      } else {
+        elementSize = MarshalUnMarshalHelper.getLengthInBytes(obj[0], null, FLAG);
+        safeArray.addMember(new ComValue(elementSize, types.INTEGER));//size
+      }
+
+      safeArray.addMember(new ComValue(0, types.SHORT));//locks
+      safeArray.addMember(new ComValue(new Variant().getSupportedType(new ComValue(null, c), FLAG), types.SHORT));//variant array, safearrayunion
+      //peculiarity here, windows seems to be sending the signed type in VarType32...
+      if (c == types.BOOLEAN) {
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, types.SHORT),FLAG));//safearrayunion
+      } else if (c == types.LONG) {
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, types.LONG),FLAG));//safearrayunion
+      } else {
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, c),FLAG));//safearrayunion
+      }
+      safeArray.addMember(new ComValue(array2.getNumElementsInAllDimensions(), types.INTEGER));//size in safearrayunion
+      let  ptr2RealArray = new Pointer(new ComValue(array2, types.COMARRAY));
+      safeArray.addMember(new ComValue(ptr2RealArray, types.POINTER));
+      safeArray.addMember(new ComValue(arrayOfSafeArrayBounds2, types.COMARRAY));
+    } catch (e) {
+      throw new Error(e);
+    }
+    variant2 = new VariantBody(3, {safeArray: safeArray,nestedClass: new ComValue(null, c),is2Dimensional: is2Dim,isByref: isByref,FLAG: FLAG});
+    this.init(new ComValue(variant2, types.VARIANTBODY),false);
   }
 
   getObject()
@@ -667,11 +755,11 @@ class VariantBody
 
     // easier workaround for lack of function overloading
     if (constructor == 1) {
-      VariantBodyObj(args);
+      this.VariantBodyObj(args);
     } else if (constructor == 2) {
-      VariantBodyValue(args);
+      this.VariantBodyValue(args);
     } else if (constructor == 3) {
-      VariantBodyArray(args);
+      this.VariantBodyArray(args);
     }
 
     // populate type3
@@ -684,42 +772,42 @@ class VariantBody
   }
 
   VariantBodyObj(args){
-    var dataType = (args.dataType == undefined) ? -1 : args.DataType;
-
+    var dataType = (args.dataType == undefined) ? -1 : args.dataType;
+    
     this.obj = (args.referent == null) ? VariantBody.EMPTY : args.referent;
 
-    if (obj instanceof IString && (obj.getType() != Flags.FLAG_REPRESENTATION_STRING_BSTR)) {
+    if (this.obj.getType() == types.COMSTRING && (this.obj.getValue().getType() != Flags.FLAG_REPRESENTATION_STRING_BSTR)) {
       throw new Error(ErrorCodes.VARIANT_BSTR_ONLY);
     }
 
-    if (obj instanceof Boolean) {
+    if (this.obj.getType() == types.BOOLEAN) {
       this.FLAG = Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
     }
 
     this.isByref = args.isByRef;
 
-    var types = Variant.getSupportedTypes(obj, dataType);
-    if (types != null) {
-      this.type = Number.parseInt(types) | (args.isByRef ? Variant.VT_BYREF:0);
+    var typo = new Variant().getSupportedType(this.obj, dataType);
+    if (typo != null) {
+      this.types = Number.parseInt(typo) | (args.isByRef ? Variant.VT_BYREF:0);
     } else {
-      throw new Error(ErrorCodes.VARIANT_UNSUPPORTED_TYPE);
+      throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
 
     if (dataType == Variant.VT_NULL) {
       this.isNull = true;
-      obj = new Number(0);
+      this.obj = new Number(0);
     }
   }
 
   VariantBodyValue(args)
   {
     if (args.value instanceof NULL) {
-      this.VariantBodyObj(new Number(0), false);
+      this.VariantBodyObj(1, {referent: new Number(0), isByref: false, dataType: -1});
       this.isNull = true;
       this.type = Varian.VT_NULL;
     }
 
-    this.VariantBodyObj(new Integer(args.errorCode), args.isByRef);
+    this.VariantBodyObj(1, {referent: new Number(args.errorCode), isByref: args.isByRef, dataType: -1});
     this.isScode = true;
     this.type = Variant.VT_ERROR;
   }
@@ -737,13 +825,13 @@ class VariantBody
     this.nestedArrayRealClass = args.nestedClass;
     this.is2Dimensional = args.is2Dimensional;
 
-    this.isByRef = args.isByRef;
+    this.isByRef = args.isByref;
 
-    var types = Number.parseInt(Variant.getSupportedType(args.nestedClass, FLAG));
+    var types = Number.parseInt(new Variant().getSupportedType(args.nestedClass, this.FLAG));
     if (types != null) {
-      this.type = types | (args.isByRef ? Variant.VT_BYREF:0);
+      this.type = types | (args.isByRef ? new Variant().VT_BYREF:0);
     } else {
-      throw new Error(ErrorCodes.VARIANT_UNSUPPORTED_TYPE);
+      throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
   }
 
@@ -757,16 +845,17 @@ class VariantBody
     var retVal = null;
 
     if (this.safeArrayStruct != null) {
-      retVal = this.safeArrayStruct.getMember(7).getReferent();
+      retVal = this.safeArrayStruct.getValue().getMember(7).getValue().getReferent();
 
       if (this.is2Dimensional) {
         var obj3 = retVal.getArrayInstance();
-        var safeArrayBound = this.safeArrayStruct.getMember(8);
+        var safeArrayBound = this.safeArrayStruct.getValue().getMember(8).getValue();
 
         // TODO: IMPLEMENT THE REST WITH BI-DIMENSIONAL Array
         // IM POSTPONING THIS FOR NOW BUT IT WILL BE NEEDED LATER
       }
     }
+    return retVal;
   }
 
   getObjectAsInt()
@@ -880,9 +969,9 @@ class VariantBody
       ndr.writeUnsignedLong(varType);
     } else {
       if (!isByRef) {
-        ndr.writeUnsignedLong(new Variant()VT_ARRAY);
+        ndr.writeUnsignedLong(new Variant().VT_ARRAY);
       } else {
-        ndr.writeUnsignedLong(new Variant()VT_BYREF_VT_ARRAY);
+        ndr.writeUnsignedLong(new Variant().VT_BYREF_VT_ARRAY);
       }
     }
 
@@ -953,10 +1042,11 @@ class VariantBody
   }
 
   decode(ndr, defferedPointers, FLAG, additionalData){
-		let index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
+		let index = new Number(ndr.getBuffer().getIndex());
 		if (index % 8.0 != 0)
 		{
-			let i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
+      let i = Math.round(index%8.0);
+      i = (i == 0)? 0 : 8 - i ;
 			ndr.readOctetArray(new Array(i), 0, i);
 		}
 
@@ -975,10 +1065,10 @@ class VariantBody
 
 		let variant = null;
 
-		let varDefferedPointers = new Array();
+		var varDefferedPointers = new Array();
 		if((variantType & new Variant().VT_ARRAY) == 0x2000)
 		{
-			let isByRef = (variantType & new Variant().VT_BYREF) == 0 ? false : true;
+			var isByRef = (variantType & new Variant().VT_BYREF) == 0 ? false : true;
 			//the struct may be null if the array has nothing
 			let safeArray = this.getDecodedValueAsArray(ndr,varDefferedPointers,variantType & ~new Variant().VT_ARRAY,isByRef,additionalData,FLAG);
 			let type2 = variantType;
@@ -1006,12 +1096,14 @@ class VariantBody
 
 			if(safeArray != null)
 			{
-        variant = new VariantBody(safeArray, new Variant().getSupportedClass(new Number(type2 
-          & ~new Variant().VT_ARRAY)),(safeArray.getMember(8)).getArrayInstance()).length > 1 ? true : false,isByRef,flagofFlags);
+        variant = new VariantBody(3, {safeArray: safeArray, nestedClass: new Variant().getSupportedClass(new Number(type2 
+          & ~new Variant().VT_ARRAY)),is2Dimensional: (safeArray.getValue().getMember(8).getValue().getArrayInstance()).length > 1 ? true : false ,
+          isByref: isByRef, FLAG: flagofFlags});
 			}
 			else
 			{
-				variant = new VariantBody(null, new Variant().getSupportedClass(new Number(type2 & ~new Variant().VT_ARRAY)),false,isByRef,flagofFlags);
+        variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~new Variant().VT_ARRAY)),
+          is2Dimensional: false,isByref: isByRef, FLAG: flagofFlags});
 			}
 
 			variant.FLAG = flagofFlags;
@@ -1019,9 +1111,11 @@ class VariantBody
 		}
 		else
 		{
-			let isByRef = (variantType & new Variant().VT_BYREF) == 0 ? false : true;
-			variant = new VariantBody(getDecodedValue(ndr,varDefferedPointers,variantType,isByRef,additionalData,FLAG),isByRef,variantType);
-			int type2 = variantType & 0x0FFF ;
+      var isByRef = (variantType & new Variant().VT_BYREF) == 0 ? false : true;
+      let ref = this.getDecodedValue(ndr,varDefferedPointers,variantType,isByRef,additionalData,FLAG);
+      variant = new VariantBody(1, {referent: ref,
+        isByRef: isByRef, dataType: variantType});
+			let type2 = variantType & 0x0FFF ;
 			if (type2 == new Variant().VT_INT)
 			{
 				variant.FLAG = Flags.FLAG_REPRESENTATION_VT_INT;
@@ -1034,15 +1128,20 @@ class VariantBody
 		}
 
 
-		int x = 0;
-		while (x < varDefferedPointers.size())
+		let x = 0;
+		while (x < varDefferedPointers.length)
 		{
 
 			let newList = new Array();
-			let replacement = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(varDefferedPointers.[x], types.POINTER),newList,FLAG,additionalData);
+			let replacement = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(varDefferedPointers[x], types.POINTER),newList,FLAG,additionalData);
 			varDefferedPointers[x].replaceSelfWithNewPointer(replacement); //this should replace the value in the original place.
-			x++;
-			varDefferedPointers.addAll(x,newList);
+      x++;
+      let aux = newList;
+      let maxLength = newList.length;
+      let i = 0;
+      let aux_index = x;
+      while(i++ < maxLength)
+			  varDefferedPointers.splice(aux_index++, 0, aux.shift());
 		}
 
 		if (variant.isArray && variant.safeArrayStruct != null)
@@ -1050,15 +1149,16 @@ class VariantBody
 			//SafeArray have the alignment rule , that all Size <=4 are aligned by 4 and size 8 is aligned by 8.
 			//Variant is aligned by 4, Interface pointers are aligned by 4 as well.
 			//but this should not exceed the length
-			index = new Integer(ndr.getBuffer().getIndex()).doubleValue();
+			index = new Number(ndr.getBuffer().getIndex());
 			length = length * 8 + start;
 			if (index < length) {
-				let safeArrayStruct = variant.safeArrayStruct;
-				let size = safeArrayStruct.getMember(2);
+				let safeArray = variant.safeArrayStruct;
+				let size = safeArray.getValue().getMember(2);
 				let i = 0;
-				if (size.intValue() == 8) {
+				if (size == 8) {
 					if (index%8.0 != 0) {
-						i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i ;
+            i = Math.round(index%8.0);
+            i = (i) == 0 ? 0 : 8 - i ;
 						if (index + i <= length) {
 							ndr.readOctetArray(new Array(i), 0, i);
 						}	else {
@@ -1086,12 +1186,170 @@ class VariantBody
 			} catch (e) {
 				throw new Error(e);
 			}
-			let variantMain = new Variant(array,variant.isByRef,variant.FLAG);
+			let variantMain = new Variant(new ComValue(array, types.COMARRAY),variant.isByref,variant.FLAG);
 			variant = variantMain.member.getValue().getReferent();
 		}
 
 		return variant;
   }
+
+  getDecodedValue(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+	{
+
+		let obj = null;
+		let c = this.getVarClass(type);
+		if (c != null)
+		{
+			if (isByRef)
+			{
+				ndr.readUnsignedLong(); //Read the Pointer
+			}
+
+			if (c.getType() == new VariantBody().SCODE)
+			{
+				obj = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(null, types.INTEGER),null,FLAG,additionalData);
+				obj = SCODE;
+				type = new Variant().VT_ERROR;
+			}else
+			if (c.getType()  == new VariantBody().NULL)
+			{
+				//have read 20 bytes
+				//JIMarshalUnMarshalHelper.deSerialize(ndr,Integer.class,null,JIFlags.FLAG_NULL);//read the last 4 bytes, since there could be parameters before this.
+				obj = NULL;
+				type = new Variant().VT_NULL;
+			}else
+			if (c.getType() == new VariantBody().EMPTY) //empty is 20 bytes
+			{
+				obj = new VariantBody().EMPTY;
+				type = new Variant().VT_EMPTY;
+			}else
+			if (c.getType()  == types.COMSTRING)
+			{
+				obj = new ComString(Flags.FLAG_REPRESENTATION_STRING_BSTR);
+				obj = (obj).decode(ndr,null,FLAG,additionalData);
+			}
+			else
+				if (c.getType()  == types.BOOLEAN) {
+					obj = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(false, types.BOOLEAN),defferedPointers,FLAG | Flags.FLAG_REPRESENTATION_VARIANT_BOOL,additionalData);
+				} else {
+					obj = MarshalUnMarshalHelper.deSerialize(ndr, c,defferedPointers,FLAG,additionalData);
+				}
+		}
+		return obj;
+  }
+  
+  getVarClass(type)
+	{
+		let c = null;
+		//now first to check if this is a pointer or not.
+		type = type & 0x0FFF ; //0x4XXX & 0x0FFF = real type
+		switch(type)
+		{
+			case 0:  //VT_EMPTY , Not specified.
+				c = EMPTY;
+				break;
+			case 1:	// VT_NULL , Null.
+				c = NULL;
+				break;
+			case 10:
+				c = SCODE; //VT_ERROR,Scodes.
+				break;
+			default:
+				c = new Variant().getSupportedClass(new Number(type));
+				if (c == null)
+				{
+					//TODO log this , what has come that i don't support.
+				}
+			    break;
+		}
+
+		return c;
+  }
+  
+  getDecodedValueAsArray(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+	{
+		//int newFLAG = FLAG;
+		if (isByRef)
+		{
+			ndr.readUnsignedLong();//read the pointer
+			type = type & ~new Variant().VT_BYREF; //so that actual type can be determined
+		}
+
+		if (ndr.readUnsignedLong() == 0)//read pointer referent id
+		{
+			return null;
+		}
+
+		ndr.readUnsignedLong();//1
+
+		let safeArray = new Struct();
+		try {
+			safeArray.addMember(new ComValue(null, types.SHORT));//dim
+
+			let safeArrayBound = new Struct();
+			safeArrayBound.addMember(new ComValue(null, types.INTEGER));
+			safeArrayBound.addMember(new ComValue(null, types.INTEGER)); //starts at 0
+
+			safeArray.addMember(new ComValue(null, types.SHORT));//flags
+			safeArray.addMember(new ComValue(null, types.INTEGER));//size
+			safeArray.addMember(new ComValue(null, types.SHORT));//locks
+			safeArray.addMember(new ComValue(null, types.SHORT));//locks
+			safeArray.addMember(new ComValue(null, types.INTEGER));//safearrayunion
+			safeArray.addMember(new ComValue(null, types.INTEGER));//size in safearrayunion
+
+			let c = new Variant().supportedTypes_classes.get(new Number(type));
+			if (c == null)
+			{
+				//not available , lets try with JIVariant.
+				//This is a bug, I should have the type.
+				c = new ComValue(null, types.VARIANT);
+			}
+
+			if (c.getType() == types.BOOLEAN)
+			{
+				FLAG |= Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
+      }
+			let values = null;
+			if (c.getType() == types.COMSTRING)
+			{
+				values = new ComArray(new ComValue(new ComString(Flags.FLAG_REPRESENTATION_STRING_BSTR), types.COMSTRING),null,1,true);
+				safeArray.addMember(new ComValue(new Pointer(new ComValue(values, types.COMARRAY)), types.POINTER));//single dimension array, will convert it into the
+				//[] or [][] after inspecting dimension read.
+			}
+			else
+			{
+				values = new ComArray(c,null,1,true);
+				safeArray.addMember(new ComValue(new Pointer(new ComValue(values, types.COMARRAY)), types.POINTER));//single dimension array, will convert it into the
+																						//[] or [][] after inspecting dimension read.
+			}
+
+			safeArray.addMember(new ComValue(new ComArray(new ComValue(safeArrayBound, types.STRUCT),null,1,true), types.COMARRAY));
+
+			safeArray = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(safeArray, types.STRUCT),defferedPointers,FLAG,additionalData);
+
+			//now set the right class after examining the flags , only set for JIVariant.class now., the BSTR would already be set previously.
+			let features = safeArray.getValue().getMember(1);
+			//this condition is being kept in the front since the feature flags can be a combination of FADF_VARIANT and the
+			//other flags , in which case the Variant takes priority (since they will all be wrapped as variants).
+			if ((features & new Variant().FADF_VARIANT) == new Variant().FADF_VARIANT)
+			{
+				values.updateClazz(new ComValue(null, types.VARIANT));
+			}
+			else if (((features & new Variant().FADF_DISPATCH) == new Variant().FADF_DISPATCH) ||
+					((features & new Variant().FADF_UNKNOWN) == new Variant().FADF_UNKNOWN))
+			{
+				values.updateClazz(new ComValue(nul, types.COMOBJECT));
+			}
+			//For JIStrings , it will be done before these above conditions are examined.
+
+
+		} catch (e) {
+			throw new Error(e);
+		}
+
+
+		return safeArray;
+	}
 }
 
 module.exports = {

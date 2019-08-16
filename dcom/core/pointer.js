@@ -167,7 +167,7 @@ class Pointer {
         if (this.isDeffered || (flag & Flags.FLAG_REPRESENTATION_ARRAY) == Flags.FLAG_REPRESENTATION_ARRAY) {
             retVal.referentId = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), defferedPointers, flag, additionalData);
             retVal.referent = this.referent; //will only be the class or object
-            if (retVal.referentId == 0 && !this.nullSpecial) {
+            if (retVal.referentId.getValue() == 0 && !this.nullSpecial) {
                 //null pointer
                 // just return
                 retVal._isNull = true;
@@ -185,7 +185,7 @@ class Pointer {
             //referentId = ndr.readUnsignedLong();
             retVal.referentId = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), defferedPointers, flag, additionalData)
             retVal.referent = this.referent; //will only be the class or object
-            if (retVal.referentId == 0 && !this.nullSpecial) {
+            if (retVal.referentId.getValue() == 0 && !this.nullSpecial) {
                 //null pointer
                 // just return
                 retVal._isNull = true;

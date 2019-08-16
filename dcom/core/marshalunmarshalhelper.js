@@ -363,7 +363,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
 
         switch (c) {
             case types.COMSTRING:
-                return (!obj) ? new ComString().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
+                return (!obj) ? new ComString("", Flags.FLAG_REPRESENTATION_STRING_LPWSTR).decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.POINTER:
                 return (!obj) ? new Pointer().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.STRUCT:
@@ -380,7 +380,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 ndr.getBuffer().align(8);
                 let date = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));
                 ndr.getBuffer().advance(8);
-                return date;
+                return new ComValue(date, types.DATE);
 
             //case types.CURRENCY:
             //    break;
@@ -388,25 +388,25 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
                     let s = ndr.readUnsignedShort();
-                    return (s != 0);
+                    return new ComValue((s != 0), types.BOOLEAN);
                 } else {
-                    return ndr.readBoolean();
+                    return new ComValue(ndr.readBoolean(), types.BOOLEAN);
                 }
 
             case types.UNSIGNEDSHORT: //TODO we may need different behavior for unsigned here
             case types.SHORT:
-                return ndr.readUnsignedShort();
+                return new ComValue(ndr.readUnsignedShort(), types.SHORT);
 
             case types.UNSIGNEDINTEGER: //TODO we may need different behavior for unsigned here
             case types.INTEGER:
-                return ndr.readUnsignedLong();
+                return new ComValue(ndr.readUnsignedLong(), types.INTEGER);
 
             case types.FLOAT:
                 ndr.getBuffer().align(4);
                 let float = Encdec.dec_floatle(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(4);
 
-                return float;
+                return new ComValue(float, types.FLOAT);
 
             case types.STRING:
                 if ((flag & Flags.FLAG_REPRESENTATION_VALID_STRING) != Flags.FLAG_REPRESENTATION_VALID_STRING) {
@@ -471,34 +471,34 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                     retString = buffer.toString('utf16le');
                 }
 
-                return retString;
+                return new ComValue(retString, types.STRING);
 
             case types.UUID:
                 let uuid = new UUID();
                 uuid.decode(ndr, ndr.getBuffer());
-                return uuid;
+                return new ComValue(uuid, types.UUID);
 
             case types.UNSIGNEDBYTE: //TODO we may need different behavior for unsigned here
             case types.BYTE:
-                return ndr.readUnsignedSmall();
+                return new ComValue(ndr.readUnsignedSmall(),types.BYTE);
 
             case types.DOUBLE:
                 ndr.getBuffer().align(8);
                 let double = Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(8);
-                return double;
+                return new ComValue(double, types.DOUBLE);
 
             case types.LONG:
                 ndr.getBuffer().align(8);
                 let long = Encdec.dec_uint64le(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(8);
-                return long;
+                return new ComValue(long, types.LONG);
 
             case types.CHARACTER:
-                return String.fromCharCode(ndr.readUnsignedSmall());
+                return new ComValue(String.fromCharCode(ndr.readUnsignedSmall()), types.CHARACTER);
 
             case types.INTERFACEPOINTERBODY:
-                return InterfacePointerBody.decode(ndr, flag);
+                return new ComValue(InterfacePointerBody.decode(ndr, flag), types.INTERFACEPOINTERBODY);
 
             case types.DISPATCH:
             case types.COMOBJECT:
@@ -510,10 +510,10 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                     comObject.setCustomObject(session.getCustomMarshallerUnMarshallerTemplate(ptr.getCustomCLSID()).decode(comObject, ndr, defferedPointers, flag, additionalData));
                 }
                 additionalData.get(CallBuilder.COMOBJECTS).push(comObject);
-                return comObject;
+                return new ComValue(comObject, types.COMOBJECT);
 
             case types.DUALSTRINGARRAY:
-                return DualStringArray.decode(ndr);
+                return new ComValue(DualStringArray.decode(ndr), types.DUALSTRINGARRAY);
 
             default:
                 throw new Error("UTIL_SERDESER_NOT_FOUND" + ErrorCodes.UTIL_SERDESER_NOT_FOUND + c);
@@ -546,10 +546,10 @@ function getLengthInBytes(val, flag)
                 throw new Error("Not yet implemented");
 
             case types.VARIANTBODY:
-                return obj.getLengthInBytes();
+                return (obj)? obj.getLengthInBytes() :  0;
                 
             case types.VARIANT:
-                return obj.getLengthInBytes(flag);
+                return (obj)? obj.getLengthInBytes(flag) : 0;
                 
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
@@ -594,6 +594,8 @@ function getLengthInBytes(val, flag)
             case types.COMSTRING:
                 length = 4;
 
+                if (!obj) return 0;
+
                 if (!obj.getString()) {
                     return length;
                 }
@@ -601,7 +603,7 @@ function getLengthInBytes(val, flag)
                 //for LPWSTR and BSTR adding 2 for the null character.
                 length = length + (obj.getType() == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR ? 0 : 2);
                 //Pointer referentId --> USER
-                return length + getLengthInBytes(new ComValue(obj.getString(), types.STRING), obj.getType() | flag);
+                return length + this.getLengthInBytes(new ComValue(obj.getString(), types.STRING), obj.getType() | flag);
 
             case types.CHARACTER:
             case types.BYTE:

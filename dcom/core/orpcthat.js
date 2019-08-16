@@ -141,9 +141,11 @@ class OrpcThat {
         //now read whether extend array exists or not
         //int ptr = ndr.readUnsignedLong();
         if (!orpcextentarrayptr.getValue().isNull()) {
-            let pointers = orpcextentarrayptr.getValue().getReferent().getMember(2).getReferent().getArrayInstance(); //JIPointer[]
+            let pointers = orpcextentarrayptr.getValue().getReferent().getMember(2).getValue().getReferent().getArrayInstance(); //JIPointer[]
             for (let i = 0; i < pointers.length; i++)
             {
+                if (!(pointers[i] instanceof Pointer))
+                    break;
                 if (pointers[i].isNull())
                     continue;
 

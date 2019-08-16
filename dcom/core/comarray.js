@@ -195,7 +195,7 @@ class ComArray {
 	computeLengthArray(array) {
 		let length = 0;
 		//let name = array.getClass().getName();
-		let elm0 = array[0];
+		let elm0 = array[0].getValue();
 		//Object o[] = (Object[])array;
 		let o = array;
 		for (let i = 0; i < o.length; i++)
@@ -205,7 +205,7 @@ class ComArray {
 				//Object o1[] = (Object[])array;
 				let o1 = array;
 				for (let j = 0; j < o1.length; j++)	{
-					length += MarshalUnMarshalHelper.getLengthInBytes(new ComValue(o1[j], this.clazz), Flags.FLAG_NULL);
+					length += MarshalUnMarshalHelper.getLengthInBytes(o1[j], Flags.FLAG_NULL);
 				}
 				return length;
 			} else {
@@ -292,7 +292,7 @@ class ComArray {
 		}
 		
 		//let name = array.getClass().getName();
-		let elm0 = array[0];
+		let elm0 = array[0].getValue();
 		//Object o[] = (Object[])array;
 		let o = array;
 		for (let i = 0; i < o.length; i++) {
@@ -301,7 +301,7 @@ class ComArray {
 				//Object o1[] = (Object[])array;
 				let o1 = array;
 				for (let j = 0; j < o1.length; j++) {
-					MarshalUnMarshalHelper.serialize(ndr, new ComValue(o1[j], this.clazz), defferedPointers, flag | Flags.FLAG_REPRESENTATION_ARRAY);
+					MarshalUnMarshalHelper.serialize(ndr, o1[j], defferedPointers, flag | Flags.FLAG_REPRESENTATION_ARRAY);
 				}
 				return;
 			} else {
@@ -360,7 +360,7 @@ class ComArray {
 				let i = 0;
 				while (i < retVal.conformantMaxCounts.length) {
 					retVal.upperBounds[i] = retVal.conformantMaxCounts[i];
-					retVal.numElementsInAllDimensions = retVal.numElementsInAllDimensions * retVal.upperBounds[i];
+					retVal.numElementsInAllDimensions = retVal.numElementsInAllDimensions * retVal.upperBounds[i].getValue();
 					i++;
 				}
 				if (i == 0) {
@@ -417,7 +417,7 @@ class ComArray {
 		retVal.clazz = this.clazz;
 		retVal.dimension = this.dimension;
 		retVal.sizeOfNestedArrayInBytes = -1; // setting here so that when a call actually comes for it's lenght , the getLength will compute. This is required since while decoding many pointers are still not complete and their length cannot be decided.
-		return retVal;
+		return new ComValue(retVal, types.COMARRAY);
 	}
 	
 	/**
@@ -435,11 +435,11 @@ class ComArray {
 		let array = null;
 		let c = new ComValue(null, arrayType)
 		for (let j = 0; j < dimension; j++ )		{
-			array = new Array(retVal.upperBounds[retVal.upperBounds.length - j - 1])
+			array = new Array(retVal.upperBounds[retVal.upperBounds.length - j - 1].getValue())
 			//c = array.getClass();
 		}
 		
-		for (let i = 0; i < retVal.upperBounds[retVal.upperBounds.length - dimension] ; i++)	{
+		for (let i = 0; i < retVal.upperBounds[retVal.upperBounds.length - dimension].getValue() ; i++)	{
 			if(dimension == 1){
 
 				//fill value here

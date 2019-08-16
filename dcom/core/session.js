@@ -363,20 +363,24 @@ class Session
       listOfFreeIPIDs = [];
 
       if (list.length > 0) {
-        let temp = new ComValue(list, types.STRUCT);
+        let temporary = new Array();
+        for (let i = 0; i < list.length; i++) {
+          temporary.push(new ComValue(list[i], types.STRUCT));
+        }
+        let temp = new ComValue(temporary, types.STRUCT);
         var array = new ComArray(temp, true);
         try {
           await session.stub.closeStub();
           let self = this;
-          await session.releaseRefs(array, true).then(function(data){
+          await session.releaseRefs(array, true).then(async function(data){
             self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
             self.removeSession(session);
 
             if (session.stub.getServerInterfacePointer() != null) {
               self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
             }
-            session.stub.closeStub();
-            session.stub2.closeStub();
+            await session.stub.closeStub();
+            await session.stub2.closeStub();
 
             self.postDestroy(session);
             session.stub = null;
@@ -411,7 +415,7 @@ class Session
       this.destroySession(session.links.get(i));
     }
 
-    session.links.clear();
+    session.links = [];
     //ComOxidRuntime.destroySessionOIDs(session.getSessionIdentifier());
   }
 
@@ -537,7 +541,7 @@ class Session
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
     console.log("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
-    await addRef_ReleaseRef(IPID, obj, -5);
+    await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
   /**
@@ -598,7 +602,7 @@ class Session
     remInterface.addMember(new ComValue(new UUID(IPID), types.UUID));
     remInterface.addMember(refcount);
     remInterface.addMember(0);
-    console.log("prepareForReleaseRef: Releasing " + refcount + "references of IPID: "
+    console.log("prepareForReleaseRef: Releasing " + refcount + " references of IPID: "
       + IPID + " session: " + this.getSessionIdentifier());
     this.updateReferenceForIPID(IPID, -1 * refcount);
 

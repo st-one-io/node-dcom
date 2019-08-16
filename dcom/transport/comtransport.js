@@ -3,13 +3,15 @@ var PresentationSyntax = require('../rpc/core/presentationsyntax.js');
 var os = require('os');
 var net = require('net');
 var dns = require('dns');
+var events = require('events');
 //var ByteBuffer = require('bytebuffer');
 var ComEndpoint = require('./comendpoint.js');
 
-class ComTransport
+class ComTransport extends events.EventEmitter
 {
   constructor(address, info)
   {
+    super();
     console.log("new ComTransport");
     this.PROTOCOL = "ncacn_ip_tcp";
     this.LOCALHOST = os.hostname();
@@ -112,7 +114,10 @@ class ComTransport
   {
     try {
       if (this.channelWrapper != null) {
-        await this.channelWrapper.end();
+        let self = this;
+        return new Promise(function(resolve, reject) {
+          let teste = self.channelWrapper.end(resolve(self.channelWrapper = null));
+        });
       }
     } finally {
       this.attached = false;

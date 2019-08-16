@@ -203,7 +203,7 @@ class RemActivation extends NdrObject {
             while (aux_i < newList.length) listOfDefferedPointers.splice(aux_i++, 1, newList.shift());
         }
 
-        let arrayObjs = array.getArrayInstance();
+        let arrayObjs = array.getValue().getArrayInstance();
         this.mInterfacePointer = arrayObjs[0];
 
         if (arrayObjs[1] != null) {

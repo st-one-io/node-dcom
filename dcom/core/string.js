@@ -58,7 +58,7 @@ class ComString {
                 this.variant = new Variant.Variant(thisComValue);
                 this.variantByRef = new Variant.Variant(thisComValue, true);
             } else {
-                throw new Error(ErrorCodes.JI_UTIL_FLAG_ERROR);
+                throw new Error(new ErrorCodes().JI_UTIL_FLAG_ERROR);
             }
 
             this.member.getValue().setFlags(type | Flags.FLAG_REPRESENTATION_VALID_STRING);
@@ -123,7 +123,7 @@ class ComString {
     decode(ndr, defferedPointers, flag, additionalData) {
         let newString = new ComString(this.type);
         newString.member = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(this.member.getValue(), types.POINTER), defferedPointers, this.type | flag, additionalData);
-        return newString;
+        return new ComValue(newString, types.COMSTRING);
     }
 
     /**

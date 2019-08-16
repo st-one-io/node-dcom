@@ -64,7 +64,7 @@ class ComObjectImpl extends ComObject
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    let array = new ComArray(new ComValue([new UUID(this.ptr.getIPID())], types.UUID), true);
+    let array = new ComArray(new ComValue([new ComValue(new UUID(this.ptr.getIPID()), types.UUID)], types.UUID), true);
     //var array = new ComArray(new ComValue(tempArray,types.COMARRAY), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     // TODO: build caching mechanism to exhausts 5 refs before asking for more
@@ -77,12 +77,12 @@ class ComObjectImpl extends ComObject
     //this.session.debug_addIpids(this.ptr.getIPID(), 5);
     await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
     
-    if (obj.getResultAt(1) != 0) {
+    if (obj.getResultAt(1).getValue() != 0) {
       throw new Error("Exception:" + String(obj.getResultAsIntAt(1)));
     }
   }
 
-  release()
+  async release()
   {
     this.checkLocal();
     var obj = new CallBuilder(true);
@@ -91,13 +91,13 @@ class ComObjectImpl extends ComObject
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    var array = new ComArray(new ComValue([new UUID(this.ptr.getIPID())], types.UUID), true);
+    var array = new ComArray(new ComValue([new ComValue(new UUID(this.ptr.getIPID()), types.UUID)], types.UUID), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
 
     obj.addInParamAsInt(5,Flags.FLAG_NULL);
     obj.addInParamAsInt(0,Flags.FLAG_NULL);
 
-    this.session.addRef_ReleaseRef(this.ptr.getIPID, obj, -5);
+    await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, -5);
   }
 
   call(obj)
