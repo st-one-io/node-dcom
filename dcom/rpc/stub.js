@@ -62,7 +62,6 @@ class Stub {
   }
 
   async attach(syntax, info){
-    console.log("stub attach");
     var self = this;
     //return new Promise(function(resolve, reject) {
       var endpoint = self.endpoint;

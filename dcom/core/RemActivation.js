@@ -196,7 +196,6 @@ class RemActivation extends NdrObject {
                 ,newList, Flags.FLAG_NULL, null);
 
             listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
-            console.log("remactivation listofdeffered loop");
             x++;
             
             let aux_i = x;

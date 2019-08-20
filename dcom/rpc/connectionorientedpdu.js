@@ -126,8 +126,6 @@ class ConnectionOrientedPdu {
     this.writePdu(ndr);
 
     var buffer = ndr.getBuffer();
-    //console.log(buffer);
-    console.log(ndr.buf.getLength());
     var length = buffer.getLength();
     this.setFragmentLength(length);
 

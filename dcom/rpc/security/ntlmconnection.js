@@ -18,7 +18,6 @@ class NTLMConnection extends DefaultConnection
   constructor(info)
   {
     super();
-    console.log("ntlmconnection constructor");
     this.authentication = new NTLMAuthentication(info);
     this.ntlm;
   }
@@ -36,9 +35,7 @@ class NTLMConnection extends DefaultConnection
   }
 
   incomingRebind(verifier)
-  {
-    console.log("Incoming Rebind");
-    
+  {    
     switch (verifier.body[8]) {
       case 1:
         this.contextId = verifier.contextId;

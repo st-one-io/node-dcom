@@ -9,7 +9,6 @@ class Type1Message extends NtlmMessage
 {
   constructor(tc, flags, suppliedDomain, suppliedWorkstation){
     super();
-    console.log(suppliedDomain, suppliedWorkstation);
     this.suppliedDomain;
     this.suppliedWorkstation;
 

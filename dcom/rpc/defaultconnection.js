@@ -39,8 +39,6 @@ class DefaultConnection
 
   transmit(pdu, transport, info)
   {
-    console.log("transmit");
-
     if (!(pdu instanceof RequestCoPdu)){
       this.transmitFragment(pdu, transport, info);
       return;
@@ -89,7 +87,6 @@ class DefaultConnection
 
   async receive(transport)
   {
-    console.log("receive");
     var fragment = await this.receiveFragment(transport);
     if (!this.bytesRemainingInReceiveBuffer){
       return fragment;
@@ -125,8 +122,6 @@ class DefaultConnection
 
   transmitFragment(fragment, transport, info)
   {
-    console.log("transmitFragment");
-
     this.transmitBuffer.reset();
 
     fragment.encode(this.ndr, this.transmitBuffer);
@@ -311,7 +306,6 @@ class DefaultConnection
 
   processIncoming(buffer)
   {
-    console.log("processIncoming");
     buffer.setIndex(new ConnectionOrientedPdu().TYPE_OFFSET);
     var logMsg = true;
 

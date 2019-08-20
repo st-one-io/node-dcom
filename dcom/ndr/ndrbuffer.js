@@ -133,7 +133,7 @@ NdrBuffer.prototype.enc_ndr_short = function (s){
 
 NdrBuffer.prototype.dec_ndr_short = function (){
   this.align(2);
-  var val = Encdec.dec_uint16le(this.buf,this.index);
+  var val = Encdec.dec_uint16le(Buffer.from(this.buf),this.index);
   this.advance(2);
   return val;
 }
@@ -146,7 +146,7 @@ NdrBuffer.prototype.enc_ndr_long = function (l){
 
 NdrBuffer.prototype.dec_ndr_long = function (){
   this.align(4);
-  var val = Encdec.dec_uint32le(this.buf, this.index);
+  var val = Encdec.dec_uint32le(Buffer.from(this.buf), this.index);
   this.advance(4);
   return val;
 }

@@ -1,4 +1,5 @@
 var SmbConstants = require("./smbconstants");
+const Buffer = require('buffer');
 
 module.exports = {
   // constants
@@ -42,19 +43,19 @@ module.exports = {
 
   // decoders
   dec_uint16be: function (src, si){
-    return (((src[si] & 0xFF) << 8) | (src[si + 1] & 0xFF));
+    return src.readUInt16BE(si);
   },
 
   dec_uint32be: function (src, si){
-     return ((src[si] & 0xFF) << 24) | ((src[si + 1] & 0xFF) << 16) | ((src[si + 2] & 0xFF) << 8) | (src[si + 3] & 0xFF);
+     return src.readUInt32BE(si);
   },
 
   dec_uint16le: function (src, si){
-    return ((src[si] & 0xFF) | ((src[si + 1] & 0xFF) << 8 ));
+    return src.readUInt16LE(si);
   },
 
   dec_uint32le: function (src, si){
-    return (src[si] & 0xFF) | ((src[si + 1] & 0xFF) << 8) | ((src[si + 2] & 0xFF) << 16) | ((src[si + 3] & 0xFF) << 24);
+    return src.readUInt32LE(si);
   },
 
   // TO-DO: encoding and decoding 64 bits integers
@@ -79,10 +80,7 @@ module.exports = {
   },
 
   dec_uint64le: function (src, si) {
-    let l;
-    l = this.dec_uint32le(src, si + 4) & 0xFFFFFFFF;
-    l <<= 32;
-    l |= this.dec_uint32le(src, si) & 0xFFFFFFFF;
+    let l = src.readUInt32LE(si)
     return l;
   },
   // TO-DO: encoding and decoding of floats and 64 bits floats

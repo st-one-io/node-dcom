@@ -131,7 +131,7 @@ class ComValue {
 
         types = require('./types');
         ComArray = require('./comarray');
-        ComObject = require('./comobject');
+        ComObject = require('./comobjcimpl');
         ComString = require('./string');
         Pointer = require('./pointer.js');
         Struct = require('./struct');

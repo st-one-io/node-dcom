@@ -11,13 +11,14 @@ let UUID;
 let ComValue;
 let types;
 
-const ComObject = require('./comobject');
+const events = require('events');
 
-class ComObjectImpl extends ComObject
+class ComObjectImpl extends events.EventEmitter
 {
   constructor(session, ptr, isLocal)
   {
     super();
+    this.IID = "00000000-0000-0000-c000-000000000046";
     this._init();
     this.serialVersionUID =  "-1661750453596032089L";
 

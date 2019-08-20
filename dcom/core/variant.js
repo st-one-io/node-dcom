@@ -145,7 +145,7 @@ class Variant {
     this.supportedTypes_classes.set(new Number(this.VT_INT), new ComValue(null, types.INTEGER));
     this.supportedTypes_classes.set(new Number(this.VT_R4), new ComValue(null, types.SHORT));
     this.supportedTypes_classes.set(new Number(this.VT_BOOL), new ComValue(null, types.BOOLEAN));
-    this.supportedTypes_classes.set(new Number(this.VT_I2), new ComValue(null, types.INTEGER));
+    this.supportedTypes_classes.set(new Number(this.VT_I2), new ComValue(null, types.SHORT));
     this.supportedTypes_classes.set(new Number(this.VT_I1), new ComValue(null, types.BYTE));
     this.supportedTypes_classes.set(new Number(this.VT_BSTR), new ComValue(null, types.COMSTRING));
     this.supportedTypes_classes.set(new Number(this.VT_ERROR), SCODE);

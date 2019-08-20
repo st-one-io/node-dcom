@@ -489,9 +489,15 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 return new ComValue(double, types.DOUBLE);
 
             case types.LONG:
-                ndr.getBuffer().align(8);
-                let long = Encdec.dec_uint64le(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
-                ndr.getBuffer().advance(8);
+                // JS support for 64bit numbers is done poorly, mostly we would need external packages, so far this should work for our needs
+                // i.e, see everythink beyond 32 bits as 32 bits
+                let index = ndr.getBuffer().getIndex();
+                let i = Math.round(index%8.0);
+                i= (i == 0) ? 0 : 8 - i ;
+
+                ndr.getBuffer().align(i);
+                let long = Encdec.dec_uint64le(Buffer.from(ndr.getBuffer().getBuffer()), ndr.getBuffer().getIndex());
+                ndr.getBuffer().advance(i);
                 return new ComValue(long, types.LONG);
 
             case types.CHARACTER:

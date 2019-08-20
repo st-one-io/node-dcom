@@ -23,9 +23,9 @@ class NtlmUtils
         let avPairsLength = avPairs != null ? avPairs.length : 0;
         let temp =[...Buffer.from(new Array(28 + avPairsLength + 4))];
 
-        Encdec.enc_uint16le(0x00000101, temp, 0);
-        Encdec.enc_uint32le(0x00000000, temp, 4);
-        Encdec.enc_uint64le(nanos1601, temp, 8);
+        Encdec.enc_uint16le(0x00000101, Buffer.from(temp), 0);
+        Encdec.enc_uint32le(0x00000000, Buffer.from(temp), 4);
+        Encdec.enc_uint64le(nanos1601, Buffer.from(temp), 8);
 
         let aux = clientChallenge.slice(0, 8);
         let aux_i = 16;

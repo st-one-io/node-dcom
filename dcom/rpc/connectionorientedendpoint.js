@@ -107,7 +107,6 @@ class ConnectionOrientedEndpoint {
    * @param {Object} info
    */
   async bind(info) {
-    console.log("bind");
     if (this.bound) return;
     if (this.context != null) {
       this.bound = true;
@@ -145,7 +144,6 @@ class ConnectionOrientedEndpoint {
                 break;
               default:
             }
-            console.log("SENDING");
             this.send(pdu, info);
           }
         }
@@ -156,7 +154,6 @@ class ConnectionOrientedEndpoint {
   }
 
   send(request, info){
-    console.log("send");
     this.bind(this.info);
     this.context.getConnection().transmit(request, this.getTransport(), info);
   }
@@ -172,7 +169,6 @@ class ConnectionOrientedEndpoint {
   }
 
   async connect(info){
-    console.log("connect");
     this.bound = true;
     this.contextIdCounter = 0;
     this.currentIID = null;

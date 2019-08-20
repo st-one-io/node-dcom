@@ -12,7 +12,6 @@ class ComTransport extends events.EventEmitter
   constructor(address, info)
   {
     super();
-    console.log("new ComTransport");
     this.PROTOCOL = "ncacn_ip_tcp";
     this.LOCALHOST = os.hostname();
     this.DEFAULT_READ_READY_HANDOFF_TIMEOUT_SECS = 30;
@@ -69,7 +68,6 @@ class ComTransport extends events.EventEmitter
 
   attach(syntax)
   {
-    console.log("attach");
     var self = this;
     return new Promise(function(resolve, reject){
       if (self.attached) {
@@ -83,7 +81,6 @@ class ComTransport extends events.EventEmitter
         received data to the receiveBuffer and wait for it be called
       */
       channel.on('data', function(data){
-         console.log("data received", self.recvPromise);
         if (self.recvPromise == null) {
           self.receivedBuffer.concat(data);
         } else {
@@ -97,11 +94,9 @@ class ComTransport extends events.EventEmitter
         if (self.recvPromise != null) {
           self.recvPromise.reject();
         }
-        console.log("IM CLOSING BECAUSE REASONS!");
       });
 
       channel.connect(Number.parseInt(self.port),  self.host, () => {
-        console.log("connected.");
         self.attached = true;
         channel.setKeepAlive(true);
         self.channelWrapper = channel;
@@ -144,7 +139,6 @@ class ComTransport extends events.EventEmitter
 
   receive()
   {
-    console.log("receiving packet...")
     if (!this.attached) {
       throw new Error("Transport not attached.");
     }
@@ -164,7 +158,6 @@ class ComTransport extends events.EventEmitter
         console.log(self.receivedBuffer);
         resolve(buffer = self.receivedBuffer);
       } else {
-        console.log("waiting for data");
         if (self.recvPromise == null){
           self.recvPromise = {resolve: resolve, reject: reject};  
         }

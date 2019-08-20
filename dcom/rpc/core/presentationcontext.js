@@ -36,7 +36,6 @@ PresentationContext.prototype.write = function (ndr) {
   for (var i = 0; i < this.transferSyntaxes.length; i++){
     this.transferSyntaxes[i].encode(ndr, ndr.getBuffer());
   }
-  console.log("finish writing");
 };
 
 module.exports = PresentationContext;
