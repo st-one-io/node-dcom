@@ -14,7 +14,7 @@ var OrphanedPdu = require('./pdu/orphanedpdu.js');
 var RequestCoPdu = require('./pdu/requestcopdu.js');
 var ResponseCoPdu = require('./pdu/responsecopdu.js');
 var ShutdownPdu = require('./pdu/shutdownpdu.js');
-var Fragmentable = require('./fragmentable.js');
+var Events = require('events');
 //var Buffer = require('buffer');
 
 class DefaultConnection

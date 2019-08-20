@@ -1,15 +1,18 @@
-var Endpoint = require('../rpc/connectionorientedendpoint.js');
-var PresentationSyntax = require('../rpc/core/presentationsyntax.js');
-var os = require('os');
-var net = require('net');
-var dns = require('dns');
-var events = require('events');
-//var ByteBuffer = require('bytebuffer');
-var ComEndpoint = require('./comendpoint.js');
+// @ts-check
+const Endpoint = require('../rpc/connectionorientedendpoint.js');
+const PresentationSyntax = require('../rpc/core/presentationsyntax.js');
+const os = require('os');
+const net = require('net');
+const events = require('events');
 
 class ComTransport extends events.EventEmitter
 {
-  constructor(address, info)
+  /**
+   * 
+   * @param {String} address
+   * @param {Number} timeout
+   */
+  constructor(address, timeout)
   {
     super();
     this.PROTOCOL = "ncacn_ip_tcp";
@@ -24,9 +27,14 @@ class ComTransport extends events.EventEmitter
     this.recvPromise = null;
     this.receivedBuffer = new Array();
     this.aux;
+    this.timeout = timeout;
     this.parse(address);
   }
 
+  /**
+   * Will parse the addres given
+   * @param {String} address 
+   */
   parse(address){
     if (address == null) {
       throw new Error ("Null address.");
@@ -61,12 +69,19 @@ class ComTransport extends events.EventEmitter
     this.host = server;
   }
 
+  /**
+   * @returns {String}
+   */
   getProtocol()
   {
     return this.PROTOCOL;
   }
 
-  attach(syntax)
+  /**
+   * 
+   * @param {PresentationSyntax} syntax 
+   */
+  attach()
   {
     var self = this;
     return new Promise(function(resolve, reject){
@@ -75,19 +90,23 @@ class ComTransport extends events.EventEmitter
       }
       var channel = new net.Socket();
       channel.setKeepAlive(true);
-      var endpoint = new ComEndpoint()
+      
       /* When we recieve some data we check if receive() was already called by
         checkin if recProm is null. If it is, we resolve it, if not we add the
         received data to the receiveBuffer and wait for it be called
       */
       channel.on('data', function(data){
+        clearTimeout(self.recvPromise.timer );
         if (self.recvPromise == null) {
           self.receivedBuffer.concat(data);
         } else {
           self.recvPromise.resolve(data);
           self.recvPromise = null;
-          console.log(self.aux);
         }
+      });
+
+      channel.on('error', function(data){
+        self.emit('disconnected');
       });
 
       channel.on('close', function(){
@@ -100,7 +119,7 @@ class ComTransport extends events.EventEmitter
         self.attached = true;
         channel.setKeepAlive(true);
         self.channelWrapper = channel;
-        resolve(new ComEndpoint(self, syntax));
+        resolve();
       });
     });
   }
@@ -123,7 +142,7 @@ class ComTransport extends events.EventEmitter
   send(buffer, info)
   {
     if (!this.attached) {
-      throw new Erro("Transport not attached.");
+      throw new Error("Transport not attached.");
     }
 
     let buf = buffer.getBuffer();
@@ -137,7 +156,7 @@ class ComTransport extends events.EventEmitter
     }
   }
 
-  receive()
+  receive(buffer)
   {
     if (!this.attached) {
       throw new Error("Transport not attached.");
@@ -152,14 +171,20 @@ class ComTransport extends events.EventEmitter
      */
 
     
-    var self = this;
+    let self = this;
+    this.timeout;
     return new Promise(function(resolve, reject){
+      let timer = setTimeout(function() {
+        clearTimeout(timer);
+        reject(new Error('connection timeout'));
+      }, self.timeout);
+
       if (self.receivedBuffer.length > 0) {
-        console.log(self.receivedBuffer);
+        clearTimeout(timer);
         resolve(buffer = self.receivedBuffer);
       } else {
         if (self.recvPromise == null){
-          self.recvPromise = {resolve: resolve, reject: reject};  
+          self.recvPromise = {resolve: resolve, reject: reject, timer: timer};  
         }
       }
     });

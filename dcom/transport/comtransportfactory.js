@@ -5,10 +5,10 @@ class ComTransportFactory {
     this.instance;
   }
 
-  createTransport(address)
+  createTransport(address, timeout)
   {
     console.log("createTransport");
-    return new ComTransport(address);
+    return new ComTransport(address, timeout);
   }
 
   getSingleton()

@@ -70,15 +70,15 @@ class RemUnknownServer extends Stub {
         }
 
         try {
-            await this.attach(this.getSyntax(), this.info);
+            await this.attach(this.getSyntax(), this.info, this.session.getGlobalSocketTimeout());
 
             if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
                 this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
                 this.getEndpoint().getSyntax().setVersion(0, 0);
-                await this.getEndpoint().rebindEndpoint(this.info);
+                await this.getEndpoint().rebind(this.info);
             }
             this.setObject(obj.getParentIpid());
-            await super.call(new Endpoint().IDEMPOTENT, obj, this.info);
+            await super.call(Endpoint.IDEMPOTENT, obj, this.info);
         } catch (e) {
             console.log(e);
         }

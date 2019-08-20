@@ -1,29 +1,31 @@
-var HashMap = require("hashmap");
-var RequestCoPdu = require('./pdu/requestcopdu.js');
-var NdrBuffer = require('../ndr/ndrbuffer.js');
-var NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
-var ConnectionOrientedPdu = require('./connectionorientedpdu.js');
-var ResponseCoPdu = require('./pdu/responsecopdu.js');
-var FaultCoPdu = require('./pdu/faultCoPdu.js');
-var ShutdownPdu = require('./pdu/shutdownpdu.js');
-var PresentationSyntax = require('./core/presentationsyntax.js');
-var PresentationContext = require('./core/presentationcontext.js');
-var BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
-var AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
-var BasicConnectionContext = require('./basicconnectioncontext.js');
-var NTLMConnectionContext = require('./security/ntlmconnectioncontext.js');
+const HashMap = require("hashmap");
+const RequestCoPdu = require('./pdu/requestcopdu.js');
+const NdrBuffer = require('../ndr/ndrbuffer.js');
+const NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
+const ConnectionOrientedPdu = require('./connectionorientedpdu.js');
+const ResponseCoPdu = require('./pdu/responsecopdu.js');
+const FaultCoPdu = require('./pdu/faultCoPdu.js');
+const ShutdownPdu = require('./pdu/shutdownpdu.js');
+const PresentationSyntax = require('./core/presentationsyntax.js');
+const PresentationContext = require('./core/presentationcontext.js');
+const BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
+const AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
+const BasicConnectionContext = require('./basicconnectioncontext.js');
+const NTLMConnectionContext = require('./security/ntlmconnectioncontext.js');
+const Events = require('events');
 
 /**
  * This class is responsible for connection oriented communications
  * in general (TCP based)
  */
-class ConnectionOrientedEndpoint {
+class ConnectionOrientedEndpoint extends Events.EventEmitter{
   /**
    *
    * @param {ComTransport} transport
    * @param {PresentationSyntax} syntax
    */
   constructor(transport, syntax) {
+    super();
     this.MAYBE = 0x01;
     this.IDEMPOTENT = 0x02;
     this.BROADCAST = 0x04;
@@ -31,6 +33,12 @@ class ConnectionOrientedEndpoint {
     this.CONNECTION_CONTEXT = "rpc.connectionContext";
     try {
       this.transport = transport;
+
+      // now we create event listeners to listen for transport events
+      let self = this;
+      this.transport.on('disconnected', function() {
+        self.emit('disconnected');
+      });
       this.syntax = syntax;
     } catch (e) {
       console.log(e);
@@ -77,7 +85,7 @@ class ConnectionOrientedEndpoint {
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
 
-    this.send(request, info);
+    await this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
     var rply = await this.receive();
@@ -126,10 +134,12 @@ class ConnectionOrientedEndpoint {
       }
 
       if (sendAlter){
-        if (pdu != null)this.send(pdu, info);
+        if (pdu != null)await this.send(pdu, info);
         while (!this.context.isEstablished()){
-          let recieved = await this.receive();
-
+          let recieved = await this.receive()
+            .catch(function(rej) {
+              throw new Error('ConnectionOrientedEndpoint: Bind - ' + rej);
+            });;
           if ((pdu = this.context.accept(recieved)) != null){
             switch (pdu.getType()){
               case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
@@ -144,7 +154,7 @@ class ConnectionOrientedEndpoint {
                 break;
               default:
             }
-            this.send(pdu, info);
+            await this.send(pdu, info);
           }
         }
       }
@@ -153,8 +163,8 @@ class ConnectionOrientedEndpoint {
     }
   }
 
-  send(request, info){
-    this.bind(this.info);
+  async send(request, info){
+    await this.bind(this.info);
     this.context.getConnection().transmit(request, this.getTransport(), info);
   }
 
@@ -180,11 +190,10 @@ class ConnectionOrientedEndpoint {
       info);
     this.contextIdToUse = this.contextIdCounter;
 
-    if (pdu != null) this.send(pdu, info);
+    if (pdu != null) await this.send(pdu, info);
     
     while (!this.context.isEstablished()){
       var received = await this.receive();
-      
       pdu = this.context.accept(received);
 
       if (pdu != null){
@@ -201,7 +210,7 @@ class ConnectionOrientedEndpoint {
             break;
           default:
         }
-        this.send(pdu, info);
+        await this.send(pdu, info);
       }
     }
   }
@@ -214,5 +223,5 @@ class ConnectionOrientedEndpoint {
     if(!context)return new NTLMConnectionContext();
   }
 }
-
+ConnectionOrientedEndpoint.IDEMPOTENT = ConnectionOrientedEndpoint.prototype.IDEMPOTENT;
 module.exports = ConnectionOrientedEndpoint;

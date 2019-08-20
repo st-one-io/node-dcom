@@ -162,7 +162,7 @@ class ComServer extends Stub {
       this.attach();
       this.getEndPoint().getSyntax().setUUID(new UUID("99fcfec4-5260-101b-bbcb-00aa0021347a"));
       this.getEndpoint().getSyntax().setVersion(0,0);
-      this.getEndPoint().rebindEndpoint();
+      this.getEndPoint().rebind();
 
       this.call(Endpoint.IDEMPOTENT, oxidResolver);
     } catch(e){};
@@ -320,12 +320,22 @@ class ComServer extends Stub {
         this.call(new Endpoint().IDEMPOTENT, serverActivation);
       } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
-        await this.attach(this.getSyntax());
+        await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout())
+          .catch(function(reject) {
+            throw new Error(reject);
+          });
         attachcomplete = true;
 
+        /* after attaching succesfully now we will call a rebindendpoint so that
+         * we can authenticate before actually doing a remote activation
+         */
+        let self = this;
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
-        await this.getEndpoint().rebindEndpoint(this.info);
+        await this.getEndpoint().rebind(this.info)
+          .catch(function(reject) {
+            throw new Error(reject);
+          });
         this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"]);
         await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
       //}
@@ -334,7 +344,7 @@ class ComServer extends Stub {
     } finally {
       if (attachcomplete && this.serverActivation == null) {
         try {
-          this.detach();
+          await this.detach();
         } catch (e) {
           throw new Error("Unable to detach during init: " + e);
         }
@@ -471,7 +481,7 @@ class ComServer extends Stub {
     let reqUnknown = new RemUnknown(ipidOfTheTargetUnknown, iid, 5);
 
     try {
-      await this.session.getStub2().call(new Endpoint().IDEMPOTENT, reqUnknown, this.info, 5);
+      await this.session.getStub2().call(Endpoint.IDEMPOTENT, reqUnknown, this.info, 5);
     } catch (e) {
       throw new Error(e);
     }
@@ -486,7 +496,7 @@ class ComServer extends Stub {
       let dispatch = new RemUnknown(retval.getIpid(), "00020400-0000-0000-c000-000000000046");
 
       try {
-        await this.session.getStub2().call(new Endpoint().IDEMPOTENT, dispatch, this.info);
+        await this.session.getStub2().call(Endpoint.IDEMPOTENT, dispatch, this.info);
       } catch (e) {
         console.log(e);
         success = false;
@@ -519,18 +529,23 @@ class ComServer extends Stub {
       }
     }
 
-    try {
-      await this.attach(this.getSyntax());
-      if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
-        this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
-        this.getEndpoint().getSyntax().setVersion(0, 0);
-        await this.getEndpoint().rebindEndpoint(this.info);
-      }
-      this.setObject(obj.getParentIpid());
-      await super.call(new Endpoint().IDEMPOTENT, obj, this.info);
-    } catch(e) {
-      console.log(e);
+    
+    await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout())
+      .catch(function(reject) {
+        throw new reject;
+      });
+    if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
+      this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
+      this.getEndpoint().getSyntax().setVersion(0, 0);
+      await this.getEndpoint().rebind(this.info)
+        .catch(function(reject) {
+          throw reject;
+        });
     }
+    this.setObject(obj.getParentIpid());
+    await super.call(Endpoint.IDEMPOTENT, obj, this.info).catch(function(reject) {
+      throw reject;
+    });
 
     return obj.getResults();
   }

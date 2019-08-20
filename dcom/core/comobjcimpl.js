@@ -101,12 +101,6 @@ class ComObjectImpl extends events.EventEmitter
     await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, -5);
   }
 
-  call(obj)
-  {
-    this.checkLocal();
-    return this.call(obj, this.timeout);
-  }
-
   internal_getInterfacePointer(){
     return (this.ptr == null) ? this.session.getStub().getServerInterfacePointer() : this.ptr;
   }
@@ -205,9 +199,15 @@ class ComObjectImpl extends events.EventEmitter
     obj.setParentIpid(this.ptr.getIPID());
 
     if (socketTimetout != 0) {
-      return await this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout);
+      return await this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout)
+        .catch(function(reject) {
+          throw reject;
+        });
     } else {
-      return await this.session.getStub().call(obj, this.ptr.getIID());
+      return await this.session.getStub().call(obj, this.ptr.getIID())
+        .catch(function(reject) {
+          throw reject;
+        });
     }
   }
 

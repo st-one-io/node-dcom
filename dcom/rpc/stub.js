@@ -1,10 +1,12 @@
-var NdrObject = require("../ndr/ndrobject.js");
-var PresentationSyntax = require("./core/presentationsyntax.js");
-var UUID = require("./core/uuid.js");
-var Endpoint = require('./connectionorientedendpoint.js');
+const NdrObject = require("../ndr/ndrobject.js");
+const PresentationSyntax = require("./core/presentationsyntax.js");
+const UUID = require("./core/uuid.js");
+const Endpoint = require('./connectionorientedendpoint.js');
+const Events = require('events');
 
-class Stub {
+class Stub extends Events.EventEmitter {
   constructor(){
+    super();
     this.TransportFactory;
     this.endpoint; //needed since javascript types are so loosly threated
     this.object;
@@ -49,6 +51,16 @@ class Stub {
 
   setEndpoint(endpoint){
     this.endpoint = endpoint;
+
+    // now we create a listener so the server can react to endpoint events
+    let self = this;
+    this.endpoint.on('disconnected', function(){
+      self.emit('disconnected');
+    });
+
+    this.endpoint.on('connectiontimeout', function(){
+      self.emit('connectiontimeout');
+    });
   }
 
   async detach(){
@@ -61,18 +73,21 @@ class Stub {
     }
   }
 
-  async attach(syntax, info){
-    var self = this;
-    //return new Promise(function(resolve, reject) {
-      var endpoint = self.endpoint;
-      if (endpoint != null) return;
-      var address = self.address;
-      if (address == null) throw new Error("No address specified.");
+  async attach(syntax, info, timeout){
+    var endpoint = this.endpoint;
+    if (endpoint != null) return;
+    var address = this.address;
+    if (address == null) throw new Error("No address specified.");
 
-      this.endpoint = await (self.getTransportFactory().createTransport(address).attach(new PresentationSyntax(syntax), info));
-      //.then(function(resolve){self.setEndpoint(resolve);
-      //});
-    //});
+    // first we create the transport, and the associated Endpoint
+    let transport = this.getTransportFactory().createTransport(address, timeout);
+    this.setEndpoint(new Endpoint(transport, new PresentationSyntax(syntax),));
+
+    // now we attach the Endpoint to the server
+    await (this.endpoint.transport.attach(info))
+    .catch(function(reject) {
+      throw new Error(reject);
+    });
   }
 
   async call(semantics, ndrobj, info){
