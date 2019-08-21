@@ -83,6 +83,13 @@ class RemUnknownServer extends Stub {
             console.log(e);
         }
 
+        // now we check if there were any error
+        if (obj.hresult != 0) {
+            if (obj.outParams.length == 0) {
+                throw new Error(String(obj.hresult));
+            } else
+                console.log(new Error(String(obj.hresult)));
+        }
         return obj.getResults();
     }
 

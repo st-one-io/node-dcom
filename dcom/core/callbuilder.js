@@ -793,7 +793,9 @@ class CallBuilder extends NdrObject {
 				this.executed = true;
 			}
 		}
-		this.readResult(ndr);
+
+		//last has to be the result.
+		this.hresult = ndr.readUnsignedLong();
 	}
 
 	/** 

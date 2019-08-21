@@ -320,10 +320,7 @@ class ComServer extends Stub {
         this.call(new Endpoint().IDEMPOTENT, serverActivation);
       } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
-        await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout())
-          .catch(function(reject) {
-            throw new Error(reject);
-          });
+        await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout());
         attachcomplete = true;
 
         /* after attaching succesfully now we will call a rebindendpoint so that
@@ -332,10 +329,7 @@ class ComServer extends Stub {
         let self = this;
         this.getEndpoint().getSyntax().setUUID(new UUID("4d9f4ab8-7d1c-11cf-861e-0020af6e7c57"));
         this.getEndpoint().getSyntax().setVersion(0,0);
-        await this.getEndpoint().rebind(this.info)
-          .catch(function(reject) {
-            throw new Error(reject);
-          });
+        await this.getEndpoint().rebind(this.info);
         this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"]);
         await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
       //}
@@ -529,25 +523,16 @@ class ComServer extends Stub {
       }
     }
 
-    
-    await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout())
-      .catch(function(reject) {
-        throw new reject;
-      });
+    await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout());
     if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
       this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
       this.getEndpoint().getSyntax().setVersion(0, 0);
-      await this.getEndpoint().rebind(this.info)
-        .catch(function(reject) {
-          throw reject;
-        });
+      await this.getEndpoint().rebind(this.info);
     }
     this.setObject(obj.getParentIpid());
-    await super.call(Endpoint.IDEMPOTENT, obj, this.info).catch(function(reject) {
-      throw reject;
-    });
+    await super.call(Endpoint.IDEMPOTENT, obj, this.info);
 
-    return obj.getResults();
+    return obj;
   }
 
   /**
@@ -561,11 +546,8 @@ class ComServer extends Stub {
 
     obj.setParentIpid(this.remunknownIPID);
     obj.attachSession(this.session);
-    try {
-      await this.call(obj, new RemUnknown().IID_Unknown);
-    } catch (e) {
-      throw new Error(e);
-    }
+
+    await this.call(obj, new RemUnknown().IID_Unknown, 0);
   }
 
   /**

@@ -199,15 +199,9 @@ class ComObjectImpl extends events.EventEmitter
     obj.setParentIpid(this.ptr.getIPID());
 
     if (socketTimetout != 0) {
-      return await this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout)
-        .catch(function(reject) {
-          throw reject;
-        });
+      return await this.session.getStub().call(obj, this.ptr.getIID(), socketTimetout);
     } else {
-      return await this.session.getStub().call(obj, this.ptr.getIID())
-        .catch(function(reject) {
-          throw reject;
-        });
+      return await this.session.getStub().call(obj, this.ptr.getIID());
     }
   }
 

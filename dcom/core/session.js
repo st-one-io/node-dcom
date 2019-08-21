@@ -81,7 +81,7 @@ class Session
   }
 
   // TODO: how to do a constant running function in nodejs
-  cleanUp()
+  async cleanUp()
   {
     try {
       while (true) {
@@ -97,7 +97,7 @@ class Session
           var session = null;
           session = this.mapofSessionIdsVsSessions.get(holder.sessionID);
           if (holder.isOnlySessionIDPresent) {
-              this.destroySession(session);
+              await this.destroySession(session);
           } else {
             if (session == null) {
               continue;
@@ -160,13 +160,13 @@ class Session
     this.releaseRefsTimer;
   }
 
-  addShutdownHook()
+  async addShutdownHook()
   {
     var i = 0;
     while (i < this.listOfSessions.size()) {
       var session = this.listOfSessions.get(i);
       try {
-        this.destroySession(session);
+        await this.destroySession(session);
       } catch (e) {
         throw new Erro("Session - addShutdownHook" + String(e));
       }
@@ -319,80 +319,73 @@ class Session
       return;
     }
 
-    try {
-      var list = new Array();
-      var listOfFreeIPIDs = new Array();
+    
+    var list = new Array();
+    var listOfFreeIPIDs = new Array();
 
-      if (session.sessionInDestroy) {
-        return;
+    if (session.sessionInDestroy) {
+      return;
+    }
+
+    for (var j = 0; j < session.listOfDeferencedIpids.length; i++){
+      list.push(session.prepareForReleaseRef(
+        String(session.listOfDeferencedIpids[session.listOfDeferencedIpids.indexOf(j)])
+      ));
+    }
+
+    for (var i = 0; i < session.listOfDeferencedIpids.length; i++) {
+      listOfFreeIPIDs.push(session.listOfDeferencedIpids[i]);
+    }
+    session.listOfDeferencedIpids = new Array();
+
+    var entries = this.mapOfObjects.entries();
+    for (var i = 0; i < entries.length; i++) {
+      var holder = entries[i][1];
+      if (session.getSessionIdentifier() != Number(holder.sessionID)) {
+        continue;
+      }
+      var ipid = holder.IPID;
+      if (ipid == null) {
+        continue;
       }
 
-      for (var j = 0; j < session.listOfDeferencedIpids.length; i++){
-        list.push(session.prepareForReleaseRef(
-          String(session.listOfDeferencedIpids[session.listOfDeferencedIpids.indexOf(j)])
-        ));
-      }
+      list.push(session.prepareForReleaseRef(ipid));
+      listOfFreeIPIDs.push(ipid);
+    }
 
-      for (var i = 0; i < session.listOfDeferencedIpids.length; i++) {
-        listOfFreeIPIDs.push(session.listOfDeferencedIpids[i]);
+    if (session.stub.getServerInterfacePointer() != null) {
+      if (!listOfFreeIPIDs.includes(session.stub.getServerInterfacePointer().getIPID())) {
+        list.push(session.prepareForReleaseRef(session.stub.getServerInterfacePointer().getIPID()));
+        listOfFreeIPIDs.push(session.stub.getServerInterfacePointer().getIPID());
       }
-      session.listOfDeferencedIpids = new Array();
+    }
 
-      var entries = this.mapOfObjects.entries();
-      for (var i = 0; i < entries.length; i++) {
-        var holder = entries[i][1];
-        if (session.getSessionIdentifier() != Number(holder.sessionID)) {
-          continue;
+    listOfFreeIPIDs = [];
+
+    if (list.length > 0) {
+      let temporary = new Array();
+      for (let i = 0; i < list.length; i++) {
+        temporary.push(new ComValue(list[i], types.STRUCT));
+      }
+      let temp = new ComValue(temporary, types.STRUCT);
+      var array = new ComArray(temp, true);
+      
+      await session.stub.closeStub();
+      let self = this;
+      await session.releaseRefs(array, true).then(async function(data){
+        self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
+        self.removeSession(session);
+
+        if (session.stub.getServerInterfacePointer() != null) {
+          self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
         }
-        var ipid = holder.IPID;
-        if (ipid == null) {
-          continue;
-        }
+        await session.stub.closeStub();
+        await session.stub2.closeStub();
 
-        list.push(session.prepareForReleaseRef(ipid));
-        listOfFreeIPIDs.push(ipid);
-      }
-
-      if (session.stub.getServerInterfacePointer() != null) {
-        if (!listOfFreeIPIDs.includes(session.stub.getServerInterfacePointer().getIPID())) {
-          list.push(session.prepareForReleaseRef(session.stub.getServerInterfacePointer().getIPID()));
-          listOfFreeIPIDs.push(session.stub.getServerInterfacePointer().getIPID());
-        }
-      }
-
-      listOfFreeIPIDs = [];
-
-      if (list.length > 0) {
-        let temporary = new Array();
-        for (let i = 0; i < list.length; i++) {
-          temporary.push(new ComValue(list[i], types.STRUCT));
-        }
-        let temp = new ComValue(temporary, types.STRUCT);
-        var array = new ComArray(temp, true);
-        try {
-          await session.stub.closeStub();
-          let self = this;
-          await session.releaseRefs(array, true).then(async function(data){
-            self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
-            self.removeSession(session);
-
-            if (session.stub.getServerInterfacePointer() != null) {
-              self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
-            }
-            await session.stub.closeStub();
-            await session.stub2.closeStub();
-
-            self.postDestroy(session);
-            session.stub = null;
-            session.stub2 = null;
-          });
-        } catch (e) {
-          throw new Error(e)
-        }
-      }
-      //ComOxidRuntime.clearIPIDsforSession(session);
-    } catch(e) {
-      throw new Error(e);
+        await self.postDestroy(session);
+        session.stub = null;
+        session.stub2 = null;
+      });
     }
   }
 
@@ -409,10 +402,10 @@ class Session
     }
   }
 
-  postDestroy(session)
+  async postDestroy(session)
   {
     for (var i = 0; i < session.links.length; i++) {
-      this.destroySession(session.links.get(i));
+      await this.destroySession(session.links.get(i));
     }
 
     session.links = [];
@@ -577,7 +570,7 @@ class Session
   async releaseRefs(arrayOfStructs, fromDestroy)
   {
     	console.log("In releaseRefs for session : " + this.getSessionIdentifier()
-        + " , array length is: " + Number(arrayOfStructs.getArrayInstance()).length);
+        + " , array length is: " + Number(arrayOfStructs.getArrayInstance().length));
 
       var obj = new CallBuilder(true);
       obj.setOpnum(2);
@@ -643,10 +636,10 @@ class Session
     return this.sessionIdentifier;
   }
 
-  finalize()
+  async finalize()
   {
     try {
-      destroySession(this);
+      await destroySession(this);
     } catch (e) {
       console.log("Exception in finalize when destroying session " + e.getMessage());
     }
