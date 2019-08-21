@@ -1,5 +1,6 @@
-var HashMap = require('hashmap');
-var Encdec = require('./encdec.js');
+// @ts-check
+const HashMap = require('hashmap');
+const Encdec = require('./encdec.js');
 
 function NdrBuffer(buf, start){
   this.referent = undefined;
@@ -20,8 +21,12 @@ function NdrBuffer(buf, start){
   this.ignoreAlign = false;
 };
 
+/**
+ * @param {Number}  idx
+ * @returns {Number}
+ */
 NdrBuffer.prototype.derive = function (idx){
-  var nb = new NdrBuffer(buf, start);
+  let nb = new NdrBuffer(buf, start);
   nb.index = idx;
   nb.deferred = this.deferred;
   nb.ignoreAlign = this.ignoreAlign;
@@ -62,8 +67,8 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
     return 0;
   }
 
-  var n = this.align(boundary);
-  var i = n;
+  let n = this.align(boundary);
+  let i = n;
   while (i > 0){
     this.buf[this.index -i] = value;
     i--;
@@ -72,8 +77,8 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
 }
 
 NdrBuffer.prototype.writeOctetArray = function (b, i, l){
-  var temp = b.slice(i, l);
-  var temp_index= this.index;
+  let temp = b.slice(i, l);
+  let temp_index= this.index;
   while (temp.length > 0){
     this.buf.splice(temp_index++, 0, temp.shift());
     i++;
@@ -82,8 +87,8 @@ NdrBuffer.prototype.writeOctetArray = function (b, i, l){
 }
 
 NdrBuffer.prototype.readOctetArray = function (b, i, l){
-  var temp = this.buf.slice(this.index, (this.index + l));
-  var temp_index= i;
+  let temp = this.buf.slice(this.index, (this.index + l));
+  let temp_index= i;
   while (temp.length > 0){
     b.splice(temp_index++, 1, temp.shift());
     i++;
@@ -107,9 +112,9 @@ NdrBuffer.prototype.align = function (boundary){
     return 0;
   }
 
-  var m = boundary - 1;
-  var i = this.index - this.start;
-  var n = ((i + m) & ~m) - i;
+  let m = boundary - 1;
+  let i = this.index - this.start;
+  let n = ((i + m) & ~m) - i;
   this.advance(n);
   return n;
 }
@@ -120,7 +125,7 @@ NdrBuffer.prototype.enc_ndr_small = function (s){
 }
 
 NdrBuffer.prototype.dec_ndr_small = function (){
-  var val = this.buf[this.index] & 0xFF;
+  let val = this.buf[this.index] & 0xFF;
   this.advance(1);
   return val;
 }
@@ -133,7 +138,7 @@ NdrBuffer.prototype.enc_ndr_short = function (s){
 
 NdrBuffer.prototype.dec_ndr_short = function (){
   this.align(2);
-  var val = Encdec.dec_uint16le(Buffer.from(this.buf),this.index);
+  let val = Encdec.dec_uint16le(Buffer.from(this.buf),this.index);
   this.advance(2);
   return val;
 }
@@ -146,15 +151,15 @@ NdrBuffer.prototype.enc_ndr_long = function (l){
 
 NdrBuffer.prototype.dec_ndr_long = function (){
   this.align(4);
-  var val = Encdec.dec_uint32le(Buffer.from(this.buf), this.index);
+  let val = Encdec.dec_uint32le(Buffer.from(this.buf), this.index);
   this.advance(4);
   return val;
 }
 
 NdrBuffer.prototype.enc_ndr_string = function (s){
   this.align(4);
-  var i = this.index;
-  var len = s.length;
+  let i = this.index;
+  let len = s.length;
 
   Encdec.enc_uint32le(len + 1, this.buf, i);
   i += 4;
@@ -174,9 +179,9 @@ NdrBuffer.prototype.enc_ndr_string = function (s){
 
 NdrBuffer.prototype.dec_ndr_string = function (){
   this.align(4);
-  var i = this.index;
-  var val = null;
-  var len = Encdec_dec_uint32le(this.buf, i);
+  let i = this.index;
+  let val = null;
+  let len = Encdec_dec_uint32le(this.buf, i);
 
   i += 12;
   if (len != 0){
@@ -184,14 +189,14 @@ NdrBuffer.prototype.dec_ndr_string = function (){
     size = len * 2;
 
     if (size < 0 || size > 0xFFFF) throw "INVALID CONFORMANCE";
-    var val = String(this.buf);
+    let val = String(this.buf);
   }
   this.advance(i - this.index);
   return val;
 }
 
 NdrBuffer.prototype.getDceReferent = function (obj){
-  var e;
+  let e;
 
   if (this.referents == null){
     this.referents = new HashMap();

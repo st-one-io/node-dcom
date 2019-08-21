@@ -1,8 +1,8 @@
-var NdrBuffer = require("../../ndr/ndrbuffer.js");
-var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
-var Fragmentable = require("../fragmentable.js");
-var UUID = require("../core/uuid.js");
+const NdrBuffer = require("../../ndr/ndrbuffer.js");
+const NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
+const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+const Fragmentable = require("../fragmentable.js");
+const UUID = require("../core/uuid.js");
 
 class RequestCoPdu extends ConnectionOrientedPdu {
   constructor(){
@@ -18,66 +18,115 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     this.callId = this.callIdCounter;
   }
 
+  /**
+   * @returns {Number}
+   */
   getType(){
     return this.REQUEST_TYPE;
   }
 
+  /**
+   * @returns {Array}
+   */
   getStub(){
     return this.stub;
   }
 
+  /**
+   * 
+   * @param {Array} stub 
+   */
   setStub(stub){
     this.stub = stub;
   }
 
+  /**
+   * @returns {Number}
+   */
   getAllocationHint(){
     return this.allocationHint;
   }
 
+  /**
+   * 
+   * @param {Number} allocationHint 
+   */
   setAllocationHint(allocationHint){
     this.allocationHint = allocationHint;
   }
 
+  /**
+   * @returns {Number}
+   */
   getContextId(){
     return this.contextId;
   }
 
+  /**
+   * 
+   * @param {Number} contextId 
+   */
   setContextId(contextId){
     this.contextId = contextId;
   }
 
+  /**
+   * @returns {Number}
+   */
   getOpnum(){
     return this.opnum;
   }
 
+  /**
+   * @returns {Number}
+   */
   setOpnum(opnum){
     this.opnum = opnum;
   }
 
+  /**
+   * @returns {UUID}
+   */
   getObject(){
     return this.object;
   }
 
+  /**
+   * 
+   * @param {UUID} object 
+   */
   setObject(object){
     this.object = object;
     this.setFlag(this.PFC_OBJECT_UUID, object != null);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   readPdu(ndr){
     this.readHeader(ndr);
     this.readBody(ndr);
     this.readStub(ndr);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   writePdu(ndr){
     this.writeHeader(ndr);
     this.writeBody(ndr);
     this.writeStub(ndr);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   readBody(ndr){
-    var object = null;
-    var src = ndr.getBuffer();
+    let object = null;
+    let src = ndr.getBuffer();
     allocationHint(src.dec_ndr_long());
     contextId(src.dec_ndr_short());
     opnum(src.dec_ndr_short());
@@ -89,6 +138,10 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     object(object);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   writeBody(ndr){
     let dst = ndr.getBuffer();
     dst.enc_ndr_long(this.getAllocationHint());
@@ -100,12 +153,16 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     }
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   readStub(ndr){
-    var src = ndr.getBuffer();
+    let src = ndr.getBuffer();
     src.align(8);
 
-    var stub = null;
-    var length = fragmentLength() - src.getIndex();
+    let stub = null;
+    let length = fragmentLength() - src.getIndex();
 
     if (length > 0){
       stub = [length];
@@ -114,6 +171,10 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     this.setStub(stub);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   writeStub(ndr){
     let dst = ndr.getBuffer();
     dst.alignToValue(8, 0);
@@ -122,14 +183,18 @@ class RequestCoPdu extends ConnectionOrientedPdu {
     if (stub != null) ndr.writeOctetArray(stub, 0, stub.length);
   }
 
+  /**
+   * 
+   * @param {Number} size 
+   */
   fragment(size){
-    var stub = stub();
+    let stub = stub();
 
     if (stub == null){
       return [];
     }
 
-    var stubSize = size - (getFlag(this.PFC_OBJECT_UUID) ? 40 : 24) - 8 - 16;
+    let stubSize = size - (getFlag(this.PFC_OBJECT_UUID) ? 40 : 24) - 8 - 16;
     if (stub.length <= stubSize){
       return [];
     }
@@ -141,18 +206,18 @@ class RequestCoPdu extends ConnectionOrientedPdu {
       throw new Error("No fragments available.");
     }
 
-    var pdu = fragments.next();
-    var stub = pdu.stub();
+    let pdu = fragments.next();
+    let stub = pdu.stub();
 
     if (sub == null) stub = [0];
     while(fragments.hasNext(stub())){
-      var fragment = fragments.next();
-      var fragmentStub = fragment.getStub();
+      let fragment = fragments.next();
+      let fragmentStub = fragment.getStub();
       if (fragmentStub != null && fragmentStub.next());{
-        var tmp = [stub.length + fragmentStub.length];
+        let tmp = [stub.length + fragmentStub.length];
 
-        var aux = stub.slice(0, stub.length);
-        var aux_i = 0;
+        let aux = stub.slice(0, stub.length);
+        let aux_i = 0;
         while(aux.length > 0)
           tmp.splice(aux_i++, 0, aux.shift());
 
@@ -164,7 +229,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
       }
     }
 
-    var length = stub.length;
+    let length = stub.length;
     if (length > 0){
       pdu.stub(stub);
       pdu.allocationHint(length);
@@ -193,18 +258,18 @@ class FragmentIterator {
   next(stub){
     if (this.index >= stub.length) throw new Erro("No such element exception.");
 
-    var fragment = Object.assign(this);
-    var allocation = stub.length - this.index;
+    let fragment = Object.assign(this);
+    let allocation = stub.length - this.index;
     fragment.allocationHint(allocation);
     if (this.stubSize < allocation) allocation = this.stubSize;
-    var fragmentStub = [allocation];
+    let fragmentStub = [allocation];
 
-    var temp = stub.slice(this.index, allocation);
-    var temp_i = 0;
+    let temp = stub.slice(this.index, allocation);
+    let temp_i = 0;
     while(temp.length > 0)
       fragmentStub.splice(temp_i++, 0, temp.shift());
     fragment.stub(fragmentStub);
-    var flags = flags() & ~(PFC_LAST_FRAG | PFC_FIRST_FRAG);
+    let flags = flags() & ~(PFC_LAST_FRAG | PFC_FIRST_FRAG);
     if (this.index == 0) flags |= PFC_FIRST_FRAG;
     this.index += allocation;
     if (this.index >= stub.length) flags |= PFC_LAST_FRAG;

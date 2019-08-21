@@ -1,4 +1,4 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class OrphanedPdu extends ConnectionOrientedPdu {
   constructor(){
@@ -6,6 +6,9 @@ class OrphanedPdu extends ConnectionOrientedPdu {
     this.ORPHANED_TYPE = 0x13;
   }
 
+  /**
+   * @returns {Number}
+   */
   getType(){
     return this.ORPHANED_TYPE;
   }

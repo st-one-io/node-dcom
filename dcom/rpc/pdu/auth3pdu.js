@@ -9,10 +9,17 @@ class Auth3Pdu extends ConnectionOrientedPdu
     this.setCallId(0);
   }
 
+  /**
+   * @returns {Number}
+   */
   getType(){
     return this.AUTH3_TYPE;
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   writeBody(ndr){
     ndr.writeUnsignedLong(0);
   }

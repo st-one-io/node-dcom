@@ -378,7 +378,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 return (!obj) ? new Variant.VariantBody().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.DATE:
                 ndr.getBuffer().align(8);
-                let date = new Date(convertWindowsTimeToMilliseconds(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex())));
+                let date = new Date(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex()));
                 ndr.getBuffer().advance(8);
                 return new ComValue(date, types.DATE);
 

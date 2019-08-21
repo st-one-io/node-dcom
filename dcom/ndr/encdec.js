@@ -1,5 +1,4 @@
 var SmbConstants = require("./smbconstants");
-const Buffer = require('buffer');
 
 module.exports = {
   // constants
@@ -94,7 +93,7 @@ module.exports = {
   },
 
   dec_doublele: function (src, si) {
-    return this.dec_uint64le(src, si);
+    return this.dec_uint64le(Buffer.from(src), si);
   },
 
   dec_doublebe: function (src, si) {

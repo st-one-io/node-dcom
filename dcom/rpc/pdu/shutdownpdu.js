@@ -1,4 +1,4 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
 class ShutdownPdu extends ConnectionOrientedPdu {
   constructor(){
@@ -6,6 +6,9 @@ class ShutdownPdu extends ConnectionOrientedPdu {
     this.SHUTDOWN_TYPE = 0x11;
   }
 
+  /**
+   * @returns {Number}
+   */
   getType(){
     return this.SHUTDOWN_TYPE;
   }

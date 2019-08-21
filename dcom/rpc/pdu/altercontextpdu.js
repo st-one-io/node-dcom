@@ -1,5 +1,6 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
-var PresentationContext = require("../core/presentationcontext.js");
+// @ts-check
+const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+const PresentationContext = require("../core/presentationcontext.js");
 
 class AlterContextPdu  extends ConnectionOrientedPdu{
   constructor(){
@@ -14,67 +15,104 @@ class AlterContextPdu  extends ConnectionOrientedPdu{
     this.associationGroupId = 0;
   }
 
+  /**
+   * @returns {Number}
+   */
   getType(){
     return this.ALTER_CONTEXT_TYPE;
   }
 
+  /**
+   * @returns {Number}
+   */
   getMaxTransmitFramgent(){
     return this.maxTransmitFramgent;
   }
 
+  /**
+   * @param {Number} maxTransmitFramgent 
+   */
   setMaxTransmitFramgent(maxTransmitFramgent){
     this.maxTransmitFramgent = maxTransmitFramgent;
   }
 
+  /**
+   * @returns {Number}
+   */
   getMaxReceiveFragment(){
     return this.maxReceiveFragment;
   }
 
+  /**
+   * @param {Number} maxReceiveFragment 
+   */
   setMaxReceiveFragment(maxReceiveFragment){
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
+  /**
+   * @returns {Number}
+   */
   getAssociationGroupId(){
     return this.associationGroupId;
   }
 
+  /**
+   * 
+   * @param {Number} associationGroupId 
+   */
   setAssociationGroupId(associationGroupId){
     this.associationGroupId = associationGroupId;
   }
 
+  /**
+   * @returns {Array}
+   */
   getContextList(){
     return this.contextList;
   }
 
+  /**
+   * 
+   * @param {Array} contextList 
+   */
   setContextList(contextList){
     this.contextList = contextList;
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   readBody(ndr){
     this.maxTransmitFramgent = ndr.readUnsingedShort();
     this.maxReceiveFragment = ndr.readUnsingedShort();
     this.associationGroupId = Number.parseInt(ndr.readUnsingedShort());
-    var count = ndr.readUnsignedSmall();
-    var contextList = [count];
-    for (var i = 0; i < count; i++){
+    let count = ndr.readUnsignedSmall();
+    let contextList = [count];
+    for (let i = 0; i < count; i++){
       contextList[i] = new PresentationContext();
       contextList[i].read(ndr);
     }
     contextList(contextList);
   }
 
+  /**
+   * 
+   * @param {NetworkDataRepresentation} ndr 
+   */
   writeBody(ndr){
-    var maxTransmitFramgent = this.getMaxTransmitFramgent();
-    var maxReceiveFragment = this.getMaxReceiveFragment();
+    let maxTransmitFramgent = this.getMaxTransmitFramgent();
+    let maxReceiveFragment = this.getMaxReceiveFragment();
     ndr.writeUnsignedShort((maxTransmitFramgent == -1) ?
         ndr.getBuffer().getCapacity() : this.getMaxTransmitFramgent());
     ndr.writeUnsignedShort((maxReceiveFragment == -1) ?
         ndr.getBuffer().getCapacity() : this.getMaxReceiveFragment());
     ndr.writeUnsignedLong(this.getAssociationGroupId());
-    var contextList = this.getContextList();
-    var count = contextList.length;
+    let contextList = this.getContextList();
+    let count = contextList.length;
     ndr.writeUnsignedSmall(count);
-    for (var i = 0; i < count; i++){
+    for (let i = 0; i < count; i++){
       contextList[i].write(ndr);
     }
   }

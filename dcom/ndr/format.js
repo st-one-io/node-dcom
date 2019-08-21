@@ -1,4 +1,8 @@
+// @ts-check
 
+/**
+ * The Format class defines the format of the data used, how it is encoded, etc.
+ */
 class Format {
   constructor(dataRepresentation){
     this.LITTLE_ENDIAN = 0x10000000;
@@ -38,14 +42,27 @@ class Format {
     }
   }
 
-  get1Format(){
+  /**
+   * @returns {Format}
+   */
+  getFormat(){
     return new Format(this.DEFAULT_DATA_REPRESENTATION);
   }
 
+  /**
+   * @returns {NetworkDataRepresentation}
+   */
   getDataRepresentation(){
     return this.dataRepresentation;
   }
 
+  /**
+   * 
+   * @param {Array} src 
+   * @param {Number} index 
+   * @param {Boolean} connectionless
+   * @returns {Format}
+   */
   readFormat(src, index, connectionless){
     var value = src[index++] << 24;
     value |= (src[index++] & 0xff) << 16;
@@ -54,6 +71,12 @@ class Format {
     return new Format(value);
   }
 
+  /**
+   * 
+   * @param {Array} dest 
+   * @param {Number} index 
+   * @param {Boolean} connectionless 
+   */
   writeFormat(dest, index, connectionless){
     var val = this.getDataRepresentation();
     dest[index++] = ((val >> 24) & 0xff);

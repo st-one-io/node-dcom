@@ -162,12 +162,11 @@ class Variant {
 
     // init Arrays
     this.arryInits = new Array();
-    this.arryInits.push(ComString);
-    this.arryInits.push(Pointer);
-    this.arryInits.push(ComObjectImpl);
+    this.arryInits.push(types.COMSTRING);
+    this.arryInits.push(types.POINTER);
+    this.arryInits.push(types.COMOBJECT);
     // TO-DO: if IDispatch support is desired: this.arryInits.push(Dispatch);
     // this.arryInits.push(Unknown);
-    this.arryInits.push(ComObject);
 
     if (value) {
       switch(value.getType()){
@@ -553,7 +552,7 @@ class Variant {
         elementSize = 16; //(Variant is pointer whose size is 16)
       }
       else if (this.arryInits.includes(c)) {
-        if (c == types.STRING) {
+        if (c == types.COMSTRING) {
           flags = (flags | new Variant().FADF_BSTR);
         } else if (c == types.COMOBJECT) {
           flags = (flags | new Variant().FADF_UNKNOWN);
@@ -568,7 +567,7 @@ class Variant {
       let safeArrayBound = null;
 
       let upperBounds = array.getValue().getUpperBounds();
-      let arrayOfSafeArrayBounds = [new Struct(array.getValue().getDimensions())];
+      let arrayOfSafeArrayBounds = new Array(array.getValue().getDimensions());
       for (let i = 0; i < array.getValue().getDimensions(); i++) {
         safeArrayBound = new Struct();
         safeArrayBound.addMember(upperBounds[i]);
@@ -603,7 +602,8 @@ class Variant {
     } catch (e) {
       throw new Error(e);
     }
-    variant2 = new VariantBody(3, {safeArray: safeArray,nestedClass: new ComValue(null, c),is2Dimensional: is2Dim,isByref: isByref,FLAG: FLAG});
+    variant2 = new VariantBody(3, 
+      {safeArray: new ComValue(safeArray,types.STRUCT), nestedClass: new ComValue(null, c),is2Dimensional: is2Dim,isByref: isByref,FLAG: FLAG});
     this.init(new ComValue(variant2, types.VARIANTBODY),false);
   }
 
@@ -1205,20 +1205,21 @@ class VariantBody
 				ndr.readUnsignedLong(); //Read the Pointer
 			}
 
-			if (c.getType() == new VariantBody().SCODE)
+			if (c == new VariantBody().SCODE)
 			{
 				obj = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(null, types.INTEGER),null,FLAG,additionalData);
-				obj = SCODE;
+        let scode = new VariantBody().SCODE.prototype.errorCode = obj;
+        obj = scode;
 				type = new Variant().VT_ERROR;
 			}else
-			if (c.getType()  == new VariantBody().NULL)
+			if (c  == new VariantBody().NULL)
 			{
 				//have read 20 bytes
 				//JIMarshalUnMarshalHelper.deSerialize(ndr,Integer.class,null,JIFlags.FLAG_NULL);//read the last 4 bytes, since there could be parameters before this.
 				obj = NULL;
 				type = new Variant().VT_NULL;
 			}else
-			if (c.getType() == new VariantBody().EMPTY) //empty is 20 bytes
+			if (c == new VariantBody().EMPTY) //empty is 20 bytes
 			{
 				obj = new VariantBody().EMPTY;
 				type = new Variant().VT_EMPTY;

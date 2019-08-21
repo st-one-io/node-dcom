@@ -96,7 +96,6 @@ class ComTransport extends events.EventEmitter
         received data to the receiveBuffer and wait for it be called
       */
       channel.on('data', function(data){
-        clearTimeout(self.recvPromise.timer );
         if (self.recvPromise == null) {
           self.receivedBuffer.concat(data);
         } else {
