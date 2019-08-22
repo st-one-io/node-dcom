@@ -54,6 +54,7 @@ class Session
     this.sessionInDestroy = false;
     this.mapOfIPIDsVsRefcounts = new HashMap();
     this.mapOfIPIDsvsWeakReferences = new HashMap();
+    this.mapOfSessionvsIPIDPingHolders = new HashMap();
     this.referenceQueueOfCOMObjects; // wait and see if is necessary
   }
 
@@ -440,7 +441,7 @@ class Session
     }
 
     this.addWeakReference(comObject, oid);
-    this.addToSession(comObject.getIpid(), oid, comObject.internal_getInterfacePointer().getObjectReference(InterfacePointer.OBJREF_STANDARD).getFlags() == 0x00001000);
+    this.addToSessionIPID(comObject.getIpid(), oid, comObject.internal_getInterfacePointer().getObjectReference(InterfacePointer.OBJREF_STANDARD).getFlags() == 0x00001000);
 
     var refCount =  comObject.internal_getInterfacePointer().getObjectReference(InterfacePointer.OBJREF_STANDARD).getPublicRefs();
     this.updateReferenceForIPID(comObject.getIpid(), refCount);
@@ -500,9 +501,9 @@ class Session
     }
   }
 
-  addToSession(IPID, oid, dontping)
+  addToSessionIPID(IPID, oid, dontping)
   {
-    if (!dontping) {
+    if (dontping) {
       if (this.sessionInDestroy) return;
 
       this.addWeakReference(IPID, oid);
@@ -513,9 +514,38 @@ class Session
       this.updateReferenceForIPID(IPID.getIpid(), refcount);
     } else {
       let joid = new ObjectId(oid, dontping);
+      this.addPingObject(this, IPID, joid);
       //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
-      console.log("addToSession] Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
+      console.log("addToSession: Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
     }
+  }
+
+  /**
+   * 
+   * @param {Session} session
+   * @param {ComObjImpl} IPID 
+   * @param {ObjectId} oid 
+   */
+  addPingObject(session, IPID, oid) {
+    let holder = this.mapOfSessionvsIPIDPingHolders.get(session);
+    if (holder == null) {
+      holder = new IPID_PingHolder;
+      holder.username = session.getUserName();
+      holder.password = session.getPassword();
+      holder.domain = session.getDomain();
+      holder.currentSetOIDs.set(oid, oid);
+      holder.seqNum = 0;
+      this.mapOfSessionvsIPIDPingHolders.set(session, holder);
+    } else {
+      let oid2 = holder.currentSetOIDs.get(oid);
+      if (oid2 != null) {
+        oid = oid2;
+      } else {
+        holder.currentSetOIDs.set(oid, oid);
+        holder.modified = true;
+      }
+    }
+    oid.incrementIPIDRefCountBy1();
   }
 
   async releaseRefs(IPID, numinstances){
@@ -743,7 +773,20 @@ class IPID_SessionID_Holder {
     this.IPID = IPID;
     this.sessionID = new Number(sessionID);
     this.isOnlySessionId = isOnlySessionId;
-    this.oid = oid;
+  }
+}
+
+class IPID_PingHolder {
+  constructor() {
+    this.username;
+    this.password;
+    this.domain;
+    this.setId = null;
+    this.modified = false;
+    this.closed = false;
+    this.seqNum = 1;
+    this.currentSetOIDs = new HashMap();
+    this.pingedOnce = new HashMap();
   }
 }
 

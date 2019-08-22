@@ -15,7 +15,7 @@ class InterfacePointerBody {
      * @param {number|InterfacePointer} [port]
      * @param {StdObjRef} [objref]
      */
-    constructor(iid, port, objref) {
+    constructor(iid, port, objref) {       
         this.iid = null; //String
         this.customCLSID = null; //String
         this.objectType = -1; //int

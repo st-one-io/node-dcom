@@ -39,6 +39,9 @@ class InterfacePointer {
      * @param {*} [objref]
      */
     constructor(iid, port, objref){
+        this.OBJREF_STANDARD = 0x1;
+        this.OBJREF_CUSTOM = 0x4;
+
         /** @type {Pointer} */
         this.member = null;
         this._init();
