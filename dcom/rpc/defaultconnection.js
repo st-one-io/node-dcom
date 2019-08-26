@@ -88,7 +88,11 @@ class DefaultConnection
   async receive(transport)
   {
     var fragment = await this.receiveFragment(transport);
-    if (!this.bytesRemainingInReceiveBuffer){
+    // flag indicating if this is a single packet
+    let flag = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG) && 
+      fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
+      
+    if (!this.bytesRemainingInReceiveBuffer && flag){
       return fragment;
     } else {
       let stub = fragment.getStub();
@@ -99,8 +103,10 @@ class DefaultConnection
         if (newStub != null && newStub.length > 0){
           if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG))
             stub = newStub.concat(stub);
+          // if its the the first frag, it will be in the middle or in the end
           else if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG))
-            stub = stub.concat(newStub);
+            console.log("last one");
+          stub = stub.concat(newStub);
         }
       }while(this.bytesRemainingInReceiveBuffer);
 

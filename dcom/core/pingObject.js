@@ -3,7 +3,8 @@ const NdrObject = require('../ndr/ndrobject');
 const MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
 const ComValue = require('./comvalue');
 const types = require('./types');
-const Flags = require('./flags'); 
+const Flags = require('./flags');
+const HashCode = require('hashcode').hashCode;
 
 class PingObject extends NdrObject{
   constructor() {
@@ -54,7 +55,7 @@ class PingObject extends NdrObject{
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.listOfDels.length, types.SHORT), null, Flags.FLAG_NULL);
 
             if (this.listOfAdds.length > 0) {
-                MarshalUnMarshalHelper.serialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL);
+                MarshalUnMarshalHelper.serialize(ndr, new ComValue(HashCode().value({}), types.INTEGER), null, Flags.FLAG_NULL);
                 MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.listOfAdds.length, types.INTEGER), null, Flags.FLAG_NULL);
 
                 for (let i = 0; i < this.listOfAdds.length; i++) {
@@ -66,7 +67,7 @@ class PingObject extends NdrObject{
             }
 
             if (this.listOfDels.length > 0) {
-                MarshalUnMarshalHelper.serialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL);
+                MarshalUnMarshalHelper.serialize(ndr, new ComValue(HashCode().value({}), types.INTEGER), null, Flags.FLAG_NULL);
                 MarshalUnMarshalHelper.serialize(ndr, new ComValue(this.listOfDels.length, types.INTEGER), null, Flags.FLAG_NULL);
 
                 let index = ndr.getBuffer().getIndex();

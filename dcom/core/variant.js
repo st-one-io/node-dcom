@@ -75,8 +75,8 @@ class Variant {
   	this.VT_UI4 			 = 0x00000013;
   	this.VT_I8				 = 0x00000014;
   	this.VT_INT 			 = 0x00000016;
-  	this.VT_UINT 			 = 0x00000017;
-  	this.VT_BYREF_VT_DECIMAL  = this.VT_BYREF|this.VT_DECIMAL;//0x0000400e;
+    this.VT_UINT 			 = 0x00000017;
+    this.VT_BYREF_VT_DECIMAL  = this.VT_BYREF|this.VT_DECIMAL;//0x0000400e;
   	this.VT_BYREF_VT_I1  	 	  = this.VT_BYREF|this.VT_I1;//0x00004010;
   	this.VT_BYREF_VT_UI2 	 = this.VT_BYREF|this.VT_UI2;//0x00004012;
   	this.VT_BYREF_VT_UI4 	 = this.VT_BYREF|this.VT_UI4;//0x00004013;
@@ -98,6 +98,23 @@ class Variant {
   	this.FADF_VARIANT     = 0x0800;  /* an array of VARIANTs */
     this.FADF_RESERVED    = 0xF008; /* reserved bits */
 
+    // array types
+    this.VT_BOOL_ARRAY = this.VT_ARRAY | this.VT_BOOL;
+    this.VT_BSTR_ARRAY = this.VT_ARRAY | this.VT_BSTR;
+    this.VT_DECIMAL_ARRAY = this.VT_ARRAY | this.VT_DECIMAL;
+    this.VT_ERROR_ARRAY = this.VT_ARRAY | this.VT_ERROR;
+    this.VT_I1_ARRAY = this.VT_ARRAY | this.VT_I1;
+    this.VT_I2_ARRAY = this.VT_ARRAY | this.VT_I2;
+    this.VT_I4_ARRAY = this.VT_ARRAY | this.VT_I4;
+    this.VT_R4_ARRAY = this.VT_ARRAY | this.VT_R4;
+    this.VT_R8_ARRAY = this.VT_ARRAY | this.VT_R8;
+    this.VT_UI1_ARRAY = this.VT_ARRAY | this.VT_UI1;
+    this.VT_UI2_ARRAY = this.VT_ARRAY | this.VT_UI2;
+    this.VT_UI4_ARRAY = this.VT_ARRAY | this.VT_UI4;
+    this.VT_UINT_ARRAY = this.VT_ARRAY | this.VT_UINT;
+    this.VT_UNKNOWN_ARRAY = this.VT_ARRAY | this.VT_UNKNOWN;
+    this.VT_VARIANT_ARRAY = this.VT_ARRAY | this.VT_VARIANT;
+
     this.supportedTypes = new HashMap();
     this.supportedTypes_classes = new HashMap();
     this.outTypeMap = new HashMap();
@@ -116,9 +133,9 @@ class Variant {
     this.supportedTypes.set(types.VARIANT, this.VT_VARIANT);
     this.supportedTypes.set(types.BOOLEAN, this.VT_BOOL);
     this.supportedTypes.set(types.COMSTRING, this.VT_BSTR);
-    this.supportedTypes.set(EMPTY, this.VT_EMPTY);
-    this.supportedTypes.set(SCODE, this.VT_ERROR);
-    this.supportedTypes.set(NULL, this.VT_NULL);
+    this.supportedTypes.set(types.EMPTY, this.VT_EMPTY);
+    this.supportedTypes.set(types.SCODE, this.VT_ERROR);
+    this.supportedTypes.set(types.NULL, this.VT_NULL);
     this.supportedTypes.set(types.ARRAY, this.VT_ARRAY);
     this.supportedTypes.set(types.DATE, this.VT_DATE);
     this.supportedTypes.set(types.INTEGER, this.VT_I4);
@@ -159,6 +176,21 @@ class Variant {
     this.supportedTypes_classes.set(new Number(this.VT_UI4),new ComValue(null, types.LONG));
     this.supportedTypes_classes.set(new Number(this.VT_I8), new ComValue(null, types.INTEGER));
     this.supportedTypes_classes.set(new Number(this.VT_R8), new ComValue(null, types.DOUBLE));
+    this.supportedTypes_classes.set(new Number(this.VT_BOOL_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_BSTR_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_DECIMAL_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_ERROR_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_I1_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_I2_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_I4_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_R4_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_R8_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_U1_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_U2_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_U4_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_UINT_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_UNKNOWN_ARRAY), new ComValue(types.VT_ARRAY));
+    this.supportedTypes_classes.set(new Number(this.VT_VARIANT_ARRAY), new ComValue(types.VT_ARRAY));
 
     // init Arrays
     this.arryInits = new Array();
@@ -1208,8 +1240,9 @@ class VariantBody
 			if (c == new VariantBody().SCODE)
 			{
 				obj = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(null, types.INTEGER),null,FLAG,additionalData);
-        let scode = new VariantBody().SCODE.prototype.errorCode = obj;
-        obj = scode;
+        /*let scode = new VariantBody().SCODE;
+        scode.errorCode = obj;
+        obj = scode;*/
 				type = new Variant().VT_ERROR;
 			}else
 			if (c  == new VariantBody().NULL)
@@ -1221,7 +1254,7 @@ class VariantBody
 			}else
 			if (c == new VariantBody().EMPTY) //empty is 20 bytes
 			{
-				obj = new VariantBody().EMPTY;
+				obj = new ComValue(new VariantBody().EMPTY,types.EMPTY);
 				type = new Variant().VT_EMPTY;
 			}else
 			if (c.getType()  == types.COMSTRING)

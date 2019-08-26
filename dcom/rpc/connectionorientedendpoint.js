@@ -73,10 +73,10 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     let stub = new Array(buffer.getLength());
     let aux = buffer.buf.slice(0, stub.length);
     let aux_i = 0;
-    while (aux.length > 0)
-      stub.splice(aux_i++, 1, aux.shift());
+    //while (aux.length > 0)
+      //stub.splice(aux_i++, 1, aux.shift());
 
-    request.setStub(stub);
+    request.setStub(aux);
     request.setAllocationHint(buffer.getLength());
     request.setOpnum(opnum);
     request.setObject(object);

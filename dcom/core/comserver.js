@@ -249,7 +249,7 @@ class ComServer extends Stub {
     this.info = {domain: session.domain, username: session.username, password: session.password};
     address = "ncacn_ip_tcp:"+ address + "[135]";
     await this.initialize(clsid, address, session);
-    this.pingResolver = setInterval(await this.pingIPIDS, 20000, this);
+    //this.pingResolver = setInterval(await this.pingIPIDS, 10000, this);
     return 1;
   }
 
