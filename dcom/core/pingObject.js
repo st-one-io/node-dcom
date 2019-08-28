@@ -98,23 +98,24 @@ class PingObject extends NdrObject{
    * @param {NetworkDataRepresentation} ndr 
    */
   read(ndr) {
+    let hresult;
     switch(this.opnum) {
         case 1:
-            let hresult = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL, null);
-            if (hresult != 0) {
-                console.log(new Error("Simple ping failed, hresult: " + hresult));
+             hresult = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL, null);
+            if (hresult.getValue() != 0) {
+                console.log(new Error("Simple ping failed, hresult: " + hresult.getValue()));
             } else {
                 console.log("Simple Ping Succeeded");            }
-            
+            break;
         case 2:
-            this.setId = MarshalUnMarshalHelper.readOctetArrayLE(ndr, 8);
+            this.setId = [...MarshalUnMarshalHelper.readOctetArrayLE(ndr, 8)];
 
             MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.SHORT), null, Flags.FLAG_NULL, null);
 
             hresult = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL, null);
 
-            if (hresult != 0) {
-                console.log(new Error("Complex ping failed, hresult: " + hresult));
+            if (hresult.getValue() != 0) {
+                console.log(new Error("Complex ping failed, hresult: " + hresult.getValue()));
             } else {
                 console.log("Complex Ping Succeeded, setId is: " + this.setId.toString());
             }

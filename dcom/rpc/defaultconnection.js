@@ -47,8 +47,9 @@ class DefaultConnection
     let stubSize = this.transmitLength - (pdu.getFlag(pdu.PFC_OBJECT_UUID) ?
       40 : 24) - 8 - 16;
     let index = 0;
-    while (index < pdu.getStub().length) {
-      if (index >= pdu.getStub().length) {
+    var pdu_length = pdu.getStub().length;
+    while (index < pdu_length) {
+      if (index >= pdu_length) {
         throw new Error("No such element.");
       }
 
@@ -89,9 +90,10 @@ class DefaultConnection
   {
     var fragment = await this.receiveFragment(transport);
     // flag indicating if this is a single packet
-    let flag = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG) && 
-      fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
-      
+    var first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
+    var last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
+    var flag =  first && last;      
+    
     if (!this.bytesRemainingInReceiveBuffer && flag){
       return fragment;
     } else {
@@ -101,14 +103,19 @@ class DefaultConnection
 
         let newStub = fragment.getStub();
         if (newStub != null && newStub.length > 0){
-          if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG))
+          if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG)){
+            first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
             stub = newStub.concat(stub);
-          // if its the the first frag, it will be in the middle or in the end
-          else if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG))
-            console.log("last one");
-          stub = stub.concat(newStub);
+          } else{
+            // if its the the first frag, it will be in the middle or in the end
+            if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)) {
+              console.log("last one");
+              last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
+            }
+            stub = stub.concat(newStub);
+          }
         }
-      }while(this.bytesRemainingInReceiveBuffer);
+      }while(!last);
 
       let length = stub.length;
       if (length > 0) {
@@ -230,6 +237,16 @@ class DefaultConnection
         this.receiveBuffer.index = 0;
         this.receiveBuffer.start = 0;
         this.bytesRemainingInReceiveBuffer = true;
+      } else {
+        /*
+         * Sometimes packest might arive a bit late so checking the bytesRemainingInReceiveBuffer flag is not enough since
+         * it would be set to false while new stuff arived on receiveBuffer. So when we consider trimsize to be 0, we need
+         * to define receive buffer buf to an empty buffer;
+         */
+        this.receiveBuffer.buf = [];
+        this.receiveBuffer.length = 0;
+        this.receiveBuffer.index = 0;
+        this.receiveBuffer.start = 0;
       }
 
       var bufferTobeUsed = new NdrBuffer(newBuffer, 0);

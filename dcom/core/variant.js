@@ -160,7 +160,7 @@ class Variant {
     this.supportedTypes_classes.set(new Number(this.VT_VARIANT), new ComValue(null, types.VARIANT));
     this.supportedTypes_classes.set(new Number(this.VT_I4), new ComValue(null, types.LONG));
     this.supportedTypes_classes.set(new Number(this.VT_INT), new ComValue(null, types.INTEGER));
-    this.supportedTypes_classes.set(new Number(this.VT_R4), new ComValue(null, types.SHORT));
+    this.supportedTypes_classes.set(new Number(this.VT_R4), new ComValue(null, types.FLOAT));
     this.supportedTypes_classes.set(new Number(this.VT_BOOL), new ComValue(null, types.BOOLEAN));
     this.supportedTypes_classes.set(new Number(this.VT_I2), new ComValue(null, types.SHORT));
     this.supportedTypes_classes.set(new Number(this.VT_I1), new ComValue(null, types.BYTE));
@@ -171,9 +171,9 @@ class Variant {
     this.supportedTypes_classes.set(new Number(this.VT_ARRAY), new ComValue(null, types.ARRAY));
     this.supportedTypes_classes.set(new Number(this.VT_UNKNOWN), new ComValue(null, types.COMOBJECT));
     this.supportedTypes_classes.set(new Number(this.VT_DISPATCH), new ComValue(null, types.COMOBJECT));
-    this.supportedTypes_classes.set(new Number(this.VT_UI1),new ComValue(null, types.SHORT));
-    this.supportedTypes_classes.set(new Number(this.VT_UI2),new ComValue(null, types.INTEGER));
-    this.supportedTypes_classes.set(new Number(this.VT_UI4),new ComValue(null, types.LONG));
+    this.supportedTypes_classes.set(new Number(this.VT_UI1),new ComValue(null, types.UNSIGNEDBYTE));
+    this.supportedTypes_classes.set(new Number(this.VT_UI2),new ComValue(null, types.UNSIGNEDSHORT));
+    this.supportedTypes_classes.set(new Number(this.VT_UI4),new ComValue(null, types.UNSIGNEDINTEGER));
     this.supportedTypes_classes.set(new Number(this.VT_I8), new ComValue(null, types.INTEGER));
     this.supportedTypes_classes.set(new Number(this.VT_R8), new ComValue(null, types.DOUBLE));
     this.supportedTypes_classes.set(new Number(this.VT_BOOL_ARRAY), new ComValue(types.VT_ARRAY));

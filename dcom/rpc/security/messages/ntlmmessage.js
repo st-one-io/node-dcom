@@ -56,6 +56,9 @@ class NtlmMessage
 
   writeULong(dst, offset, ulong)
   {
+    /*dst = Buffer.from(dst);
+    ulong = ulong - Math.floor(ulong/Math.pow(2, 32)) * Math.pow(2, 32);
+    dst.writeUInt32LE(ulong, offset);*/
     dst[ offset ] = ( ulong & 0xff );
     dst[ offset + 1 ] = ( ulong >> 8 & 0xff );
     dst[ offset + 2 ] = ( ulong >> 16 & 0xff );

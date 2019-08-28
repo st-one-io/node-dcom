@@ -70,7 +70,7 @@ class RemUnknownServer extends Stub {
         }
 
         try {
-            await this.attach(this.getSyntax(), this.info, this.session.getGlobalSocketTimeout());
+            await this.attach(this.info, this.session.getGlobalSocketTimeout());
 
             if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
                 this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));

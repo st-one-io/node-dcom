@@ -73,7 +73,7 @@ class Stub extends Events.EventEmitter {
     }
   }
 
-  async attach(syntax, info, timeout){
+  async attach(info, timeout){
     var endpoint = this.endpoint;
     if (endpoint != null) return;
     var address = this.address;
@@ -81,7 +81,7 @@ class Stub extends Events.EventEmitter {
 
     // first we create the transport, and the associated Endpoint
     let transport = this.getTransportFactory().createTransport(address, timeout);
-    this.setEndpoint(new Endpoint(transport, new PresentationSyntax(syntax),));
+    this.setEndpoint(new Endpoint(transport, new PresentationSyntax(this.getSyntax()),));
 
     // now we attach the Endpoint to the server
     await (this.endpoint.transport.attach(info))
@@ -90,16 +90,12 @@ class Stub extends Events.EventEmitter {
     });
   }
 
-  async call(semantics, ndrobj, info){
-    this.attach();
+  async call(semantics, ndrobj, info, timeout){
+    await this.attach(info, timeout);
     let object = this.getObject();
     let uuid = (object == null) ? null : new UUID(object);
     return await this.getEndpoint().call(semantics, uuid, ndrobj.getOpnum(), ndrobj, info);
   }
-
-  getSyntax(){
-    return this.endpoint.getSyntax();
-  };
 }
 
 module.exports = Stub;

@@ -513,7 +513,7 @@ class Session
       let refcount = IPID.internal_getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
       this.updateReferenceForIPID(IPID.getIpid(), refcount);
     } else {
-      let joid = new ObjectId(oid, dontping);
+      let joid = new ObjectId([...oid], dontping);
       this.addPingObject(this, IPID, joid);
       //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
       console.log("addToSession: Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
@@ -533,15 +533,18 @@ class Session
       holder.username = session.getUserName();
       holder.password = session.getPassword();
       holder.domain = session.getDomain();
-      holder.currentSetOIDs.set(oid, oid);
+      // we are using the static part to add it to the hash since using 
+      // the whole object was problematic since a single change caused it
+      // to add the same IPID more than once because of lastpingtime
+      holder.currentSetOIDs.set(oid.oid, oid);
       holder.seqNum = 0;
       this.mapOfSessionvsIPIDPingHolders.set(session, holder);
     } else {
-      let oid2 = holder.currentSetOIDs.get(oid);
+      let oid2 = holder.currentSetOIDs.get(oid.oid);
       if (oid2 != null) {
         oid = oid2;
       } else {
-        holder.currentSetOIDs.set(oid, oid);
+        holder.currentSetOIDs.set(oid.oid, oid);
         holder.modified = true;
       }
     }

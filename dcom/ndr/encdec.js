@@ -93,12 +93,16 @@ module.exports = {
   },
 
   dec_doublele: function (src, si) {
-    return this.dec_uint64le(Buffer.from(src), si);
+    return Buffer.from(src).readDoubleLE(si);
   },
 
   dec_doublebe: function (src, si) {
     return this.dec_uint64be(src, si);
-}
+  },
+
+  dec_floatle: function(src, si) {
+    return Buffer.from(src).readFloatLE(si);
+  }
   // TO-DO: encoding and ecoding of time values
   // TO-DO: encoding and decoding of utf values
 };

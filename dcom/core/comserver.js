@@ -19,7 +19,7 @@ const ComObjetImpl = require('./comobjcimpl');
 const FrameworkHelper = require('./frameworkhelper');
 const Flags = require('./flags');
 const types = require('./types');
-const PingObject = require('./pingObject');
+const OXIDStub = require('./oxidstub');
 
 /**
  * This class represents the basic server object
@@ -249,7 +249,6 @@ class ComServer extends Stub {
     this.info = {domain: session.domain, username: session.username, password: session.password};
     address = "ncacn_ip_tcp:"+ address + "[135]";
     await this.initialize(clsid, address, session);
-    //this.pingResolver = setInterval(await this.pingIPIDS, 10000, this);
     return 1;
   }
 
@@ -271,6 +270,8 @@ class ComServer extends Stub {
     this.clsid = clsid.getClsid().toUpperCase();
     this.session = session;
     this.session.setTargetServer(address.substring(address.indexOf(":") + 1, address.indexOf("[")));
+    // start the ping function
+    this.pingResolver = new OXIDStub(this);
     try {
       await this.start();
     } catch (e) {
@@ -323,7 +324,7 @@ class ComServer extends Stub {
         this.call(new Endpoint().IDEMPOTENT, serverActivation);
       } else {*/
         this.syntax = "4d9f4ab8-7d1c-11cf-861e-0020af6e7c57:0.0";
-        await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout());
+        await this.attach(null, this.session.getGlobalSocketTimeout());
         attachcomplete = true;
 
         /* after attaching succesfully now we will call a rebindendpoint so that
@@ -465,56 +466,6 @@ class ComServer extends Stub {
     return comObject;
   }
 
-  async pingIPIDS(server) {
-    let list = server.session.mapOfSessionvsIPIDPingHolders.entries();
-
-    while(list.length > 0) {
-      let entry = list.pop();
-      let key = entry[0];
-      let holder = entry[1];
-      let address = key.getTargetServer();
-
-      let pingObject = new PingObject();
-      pingObject.seqNum = holder.setId++;
-
-      let list2 = holder.currentSetOIDs.entries();
-      while(list2.length > 0) {
-        let oid = list2.pop()[1];
-        if (oid.getIPIDRefCount() == 0) {
-          if (!oid.dontping) {
-            pingObject.listOfDels.push(oid);
-            holder.pingedOnce.delete(oid);
-            holder.modified = true;
-          }
-        } else {
-          if (!oid.dontping && !holder.pingedOnce.get(oid)) {
-            pingObject.listOfAdds.push(oid);
-            holder.pingedOnce.set(oid, oid);
-            holder.modified = true;
-          }
-        }
-      }
-
-      if (holder.setId = null) {
-        pingObject.listOfDels = new Array();
-      }
-
-      let isSimplePing = false;
-
-      if (holder.setId != null && !holder.modified) {
-        isSimplePing = true;
-      }
-
-      pingObject.opnum = (isSimplePing)? 1 : 2;
-
-      holder.setId = await server.getEndpoint().call(Endpoint.IDEMPOTENT, null, pingObject.opnum, pingObject, server.info)
-        .catch(function(reject) {
-          console.log(new Error("Ping: " + reject));
-          clearInterval(server.pingResolver);
-        });
-    }
-  }
-
   /**
    *
    * @param {String} iid
@@ -576,7 +527,7 @@ class ComServer extends Stub {
       }
     }
 
-    await this.attach(this.getSyntax(), null, this.session.getGlobalSocketTimeout());
+    await this.attach(null, this.session.getGlobalSocketTimeout());
     if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
       this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
       this.getEndpoint().getSyntax().setVersion(0, 0);
