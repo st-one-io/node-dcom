@@ -127,9 +127,6 @@ class UUID{
 
     this.clockSeqHighAndReserved = Number.parseInt(token.substring(0, 2), 16);
     this.clockSeqLow = Number.parseInt(token.substring(2), 16);
-    //this.node1 = parseInt(temp[4].substr(0, 4), 16)
-    //this.node2 = parseInt(temp[4].substr(4, 4), 16)
-    //this.node3 = parseInt(temp[4].console.log(token);substr(8, 4), 16)
 
     token = temp[4];
     for (var i = 0; i < 6; i++){

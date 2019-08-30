@@ -124,8 +124,7 @@ class Type3Message extends NtlmMessage {
         case 4:
         case 5:
           let ntlmClienteChallengeInfo = type2.getTargetInformation();
-          console.log(ntlmClienteChallengeInfo);
-          
+          break;          
         default:
           break;
       }

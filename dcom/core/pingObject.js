@@ -5,6 +5,8 @@ const ComValue = require('./comvalue');
 const types = require('./types');
 const Flags = require('./flags');
 const HashCode = require('hashcode').hashCode;
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 class PingObject extends NdrObject{
   constructor() {
@@ -33,7 +35,7 @@ class PingObject extends NdrObject{
             if (this.setId != null) {
                 MarshalUnMarshalHelper.writeOctetArrayLE(ndr, Buffer.from(this.setId)) ;
             } else {
-                console.log(new Error("Simple ping requested without a setID!"));
+                debug("Simple ping requested without a setID!");
             }
             break;  
         case 2:
@@ -45,7 +47,7 @@ class PingObject extends NdrObject{
             if (this.setId == null) {
                 this.setId = [0,0,0,0,0,0,0,0];
             } else {
-                console.log(new Error("Complex Ping going for setId: " + this.setId));
+                debug("Complex Ping going for setId: " + this.setId);
             }
 
             MarshalUnMarshalHelper.writeOctetArrayLE(ndr, Buffer.from(this.setId));
@@ -103,9 +105,10 @@ class PingObject extends NdrObject{
         case 1:
              hresult = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL, null);
             if (hresult.getValue() != 0) {
-                console.log(new Error("Simple ping failed, hresult: " + hresult.getValue()));
+                debug(String(new Error("Simple ping failed, hresult: " + hresult.getValue())));
             } else {
-                console.log("Simple Ping Succeeded");            }
+                debug("Simple Ping Succeeded");
+            }
             break;
         case 2:
             this.setId = [...MarshalUnMarshalHelper.readOctetArrayLE(ndr, 8)];
@@ -115,9 +118,9 @@ class PingObject extends NdrObject{
             hresult = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, Flags.FLAG_NULL, null);
 
             if (hresult.getValue() != 0) {
-                console.log(new Error("Complex ping failed, hresult: " + hresult.getValue()));
+                debug(String(new Error("Complex ping failed, hresult: " + hresult.getValue())));
             } else {
-                console.log("Complex Ping Succeeded, setId is: " + this.setId.toString());
+                debug("Complex Ping Succeeded, setId is: " + this.setId.toString());
             }
             break;
         default:

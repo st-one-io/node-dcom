@@ -116,7 +116,6 @@ class BindAcknowledgePdu extends ConnectionOrientedPdu{
         resultList[i].read(ndr);
     }
     this.setResultList(resultList);
-    //console.log(this.maxTransmitFragment, this.maxReceiveFragment, this.associationGroupId, this.secondaryAddress, this.resultList);
   }
 
   /**

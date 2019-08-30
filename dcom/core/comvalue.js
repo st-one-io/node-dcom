@@ -9,7 +9,7 @@ let Struct;
 let Union;
 let Variant;
 let UUID;
-let inited = false;
+let initted = false;
 
 /**
  * Stores a value and it's related COM type
@@ -127,7 +127,7 @@ class ComValue {
         return `ComValue:[${types.descr[this._type]} : ${this._obj}]`;
     }
     _init() {
-        if (inited) return;
+        if (initted) return;
 
         types = require('./types');
         ComArray = require('./comarray');
@@ -139,7 +139,7 @@ class ComValue {
         Variant = require('./variant');
         UUID = require('../rpc/core/uuid');
 
-        inited = true;
+        initted = true;
     }
 }
 

@@ -7,7 +7,6 @@ class ComTransportFactory {
 
   createTransport(address, timeout)
   {
-    console.log("createTransport");
     return new ComTransport(address, timeout);
   }
 

@@ -1,21 +1,22 @@
-var NdrBuffer = require('../ndr/ndrbuffer.js');
-var NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
-var AuthenticationVerifier = require('./core/authenticationverifier.js');
-var AlterContextPdu = require('./pdu/altercontextpdu.js');
-var AlterContextResponsePdu = require("./pdu/altercontextresponsepdu.js");
-var Auth3Pdu = require('./pdu/auth3pdu.js');
-var BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
-var BindNoAcknowledgePdu = require('./pdu/bindnoacknowledgepdu.js');
-var BindPdu = require('./pdu/bindPdu.js');
-var CancelCoPdu = require('./pdu/cancelCoPdu.js');
-var ConnectionOrientedPdu = require('./connectionorientedpdu.js');
-var FaultCoPdu = require('./pdu/faultCoPdu.js');
-var OrphanedPdu = require('./pdu/orphanedpdu.js');
-var RequestCoPdu = require('./pdu/requestcopdu.js');
-var ResponseCoPdu = require('./pdu/responsecopdu.js');
-var ShutdownPdu = require('./pdu/shutdownpdu.js');
-var Events = require('events');
-//var Buffer = require('buffer');
+const NdrBuffer = require('../ndr/ndrbuffer.js');
+const NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
+const AuthenticationVerifier = require('./core/authenticationverifier.js');
+const AlterContextPdu = require('./pdu/altercontextpdu.js');
+const AlterContextResponsePdu = require("./pdu/altercontextresponsepdu.js");
+const Auth3Pdu = require('./pdu/auth3pdu.js');
+const BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
+const BindNoAcknowledgePdu = require('./pdu/bindnoacknowledgepdu.js');
+const BindPdu = require('./pdu/bindPdu.js');
+const CancelCoPdu = require('./pdu/cancelCoPdu.js');
+const ConnectionOrientedPdu = require('./connectionorientedpdu.js');
+const FaultCoPdu = require('./pdu/faultCoPdu.js');
+const OrphanedPdu = require('./pdu/orphanedpdu.js');
+const RequestCoPdu = require('./pdu/requestcopdu.js');
+const ResponseCoPdu = require('./pdu/responsecopdu.js');
+const ShutdownPdu = require('./pdu/shutdownpdu.js');
+const Events = require('events');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 class DefaultConnection
 {
@@ -97,6 +98,7 @@ class DefaultConnection
     if (!this.bytesRemainingInReceiveBuffer && flag){
       return fragment;
     } else {
+      let first_fragment = fragment;
       let stub = fragment.getStub();
       do{
         fragment = await this.receiveFragment(transport);
@@ -109,7 +111,6 @@ class DefaultConnection
           } else{
             // if its the the first frag, it will be in the middle or in the end
             if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)) {
-              console.log("last one");
               last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
             }
             stub = stub.concat(newStub);
@@ -128,6 +129,7 @@ class DefaultConnection
       
       fragment.setFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG, true);
       fragment.setFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG, true);
+      let aeea = first_fragment;
       return fragment;
     }
 
@@ -335,22 +337,22 @@ class DefaultConnection
     switch (buffer.dec_ndr_small()) {
       case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
         if (logMsg){
-          console.log("Received BIND_ACK");
+          debug("Received BIND_ACK");
           logMsg = false;
         }
       case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
         if (logMsg){
-          console.log("Received ALTER_CTX_RESP");
+          debug("Received ALTER_CTX_RESP");
           logMsg = false;
         }
       case new BindPdu().BIND_TYPE:
         if (logMsg){
-          console.log("Received BIND");
+          debug("Received BIND");
           logMsg = false;
         }
       case new AlterContextPdu().ALTER_CONTEXT_TYPE:
         if (logMsg){
-          console.log("Received ALTER_CTX");
+          debug("Received ALTER_CTX");
           logMsg = false;
         }
 
@@ -361,27 +363,27 @@ class DefaultConnection
         break;
       case new FaultCoPdu().FAULT_TYPE:
         if (logMsg){
-          console.log("Received FAULT");
+          debug("Received FAULT");
           logMsg = false;
         }
       case new CancelCoPdu().CANCEL_TYPE:
         if (logMsg){
-          console.log("Received CANCEL");
+          debug("Received CANCEL");
           logMsg = false;
         }
       case new OrphanedPdu().ORPHANED_TYPE:
         if (logMsg){
-          console.log("Received ORPHANED");
+          debug("Received ORPHANED");
           logMsg = false;
         }
       case new ResponseCoPdu().RESPONSE_TYPE:
         if (logMsg) {
-          console.log("Received RESPONSE");
+          debug("Received RESPONSE");
           logMsg = false;
         }
       case new RequestCoPdu().REQUEST_TYPE:
         if (logMsg) {
-          console.log("Received REQUEST");
+          debug("Received REQUEST");
           logMsg = false;
         }
         
@@ -416,27 +418,27 @@ class DefaultConnection
     switch (pduType) {
       case (new BindPdu().BIND_TYPE):
         if (logMsg){
-          console.log("Sending BIND");
+          debug("Sending BIND");
           logMsg = false;
         }
       case (new Auth3Pdu().AUTH3_TYPE):
         if (logMsg) {
-          console.log("Sending AUTH3");
+          debug("Sending AUTH3");
           logMsg = false;
         }
       case (new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE):
         if (logMsg){
-          console.log("Sending BIND_ACK");
+          debug("Sending BIND_ACK");
           logMsg = false;
         }
       case (new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE):
         if (logMsg){
-          console.log("Sending ALTER_CTX_RESP");
+          debug("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
       case (new RequestCoPdu().REQUEST_TYPE):
         if (logMsg) {
-          console.log("Sending REQUEST");
+          debug("Sending REQUEST");
           logMsg = false;
         }       
         var verifier = this.outgoingRebind(info, pduType);
@@ -444,7 +446,7 @@ class DefaultConnection
         break;
       case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
         if (logMsg){
-          console.log("Sending ALTER_CTX");
+          debug("Sending ALTER_CTX");
           logMsg = false;
         }
         var verifier = this.outgoingRebind(info, pduType);
@@ -452,22 +454,22 @@ class DefaultConnection
         break;
       case (new FaultCoPdu().FAULT_TYPE):
         if (logMsg){
-          console.log("Sending FAULT");
+          debug("Sending FAULT");
           logMsg = false;
         }
       case (new CancelCoPdu().CANCEL_TYPE):
         if (logMsg){
-          console.log("Sending CANCEL");
+          debug("Sending CANCEL");
           logMsg = false;
         }
       case (new OrphanedPdu().ORPHANED_TYPE):
         if (logMsg){
-          console.log("Sending ORPHANED");
+          debug("Sending ORPHANED");
           logMsg = false;
         }
       case (new ResponseCoPdu().RESPONSE_TYPE):
         if (logMsg) {
-          console.log("Sending RESPONSE");
+          debug("Sending RESPONSE");
           logMsg = false;
         }
         if (security != null) {

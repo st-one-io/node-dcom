@@ -18,6 +18,8 @@ const NdrObject = require('../ndr/ndrobject.js');
 const InterfacePointer = require('./interfacepointer.js');
 const ComArray = require('./comarray.js');
 const Flags = require('./flags.js');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 /**
  * Remote Activation class
@@ -181,7 +183,7 @@ class RemActivation extends NdrObject {
 
         this.hresult = ndr.readUnsignedLong();
         if (this.hresult != 0) {
-            throw new Error("Exception from server: " + this.hresult);
+            throw this.hresult;
         }
 
         let array = new ComArray(new ComValue(new InterfacePointer(), types.INTERFACEPOINTER), null, 1, true);

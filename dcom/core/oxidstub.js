@@ -2,6 +2,8 @@ const Stub = require('../rpc/stub');
 const PingObject = require('./pingObject');
 const Endpoint = require('../rpc/connectionorientedendpoint');
 const ComTransportFactory = require('../transport/comtransportfactory');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 class OXIDStub extends Stub{
   constructor(server) {
@@ -20,6 +22,17 @@ class OXIDStub extends Stub{
     return "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
   }
 
+  /**
+   * Close everything that must be closed
+   * @param {Session} session 
+   */
+  async destroySessionOIDs(session){
+    // removes the pingHolder for this session
+    session.mapOfSessionvsIPIDPingHolders.delete(session);
+    // closes the connection used for pings
+    await this.detach();
+    clearTimeout(this.timer);
+  }
   /**
    * 
    * @param {OXIDStub} oxid 
@@ -67,10 +80,10 @@ class OXIDStub extends Stub{
 
         let info = oxid.info;
         let timeout = oxid.server.session.timeout;
-        console.log("sending ping");
+        debug("sending ping");
         await oxid.call(Endpoint.IDEMPOTENT, pingObject, info, timeout)
           .catch(function(reject) {
-            console.log(new Error("Ping: " + reject));
+            debug(new Error("Ping: " + reject));
             clearInterval(oxid.timer);
           });
         holder.setId = pingObject.setId;

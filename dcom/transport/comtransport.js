@@ -4,6 +4,8 @@ const PresentationSyntax = require('../rpc/core/presentationsyntax.js');
 const os = require('os');
 const net = require('net');
 const events = require('events');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 class ComTransport extends events.EventEmitter
 {
@@ -149,9 +151,9 @@ class ComTransport extends events.EventEmitter
     let length = buffer.length;
     
     try{
-        this.channelWrapper.write(Buffer.from(buf.slice(0, length)));
+      this.channelWrapper.write(Buffer.from(buf.slice(0, length)));
     } catch(e){
-      console.log(e);
+      debug(e);
     }
   }
 

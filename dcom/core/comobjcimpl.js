@@ -1,5 +1,5 @@
 // @ts-check
-let inited = false;
+let initted = false;
 let HashMap;
 let Unreferenced;
 let ErroCodes;
@@ -256,7 +256,7 @@ class ComObjectImpl extends events.EventEmitter
   }
 
   _init() {
-    if (inited) return;
+    if (initted) return;
     HashMap = require('hashmap');
     Unreferenced = require('../common/unreferenced.js');
     ErroCodes = require('../common/errorcodes.js');
@@ -268,7 +268,7 @@ class ComObjectImpl extends events.EventEmitter
     types = require('./types');
     ComArray = require('./comarray');
     ComValue = require('./comvalue');
-    inited = true;
+    initted = true;
   }
 }
 

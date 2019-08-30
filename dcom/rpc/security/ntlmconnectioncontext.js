@@ -29,7 +29,6 @@ class NTLMConnectionContext
 
   init2(context, info)
   {
-    console.log("init2");
     this.established = false;
     var maxTransmit = this.DEFAULT_MAX_TRANSMIT_FRAGMENT;
     if (maxTransmit != null) {
@@ -50,7 +49,6 @@ class NTLMConnectionContext
 
   init(context, info)
   {
-    console.log("init");
     var pdu = this.init2(context, info);
     pdu.resetCallIdCounter();
     return pdu;

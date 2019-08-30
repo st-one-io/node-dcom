@@ -41,7 +41,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       });
       this.syntax = syntax;
     } catch (e) {
-      console.log(e);
+      debug(e);
     }
     this.bound;
     this.callId;
@@ -88,7 +88,10 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     await this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
-    var rply = await this.receive();
+    var rply = await this.receive()
+    .catch(function(error){
+      console.log(error);
+    });
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
 

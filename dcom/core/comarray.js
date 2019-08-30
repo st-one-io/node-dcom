@@ -1,5 +1,5 @@
 //@ts-check
-let inited = false;
+let initted = false;
 let Struct;
 let Union;
 let Flags;
@@ -559,9 +559,9 @@ class ComArray {
 	}
 
 	_init() {
-		if (inited) return;
+		if (initted) return;
 
-		inited = false;
+		initted = false;
 		Struct = require('./struct');
 		Union = require('./union');
 		Flags = require('./flags');
@@ -576,7 +576,7 @@ class ComArray {
 		types = require('./types');
 		ComValue = require('./comvalue');
 
-		inited = true;
+		initted = true;
 	}
 }
 

@@ -71,7 +71,6 @@ class NTLMConnection extends DefaultConnection
   {
     if (this.ntlm == null) {
       this.contextId = ++contextSerial;
-      //console.log("=====================CONTEXT SERIAL========================", contextSerial);
       this.ntlm = this.authentication.createType1(info.domain);
     } else if (this.ntlm instanceof Type1Message) {
       this.ntlm = this.authentication.createType2(this.ntlm);

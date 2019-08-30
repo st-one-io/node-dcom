@@ -38,7 +38,7 @@ Port.prototype.write = function (ndr){
 
 Port.prototype.equals = function (obj) {
   if (!(obj instanceof Port)) return false;
-  console.log(obj);
+  debug(obj);
   return (this.portSpec != null) ? this.equals(obj.portSpec) : obj.portSpec == null;
 };
 

@@ -119,9 +119,7 @@ class NTLMAuthentication
 
   createType1(domain)
   {
-    console.log("createType1");
     var flags = this.getDefaultFlags();
-    console.log("createtype1");
     return new Type1Message(null, flags, domain,
       os.hostname());
   }

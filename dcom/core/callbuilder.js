@@ -1,6 +1,6 @@
 //@ts-check
 const NdrObject = require('../ndr/ndrobject.js');
-let inited = false;
+let initted = false;
 let UUID;
 let MarshalUnMarshalHelper;
 let Flags;
@@ -64,7 +64,7 @@ class CallBuilder extends NdrObject {
 	 * requires all libs
 	 */
 	_init(){
-		if (inited) return;
+		if (initted) return;
 		UUID = require('../rpc/core/uuid.js');
 		MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
 		Flags = require('./flags.js');
@@ -86,7 +86,7 @@ class CallBuilder extends NdrObject {
 		
 		types = require('./types');
 		ComValue = require('./comvalue');
-		inited = true;
+		initted = true;
 	}
 
 	/**

@@ -1,9 +1,11 @@
-var NtlmMessage = require('./ntlmmessage.js');
-var SmbConstants = require('../../../ndr/smbconstants.js');
-var Buffer = require('buffer');
-var HexDump = require('../../../ndr/hexdump.js');
-var LegacyEncoding = require('legacy-encoding');
-var NtlmFlags = require('../ntlmflags.js');
+const NtlmMessage = require('./ntlmmessage.js');
+const SmbConstants = require('../../../ndr/smbconstants.js');
+const Buffer = require('buffer');
+const HexDump = require('../../../ndr/hexdump.js');
+const LegacyEncoding = require('legacy-encoding');
+const NtlmFlags = require('../ntlmflags.js');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 class Type1Message extends NtlmMessage
 {
@@ -15,10 +17,10 @@ class Type1Message extends NtlmMessage
     if (!(arguments[0] instanceof Array)){
       (flags) ? this.setFlags(this.getDefaultFlags(tc) | flags) :
         this.getDefaultFlags();
-      (suppliedDomain) ? this.setSuppliedDomain(suppliedDomain) :console.log("No domain provided");
+      (suppliedDomain) ? this.setSuppliedDomain(suppliedDomain) : debug("Error: No domain provided");
 
       (suppliedWorkstation) ? this.setSuppliedWorkstation(suppliedWorkstation) :
-        console.log("No workstation provided");
+        debug("No workstation provided");
     } else {
       this.parse(dc);
     }

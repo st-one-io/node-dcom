@@ -84,9 +84,10 @@ class Stub extends Events.EventEmitter {
     this.setEndpoint(new Endpoint(transport, new PresentationSyntax(this.getSyntax()),));
 
     // now we attach the Endpoint to the server
-    await (this.endpoint.transport.attach(info))
+    transport = this.endpoint.transport;
+    await transport.attach()
     .catch(function(reject) {
-      throw new Error(reject);
+      debug(reject);
     });
   }
 

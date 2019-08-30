@@ -17,6 +17,8 @@ let Struct;
 let UUID;
 let types;
 let inited = false;
+let util;
+let debug;
 
 /**
  * This class defines a basic session
@@ -49,6 +51,7 @@ class Session
     this.useNTLMv2 = false;
     this.isSSO = false;
     this.links = new Array();
+    this.pingResolver;
     this.mapOfOxidsVsSessions = new HashMap();
     this.mapOfCustomCLSIDs = new HashMap();
     this.sessionInDestroy = false;
@@ -77,6 +80,8 @@ class Session
     CallBuilder = require('./callbuilder');
     types = require('./types');
     Struct = require('./struct');
+    util = require('util');
+    debug = util.debuglog('dcom');
 
     inited = true;
   }
@@ -132,9 +137,9 @@ class Session
 
     try {
       sock = Net.createServer((c) => {
-        console.log("client connected");
+        debug("client connected");
         c.on('end', () => {
-          console.log("client disconnected");
+          debug("client disconnected");
         })
       });
       DNS.lookup(destination, function(err, address, family){
@@ -202,7 +207,7 @@ class Session
             var ipid = deferencedIpids[j];
             listToKIll.push(session.prepareForReleaseRef(ipid));
           } catch(e){
-            console.log("Release_References_TimerTask:[RUN] Exception preparing for release " + String(e));
+            debug("Release_References_TimerTask:[RUN] Exception preparing for release " + String(e));
           }
         }
 
@@ -218,12 +223,12 @@ class Session
         try {
           session.releaseRefs(array, false);
         } catch(e){
-          console.log("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+          debug("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
         }
         i++;
       }
     } catch (e){
-      console.log("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+      debug("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
     }
   }
 
@@ -316,7 +321,7 @@ class Session
       this.mapofSessionIdsVsSessions.delete(Number(session.getSessionIdentifier()));
       this.listOfSessions.remove(session);
 
-      this.postDestroy(session);
+      await this.postDestroy(session);
       return;
     }
 
@@ -371,7 +376,8 @@ class Session
       let temp = new ComValue(temporary, types.STRUCT);
       var array = new ComArray(temp, true);
       
-      await session.stub.closeStub();
+      // im not sure if this stub should be closed if we still have refs to release
+      //await session.stub.closeStub();
       let self = this;
       await session.releaseRefs(array, true).then(async function(data){
         self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
@@ -380,12 +386,17 @@ class Session
         if (session.stub.getServerInterfacePointer() != null) {
           self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
         }
+        // pushing the stubs to be close here guarantee that nothing else will remain on this session before 
+        // actually closing the connection
         await session.stub.closeStub();
         await session.stub2.closeStub();
 
         await self.postDestroy(session);
         session.stub = null;
         session.stub2 = null;
+      })
+      .catch(function(reject){
+        debug(reject);
       });
     }
   }
@@ -410,7 +421,7 @@ class Session
     }
 
     session.links = [];
-    //ComOxidRuntime.destroySessionOIDs(session.getSessionIdentifier());
+    await this.pingResolver.destroySessionOIDs(this);
   }
 
   setStub(stub)
@@ -458,7 +469,7 @@ class Session
     var value = this.mapOfIPIDsVsRefcounts.get(ipid);
     if (value == null) {
       if (refcount < 0) {
-        console.log("[updateReferenceForIPID] Released IPID not found: " + ipid);
+        debug("[updateReferenceForIPID] Released IPID not found: " + ipid);
         return;
       } else {
         value = new Number(0);
@@ -516,7 +527,7 @@ class Session
       let joid = new ObjectId([...oid], dontping);
       this.addPingObject(this, IPID, joid);
       //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
-      console.log("addToSession: Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
+      debug("addToSession: Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
     }
   }
 
@@ -554,7 +565,7 @@ class Session
   async releaseRefs(IPID, numinstances){
     numinstances = (numinstances == undefined) ? 5 : numinstances;
 
-    console.log("releaseRef:Reclaiming from Session: " + this.getSessionIdentifier()
+    debug("releaseRef: Reclaiming from Session: " + this.getSessionIdentifier()
       + " , the IPID: " + IPID + ", numinstances is " + numinstances);
 
     var obj = new CallBuilder(true);
@@ -566,7 +577,7 @@ class Session
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
-    console.log("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
+    debug("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
     await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
@@ -594,7 +605,7 @@ class Session
 
   addDeferencedIpids(IPID)
   {
-    console.log("addDereferencedIpids for session : " + getSessionIdentifier() + " , IPID is: " + IPID);
+    debug("addDereferencedIpids for session : " + getSessionIdentifier() + " , IPID is: " + IPID);
     if (!this.listOfDeferencedIpids.includes(IPID)) {
       this.listOfDeferencedIpids.push(IPID);
     }
@@ -602,7 +613,7 @@ class Session
 
   async releaseRefs(arrayOfStructs, fromDestroy)
   {
-    	console.log("In releaseRefs for session : " + this.getSessionIdentifier()
+    	debug("In releaseRefs for session : " + this.getSessionIdentifier()
         + " , array length is: " + Number(arrayOfStructs.getArrayInstance().length));
 
       var obj = new CallBuilder(true);
@@ -628,7 +639,7 @@ class Session
     remInterface.addMember(new ComValue(new UUID(IPID), types.UUID));
     remInterface.addMember(refcount);
     remInterface.addMember(0);
-    console.log("prepareForReleaseRef: Releasing " + refcount + " references of IPID: "
+    debug("prepareForReleaseRef: Releasing " + refcount + " references of IPID: "
       + IPID + " session: " + this.getSessionIdentifier());
     this.updateReferenceForIPID(IPID, -1 * refcount);
 
@@ -674,7 +685,7 @@ class Session
     try {
       await destroySession(this);
     } catch (e) {
-      console.log("Exception in finalize when destroying session " + e.getMessage());
+      debug("Exception in finalize when destroying session " + e.getMessage());
     }
   }
 

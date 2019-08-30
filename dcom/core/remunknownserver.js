@@ -8,6 +8,8 @@ const CallBuilder = require('./callbuilder');
 const UUID = require('../rpc/core/uuid');
 const Endpoint = require('../rpc/connectionorientedendpoint.js');
 const RemUnknown = require('./remunknown');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 /**
  * Remote unknown server class
@@ -69,26 +71,23 @@ class RemUnknownServer extends Stub {
             }
         }
 
-        try {
-            await this.attach(this.info, this.session.getGlobalSocketTimeout());
+        
+        await this.attach(this.info, this.session.getGlobalSocketTimeout());
 
-            if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
-                this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
-                this.getEndpoint().getSyntax().setVersion(0, 0);
-                await this.getEndpoint().rebind(this.info);
-            }
-            this.setObject(obj.getParentIpid());
-            await super.call(Endpoint.IDEMPOTENT, obj, this.info);
-        } catch (e) {
-            console.log(e);
+        if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
+            this.getEndpoint().getSyntax().setUUID(new UUID(targetIID));
+            this.getEndpoint().getSyntax().setVersion(0, 0);
+            await this.getEndpoint().rebind(this.info);
         }
+        this.setObject(obj.getParentIpid());
+        await super.call(Endpoint.IDEMPOTENT, obj, this.info);
 
         // now we check if there were any error
         if (obj.hresult != 0) {
             if (obj.outParams.length == 0) {
                 throw new Error(String(obj.hresult));
             } else
-                console.log(new Error(String(obj.hresult)));
+                debug(String(new Error(String(obj.hresult))));
         }
         return obj.getResults();
     }
@@ -104,22 +103,21 @@ class RemUnknownServer extends Stub {
 
         obj.setParentIpid(this.remunknownIPID);
         obj.attachSession(this.session);
-        try {
-            await this.callUnknown(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout());
-        } catch (e) {
-            throw new Error(e);
-        }
+        
+        await this.callUnknown(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout())
+        .catch(function(error){
+            debug(error);
+        });
     }
 
     /**
      * Close the current connection stub
      */
     async closeStub() {
-        try {
-            await super.detach();
-        } catch (e) {
-            throw new Error(e);
-        }
+        await super.detach()
+        .catch(function(error){
+            debug(error);
+        });
     }
 
     /**
