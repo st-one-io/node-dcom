@@ -410,7 +410,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
 
             case types.STRING:
                 if ((flag & Flags.FLAG_REPRESENTATION_VALID_STRING) != Flags.FLAG_REPRESENTATION_VALID_STRING) {
-                    throw new Error("UTIL_STRING_INVALID" + ErrorCodes.UTIL_STRING_INVALID);
+                    throw new Error("UTIL_STRING_INVALID" + new ErrorCodes().UTIL_STRING_INVALID);
                 }
 
                 let retString = null;
@@ -522,7 +522,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 return new ComValue(DualStringArray.decode(ndr), types.DUALSTRINGARRAY);
 
             default:
-                throw new Error("UTIL_SERDESER_NOT_FOUND" + ErrorCodes.UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
 
@@ -634,7 +634,7 @@ function getLengthInBytes(val, flag)
                 return 16;
 
             default:
-                throw new Error("UTIL_SERDESER_NOT_FOUND" + ErrorCodes.UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
 

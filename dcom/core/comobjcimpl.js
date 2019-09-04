@@ -2,7 +2,7 @@
 let initted = false;
 let HashMap;
 let Unreferenced;
-let ErroCodes;
+let ErrorCodes;
 let System;
 let CallBuilder;
 let Flags;
@@ -42,11 +42,11 @@ class ComObjectImpl extends events.EventEmitter
   checkLocal()
   {
     if (this.session == null) {
-      throw new Error(ErroCodes.SESSION_NOT_ATTACHED);
+      throw new Error(new ErrorCodes().SESSION_NOT_ATTACHED);
     }
 
     if (this.isLocalReference()) {
-      throw new Error(ErroCodes.E_NOTIMPL);
+      throw new Error(new ErrorCodes().E_NOTIMPL);
     }
   }
 
@@ -259,7 +259,7 @@ class ComObjectImpl extends events.EventEmitter
     if (initted) return;
     HashMap = require('hashmap');
     Unreferenced = require('../common/unreferenced.js');
-    ErroCodes = require('../common/errorcodes.js');
+    ErrorCodes = require('../common/errorcodes.js');
     System = require('../common/system.js');
     CallBuilder = require('./callbuilder');
     Flags = require('./flags');

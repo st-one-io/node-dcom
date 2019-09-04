@@ -13,6 +13,7 @@ let CallBuilder;
 let Flags;
 let ComArray;
 let ComValue
+let ErrorCodes;
 let Struct;
 let UUID;
 let types;
@@ -82,6 +83,7 @@ class Session
     Struct = require('./struct');
     util = require('util');
     debug = util.debuglog('dcom');
+    ErrorCodes = require('../common/errorcodes');
 
     inited = true;
   }
@@ -287,11 +289,11 @@ class Session
       return session;
     } else if (arguments.length == 1) {
       var newSession = this.createSession(session.getDomain(), session.getUserName(), sesson.getPassword());
-      newSesssion.authInfo = session.authInfo;
-      return newSesion;
+      newSession.authInfo = session.authInfo;
+      return newSession;
     } else if (arguments.length == 3) {
       if (arguments[0] == null || arguments[1] == null || arguments[2] == null) {
-        throw new Error(ErroCodes.AUTH_NOT_SUPPLIED);
+        throw new Error(new ErrorCodes().AUTH_NOT_SUPPLIED);
       }
 
       var session = new Session();

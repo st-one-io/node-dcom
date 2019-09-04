@@ -384,7 +384,7 @@ class Variant {
 
   OPTIONAL_PARAM()
   {
-    return new Variant(Variant.SCODE, ErrorCodes.DISP_E_PARAMNOTFOUND);
+    return new Variant(Variant.SCODE, new ErrorCodes().DISP_E_PARAMNOTFOUND);
   }
 
   BSTRARRAY()
@@ -407,11 +407,11 @@ class Variant {
     isByref = (isByref == undefined) ? false : isByref;
 
     if (obj != null && obj.getType() == types.ARRAY) {
-      throw new Error("Ilegal Argument: " + ErrorCodes.VARIANT_ONLY_JIARRAY_EXCEPTED);
+      throw new Error("Ilegal Argument: " + new ErrorCodes().VARIANT_ONLY_JIARRAY_EXCEPTED);
     }
 
     if (obj != null && obj.getType() == types.INTERFACEPOINTER) {
-      throw new Error("Ilegal Argument:" + ErrorCodes.VARIANT_TYPE_INCORRECT);
+      throw new Error("Ilegal Argument:" + new ErrorCodes().VARIANT_TYPE_INCORRECT);
     }
 
     if (obj.getType() == types.VARIANTBODY) {
@@ -470,7 +470,7 @@ class Variant {
 
   VariantValBool(value, isByref, errorCode){
     isByref = (isByref == undefined) ? false : isByref;
-    errorCode = (erroCode == undefined) ? false: errorCode;
+    errorCode = (errorCode == undefined) ? false: errorCode;
 
     if (value instanceof Number)
     {
@@ -749,7 +749,7 @@ class Variant {
   checkValidity()
   {
     if (this.member == null || this.member.isNull()) {
-      throw new Error(ErrorCodes.VARIANT_IS_NULL);
+      throw new Error(new ErrorCodes().VARIANT_IS_NULL);
     }
   }
 
@@ -809,7 +809,7 @@ class VariantBody
     this.obj = (args.referent == null) ? VariantBody.EMPTY : args.referent;
 
     if (this.obj.getType() == types.COMSTRING && (this.obj.getValue().getType() != Flags.FLAG_REPRESENTATION_STRING_BSTR)) {
-      throw new Error(ErrorCodes.VARIANT_BSTR_ONLY);
+      throw new Error(new ErrorCodes().VARIANT_BSTR_ONLY);
     }
 
     if (this.obj.getType() == types.BOOLEAN) {
@@ -907,7 +907,7 @@ class VariantBody
   getObjectAsSCODE()
   {
     try {
-      return this.obj.erroCode;
+      return this.obj.errorCode;
     }catch(e){};
   }
 

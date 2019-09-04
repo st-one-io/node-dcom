@@ -124,7 +124,7 @@ class ComArray {
 		if (upperBounds) {
 			//have to supply the upperbounds for each dimension , no gaps in between
 			if (upperBounds.length != dimension) {
-				throw new Error("ARRAY_UPPERBNDS_DIM_NOTMATCH" + ErrorCodes.ARRAY_UPPERBNDS_DIM_NOTMATCH);
+				throw new Error("ARRAY_UPPERBNDS_DIM_NOTMATCH" + new ErrorCodes().ARRAY_UPPERBNDS_DIM_NOTMATCH);
 			}
 			
 			for (let i = 0; i < upperBounds.length; i++) {
@@ -142,17 +142,6 @@ class ComArray {
 	 */
 	init(array)
 	{
-		//if (!array.getClass().isArray()) {
-		//	throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_ARRAY_PARAM_ONLY));
-		//}
-		//if (array.getClass().isPrimitive()) {
-		//	throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_ARRAY_PRIMITIVE_NOTACCEPT));
-		//}
-		////bad way...but what the heck...
-		//if (array.getClass().toString().indexOf("java.lang.Object") != -1) {
-		//	throw new IllegalArgumentException(JISystem.getLocalizedMessage(JIErrorCodes.JI_ARRAY_TYPE_INCORRECT));
-		//}
-		
 		this.memberArray = array;
 		
 		let upperBounds2 = [];

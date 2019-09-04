@@ -20,7 +20,7 @@ class Union {
     constructor(discriminantClass){
         this.dsVsMember = new Map();
         if (!(discriminantClass === 'Integer' || discriminantClass === 'Short' || discriminantClass === 'Boolean' || discriminantClass === 'Character')) {
-            throw new Error("UNION_INCORRECT_DISC" + ErrorCodes.UNION_INCORRECT_DISC)
+            throw new Error("UNION_INCORRECT_DISC" + new ErrorCodes().UNION_INCORRECT_DISC)
         }
         
         this.discriminantClass = discriminantClass;
@@ -37,11 +37,11 @@ class Union {
     addMember(discriminant, member) {
 
         if (!discriminant || !member) {
-            throw new Error("UNION_NULL_DISCRMINANT" + ErrorCodes.UNION_NULL_DISCRMINANT);
+            throw new Error("UNION_NULL_DISCRMINANT" + new ErrorCodes().UNION_NULL_DISCRMINANT);
         }
 
         if (!discriminant.getClass().equals(discriminantClass)) {
-            throw new Error("UNION_DISCRMINANT_MISMATCH" + ErrorCodes.UNION_DISCRMINANT_MISMATCH);
+            throw new Error("UNION_DISCRMINANT_MISMATCH" + new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
         }
 
         if ((member instanceof Pointer && !member.isReference()) || member instanceof ComString) {
@@ -61,11 +61,11 @@ class Union {
     //used both for reading and writing
     addMember(discriminant, member) {
         if (discriminant == null) {
-            throw new IllegalArgumentException(JISystem.getLocalizedMessage(ErrorCodes.UNION_NULL_DISCRMINANT));
+            throw new IllegalArgumentException(JISystem.getLocalizedMessage(new ErrorCodes().UNION_NULL_DISCRMINANT));
         }
 
         if (!discriminant.getClass().equals(discriminantClass)) {
-            throw new JIException(ErrorCodes.UNION_DISCRMINANT_MISMATCH);
+            throw new JIException(new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
         }
 
         if (member == null) {
@@ -101,7 +101,7 @@ class Union {
      */
     encode(ndr, listOfDefferedPointers, flags) {
         if (this.dsVsMember.size != 1) {
-            throw new Error("UNION_DISCRMINANT_SERIALIZATION_ERROR" + ErrorCodes.UNION_DISCRMINANT_SERIALIZATION_ERROR);
+            throw new Error("UNION_DISCRMINANT_SERIALIZATION_ERROR" + new ErrorCodes().UNION_DISCRMINANT_SERIALIZATION_ERROR);
         }
 
         //first write the discriminant and then the member
@@ -129,7 +129,7 @@ class Union {
     {
         //first read discriminant, and then call the appropriate deserializer of the member
         if (this.dsVsMember.size == 0) {
-            throw new Error("UNION_DISCRMINANT_DESERIALIZATION_ERROR" + ErrorCodes.UNION_DISCRMINANT_DESERIALIZATION_ERROR);
+            throw new Error("UNION_DISCRMINANT_DESERIALIZATION_ERROR" + new ErrorCodes().UNION_DISCRMINANT_DESERIALIZATION_ERROR);
         }
 
         //shallowClone();

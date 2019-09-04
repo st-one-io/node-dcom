@@ -61,13 +61,13 @@ class Struct {
 
     //An array has already been added , now a new member cannot be added
     if (this.arrayAdded && (position == this.listOfMembers.length) && !(member instanceof ComArray)) {
-      throw new Error("STRUCT_ARRAY_AT_END" + ErrorCodes.STRUCT_ARRAY_AT_END);
+      throw new Error("STRUCT_ARRAY_AT_END" + new ErrorCodes().STRUCT_ARRAY_AT_END);
     }
 
     // arrays can only be the last element of this struct.
     if (member != undefined && member.constructor.name == "ComArray") {
       if (position != this.listOfMembers.length) {
-        throw new Error("STRUCT_ARRAY_ONLY_AT_END" + ErrorCodes.STRUCT_ARRAY_ONLY_AT_END);
+        throw new Error("STRUCT_ARRAY_ONLY_AT_END" + new ErrorCodes().STRUCT_ARRAY_ONLY_AT_END);
       }
 
       this.arrayAdded = true;
@@ -82,7 +82,7 @@ class Struct {
     if (member instanceof Struct) {
 
       if (member.arrayAdded && this.arrayAdded && position != (this.listOfMembers.length - 1)) {
-        throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS" + ErrorCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS);
+        throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS" + new ErrorCodes().STRUCT_INCORRECT_NESTED_STRUCT_POS);
       }
 
       if (this.arrayAdded && member.arrayAdded) {
@@ -110,7 +110,7 @@ class Struct {
             this.listOfDimensions.push(...member.listOfDimensions);
             member.listOfDimensions.length = 0; //clear
           } else {
-            throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS2" + ErrorCodes.STRUCT_INCORRECT_NESTED_STRUCT_POS2);
+            throw new Error("STRUCT_INCORRECT_NESTED_STRUCT_POS2" + new ErrorCodes().STRUCT_INCORRECT_NESTED_STRUCT_POS2);
           }
 
         }

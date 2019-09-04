@@ -21,11 +21,11 @@ async function instantiateComObject(session, obj, ipAddress) {
 
     if (obj instanceof ComObject) {
         if (obj.getAssociatedSession()) {
-            throw new Error("SESSION_ALREADY_ATTACHED" + ErrorCodes.SESSION_ALREADY_ATTACHED);
+            throw new Error("SESSION_ALREADY_ATTACHED" + new ErrorCodes().SESSION_ALREADY_ATTACHED);
         }
 
         if (obj.isLocalReference()) {
-            throw new Error("COMOBJ_LOCAL_REF" + ErrorCodes.COMOBJ_LOCAL_REF);
+            throw new Error("COMOBJ_LOCAL_REF" + new ErrorCodes().COMOBJ_LOCAL_REF);
         }
 
         obj = obj.internal_getInterfacePointer();
@@ -63,7 +63,7 @@ async function instantiateComObject(session, obj, ipAddress) {
  */
 function instantiateComObject2(session, ptr) {
     if (!ptr) {
-        throw new Error("COMFACTORY_ILLEGAL_ARG" + ErrorCodes.COMFACTORY_ILLEGAL_ARG);
+        throw new Error("COMFACTORY_ILLEGAL_ARG" + new ErrorCodes().COMFACTORY_ILLEGAL_ARG);
     }
 
     let retval;
@@ -125,7 +125,7 @@ function instantiateLocalComObject(session, javaComponent) {
 function detachEventHandler(comObject, identifier) {
     let connectionInfo = comObject.internal_getConnectionInfo(identifier);
     if (!connectionInfo) {
-        throw new Error("CALLBACK_INVALID_ID" + ErrorCodes.CALLBACK_INVALID_ID);
+        throw new Error("CALLBACK_INVALID_ID" + new ErrorCodes().CALLBACK_INVALID_ID);
     }
 
     let connectionPointer = connectionInfo[0];
@@ -149,7 +149,7 @@ function detachEventHandler(comObject, identifier) {
  */
 function attachEventHandler(comObject, sourceUUID, eventListener) {
     if (!eventListener || !comObject || !sourceUUID || sourceUUID === "") {
-        throw new Error("CALLBACK_INVALID_PARAMS" + ErrorCodes.CALLBACK_INVALID_PARAMS);
+        throw new Error("CALLBACK_INVALID_PARAMS" + new ErrorCodes().CALLBACK_INVALID_PARAMS);
     }
 
     //IID of IConnectionPointContainer :- B196B284-BAB4-101A-B69C-00AA00341D07

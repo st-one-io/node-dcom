@@ -38,7 +38,7 @@ class ComString {
             } else if (type == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
                 this.member = new ComValue(new Pointer(new ComValue(null, types.STRING), false), types.POINTER);
             } else {
-                throw new Error("JI_UTIL_FLAG_ERROR" + ErrorCodes.JI_UTIL_FLAG_ERROR);
+                throw new Error("JI_UTIL_FLAG_ERROR" + new ErrorCodes().JI_UTIL_FLAG_ERROR);
             }
             this.type = type;
 

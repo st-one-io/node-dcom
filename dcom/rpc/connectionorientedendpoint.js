@@ -99,7 +99,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       await ndrobj.decode(ndr, buffer);
     } else if (rply instanceof FaultCoPdu){
       var fault = rply;
-      throw new Error("Received fault.",fault.getStatus(), fault.getStub());
+      throw fault.getStatus();
     }  else if (rply instanceof ShutdownPdu){
       throw new Error("Received shuktdown request from server.");
     } else{

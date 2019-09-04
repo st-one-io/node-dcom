@@ -84,11 +84,11 @@ class ComServer extends Stub {
   comServerSession(session, interfacePointer, ipAddress)
   {
     if (interfacePointer == null || session == null) {
-      throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
+      throw new Error(new ErrorCodes().COMSTUB_ILLEGAL_ARGUMENTS);
     }
 
     if (session.getStub() != null) {
-      throw new Error(ErroCodes.SESSION_ALREADY_ESTABLISHED);
+      throw new Error(new ErrorCodes().SESSION_ALREADY_ESTABLISHED);
     }
 
     if (ipAddress != null && !ipAddress.trim() == "") {
@@ -232,15 +232,15 @@ class ComServer extends Stub {
   async comServerClsid(clsid, address, session)
   {
     if (clsid == null || address == null || session == null) {
-      throw new Error(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS);
+      throw new Error(String(new ErrorCodes().COMSTUB_ILLEGAL_ARGUMENTS));
     }
 
     if (session.getStub() != null) {
-      throw new Error(ErrorCodes.SESSION_ALREADY_ESTABLISHED);
+      throw new Error(String(new ErrorCodes().SESSION_ALREADY_ESTABLISHED));
     }
 
     if (session.isSSOEnalbed()) {
-      throw new Erro(ErrorCodes.COMSTUB_ILLEGAL_ARGUMENTS2);
+      throw new Error(String(new ErrorCodes().COMSTUB_ILLEGAL_ARGUMENTS2));
     }
 
     address = address.trim();
@@ -302,15 +302,8 @@ class ComServer extends Stub {
     await this.getEndpoint().rebind(this.info);
 
     this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"]);
-    await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info).catch(function(error) {
-      if (error == 0x80040154) {
-        self.emit('e_classnotreg');
-        debug(String(new Error("Server exception: " + error)));
-      } else if (error == 0x80070005) {
-        self.emit("e_accessdenied");
-        debug(String(new Error("Access denied.")));
-      }
-    });
+    
+    await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
 
     if (attachcomplete && this.serverActivation.activationsuccessful) {
       try {
@@ -421,7 +414,7 @@ class ComServer extends Stub {
     let comObject = null;
 
     if (this.serverInstantiated) {
-      throw new Error(new ErrorCodes().JI_OBJECT_ALREADY_INSTANTIATED, null);
+      throw new Error(new ErrorCodes().JI_OBJECT_ALREADY_INSTANTIATED);
     }
 
     comObject = await FrameworkHelper.instantiateComObject(this.session,

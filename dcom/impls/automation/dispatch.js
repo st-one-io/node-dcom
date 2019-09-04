@@ -79,7 +79,7 @@ class Dispatch extends ComObjectImpl
       return Number(result[0].getArrayInstance(0))[0];
     } else if (apiName instanceof Array) {
       if (apiName == null || apiName.length == 0) {
-        throw new Error("Illegal Argument: " + String(ErroCodes.DISP_INCORRECT_VALUE_FOR_GETIDNAMES));
+        throw new Error("Illegal Argument: " + String(new ErrorCodes().DISP_INCORRECT_VALUE_FOR_GETIDNAMES));
       }
 
       var sendForAll = false;
@@ -106,7 +106,7 @@ class Dispatch extends ComObjectImpl
     var pointers = new Array(apiName.length);
     for (var i = 0; i < apiName.length; i++) {
       if (apiName[i] == null || apiName[i].trim() == "") {
-        throw new Error("Ilegal Arguments: " + String(ErroCodes.DISP_INCORRECT_VALUE_FOR_GETIDNAMES));
+        throw new Error("Ilegal Arguments: " + String(new ErrorCodes().DISP_INCORRECT_VALUE_FOR_GETIDNAMES));
       }
       pointers[i] = new Pointer(new IString(apiName[i].trim(), Flags.FLAG_REPRESENTATION_STRING_LPWSTR));
     }
