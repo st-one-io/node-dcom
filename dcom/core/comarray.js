@@ -447,7 +447,7 @@ class ComArray {
 				array[i] = this.recurseDecode(retVal,ndr,arrayType,dimension - 1,defferedPointers,flag,additionalData);
 			}
 		}	
-		
+			
 		return array;
 	}
 	

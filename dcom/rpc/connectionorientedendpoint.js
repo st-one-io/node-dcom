@@ -50,6 +50,8 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     this.context;
     this.uuidsVsContextIds = new HashMap();
     this.currentIID = null;
+    this.locked = false;
+    this.ee = new Events.EventEmitter();
   }
 
   getTransport(){
@@ -84,7 +86,9 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     if ((semantics & this.MAYBE) != 0){
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
-
+    await this.acquire();
+    console.log("==================");
+    console.log("Sending Request...");
     await this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
@@ -92,16 +96,18 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     .catch(function(error){
       console.log(error);
     });
+    console.log("Response Received...");
+    this.release();
+    
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
-
       buffer = new NdrBuffer(rply.getStub(), 0);
       await ndrobj.decode(ndr, buffer);
     } else if (rply instanceof FaultCoPdu){
       var fault = rply;
       throw fault.getStatus();
     }  else if (rply instanceof ShutdownPdu){
-      throw new Error("Received shuktdown request from server.");
+      throw new Error("Received shutdown request from server.");
     } else{
       throw new Error("Received unexpected PDU from server.");
     }
@@ -137,12 +143,14 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       }
 
       if (sendAlter){
+        await this.acquire();
         if (pdu != null)await this.send(pdu, info);
         while (!this.context.isEstablished()){
           let recieved = await this.receive()
             .catch(function(rej) {
               throw new Error('ConnectionOrientedEndpoint: Bind - ' + rej);
             });;
+          this.release();
           if ((pdu = this.context.accept(recieved)) != null){
             switch (pdu.getType()){
               case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
@@ -157,9 +165,12 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
                 break;
               default:
             }
+            await this.acquire();
             await this.send(pdu, info);
+            this.release();
           }
         }
+        this.release();
       }
     }else{
       await this.connect(info);
@@ -193,10 +204,12 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       info);
     this.contextIdToUse = this.contextIdCounter;
 
+    await this.acquire();
     if (pdu != null) await this.send(pdu, info);
     
     while (!this.context.isEstablished()){
       var received = await this.receive();
+      this.release();
       pdu = this.context.accept(received);
 
       if (pdu != null){
@@ -213,9 +226,11 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
             break;
           default:
         }
+        await this.acquire();
         await this.send(pdu, info);
       }
     }
+    this.release();
   }
 
   createContext(info){
@@ -224,6 +239,30 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     conso
     var context = String(properties.CONNECTION_CONTEXT);
     if(!context)return new NTLMConnectionContext();
+  }
+
+  acquire() {
+    let self = this;
+    return new Promise(function(resolve, reject){
+      if (!self.locked){
+        self.locked = true;
+        return resolve();
+      }
+
+      const tryAcquire = () => {
+        if (!self.locked) {
+          self.locked = true;
+          self.ee.removeListener('release', tryAcquire);
+          return resolve();
+        }
+      };
+      self.ee.on('release', tryAcquire);
+    });
+  }
+
+  release() {
+    this.locked = false;
+    setImmediate(() => this.ee.emit('release'));
   }
 }
 ConnectionOrientedEndpoint.IDEMPOTENT = ConnectionOrientedEndpoint.prototype.IDEMPOTENT;

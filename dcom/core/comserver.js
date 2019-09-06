@@ -454,7 +454,7 @@ class ComServer extends Stub {
     }
 
     retVal = await FrameworkHelper.instantiateComObject(this.session, reqUnknown.getInterfacePointer());
-
+    
     await retVal.addRef();
 
     // this part is only relevant when IDispatch suport is implemented

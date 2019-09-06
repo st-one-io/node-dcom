@@ -18,7 +18,6 @@ const NdrBuffer = require('../ndr/ndrbuffer');
  * @returns {ComObject}
  */
 async function instantiateComObject(session, obj, ipAddress) {
-
     if (obj instanceof ComObject) {
         if (obj.getAssociatedSession()) {
             throw new Error("SESSION_ALREADY_ATTACHED" + new ErrorCodes().SESSION_ALREADY_ATTACHED);

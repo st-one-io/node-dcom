@@ -36,6 +36,7 @@ class DefaultConnection
     this.contextId;
     this.bytesRemainingInReceiveBuffer = false;
     this.info;
+    this.sendQueue = null;
   }
 
   transmit(pdu, transport, info)
@@ -63,8 +64,6 @@ class DefaultConnection
       fragment.setObject(pdu.getObject());
       fragment.setFlags(pdu.getFlags());
 
-
-
       let allocation = fragment.getStub().length - index;
       fragment.setAllocationHint(allocation);
       if (stubSize < allocation) allocation = stubSize;
@@ -85,6 +84,8 @@ class DefaultConnection
 
       this.transmitFragment(fragment, transport, info);
     }
+
+
   }
 
   async receive(transport)
@@ -259,6 +260,7 @@ class DefaultConnection
       type = bufferTobeUsed.dec_ndr_small();
 
       var pdu = null;
+      
       switch (type) {
         case new AlterContextPdu().ALTER_CONTEXT_TYPE:
           pdu = new AlterContextPdu();
@@ -288,7 +290,7 @@ class DefaultConnection
           pdu = new OrphanedPdu();
           break;
         case new RequestCoPdu().REQUEST_TYPE:
-          pdu = new RequestCoPdu();
+          pdu = new RequestCoPdu();       
           break;
         case new ResponseCoPdu().RESPONSE_TYPE:
           pdu = new ResponseCoPdu();

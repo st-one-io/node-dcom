@@ -12,7 +12,7 @@ class OXIDStub extends Stub{
     this.setAddress(server.getAddress());
     this.setTransportFactory(new ComTransportFactory().getSingleTon());
     this.info = server.info;
-    this.timer = setTimeout(this.pingIPIDS, 60000, this);
+    this.timer = setTimeout(this.pingIPIDS, 120000, this);
   }
 
   /**
@@ -39,7 +39,7 @@ class OXIDStub extends Stub{
    */
   async pingIPIDS(oxid) {
       let list = oxid.server.session.mapOfSessionvsIPIDPingHolders.keys();
-
+      console.log(list.length);
       while(list.length > 0) {
         let key = list.pop();
         let holder = oxid.server.session.mapOfSessionvsIPIDPingHolders.get(key);
@@ -81,14 +81,17 @@ class OXIDStub extends Stub{
         let info = oxid.info;
         let timeout = oxid.server.session.timeout;
         debug("sending ping");
+        console.log("SENDING PING!");
         await oxid.call(Endpoint.IDEMPOTENT, pingObject, info, timeout)
           .catch(function(reject) {
             debug(new Error("Ping: " + reject));
+            console.log("ERRO");
             clearInterval(oxid.timer);
           });
         holder.setId = pingObject.setId;
+        console.log("PING SUCCESSFULL");
         clearInterval(oxid.timer);
-        this.timer = setTimeout(oxid.pingIPIDS, 60000, oxid)
+        oxid.timer = setTimeout(oxid.pingIPIDS, 120000, oxid)
         holder.modified = false;
         //oxid.server.session.mapOfSessionvsIPIDPingHolders.delete(key);
         //oxid.server.session.mapOfSessionvsIPIDPingHolders.set(key, holder);

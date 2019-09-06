@@ -79,7 +79,6 @@ class RemUnknown extends NdrObject {
             }
 
             ndr.readUnsignedLong();
-            
             this.iidPtr = new InterfacePointer(this.requestIID, -1, new StdObjRef().decode(ndr));
             //this.iidPtr = new InterfacePointer().decode(ndr, new Array(), Flags.FLAG_NULL, new HashMap());
         }
