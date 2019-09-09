@@ -88,7 +88,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
     this.currentRequires++;
-    await this.acquire();
+    
     await this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
@@ -96,7 +96,6 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     .catch(function(error){
       console.log(error);
     });
-    this.release();
     this.currentRequires--;
     console.log("Current Requires awaiting transport access: " + this.currentRequires);
     if (rply instanceof ResponseCoPdu){
@@ -143,14 +142,12 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       }
 
       if (sendAlter){
-        await this.acquire();
         if (pdu != null)await this.send(pdu, info);
         while (!this.context.isEstablished()){
           let recieved = await this.receive()
             .catch(function(rej) {
               throw new Error('ConnectionOrientedEndpoint: Bind - ' + rej);
             });;
-          this.release();
           if ((pdu = this.context.accept(recieved)) != null){
             switch (pdu.getType()){
               case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
@@ -165,12 +162,9 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
                 break;
               default:
             }
-            await this.acquire();
             await this.send(pdu, info);
-            this.release();
           }
         }
-        this.release();
       }
     }else{
       await this.connect(info);
@@ -204,12 +198,10 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
       info);
     this.contextIdToUse = this.contextIdCounter;
 
-    await this.acquire();
     if (pdu != null) await this.send(pdu, info);
     
     while (!this.context.isEstablished()){
       var received = await this.receive();
-      this.release();
       pdu = this.context.accept(received);
 
       if (pdu != null){
@@ -226,11 +218,9 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
             break;
           default:
         }
-        await this.acquire();
         await this.send(pdu, info);
       }
     }
-    this.release();
   }
 
   createContext(info){

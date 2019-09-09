@@ -485,6 +485,9 @@ class ComServer extends Stub {
    * @param {Number} socketTimeout
    */
   async call(obj, targetIID, socketTimeout) {
+    if (this.endpoint)
+      await this.session.getStub().endpoint.acquire();
+
     if (this.session.isSessionInDestroy() && !obj.fromDestroySession) {
       throw new Error("Sessions destroyed");
     }
@@ -505,7 +508,7 @@ class ComServer extends Stub {
     }
     this.setObject(obj.getParentIpid());
     await super.call(Endpoint.IDEMPOTENT, obj, this.info);
-
+    await this.endpoint.release();
     return obj;
   }
 
