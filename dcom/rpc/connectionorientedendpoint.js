@@ -51,7 +51,6 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     this.uuidsVsContextIds = new HashMap();
     this.currentIID = null;
     this.locked = false;
-    this.currentRequires = 0;
     this.ee = new Events.EventEmitter();
   }
 
@@ -87,7 +86,6 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     if ((semantics & this.MAYBE) != 0){
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
-    this.currentRequires++;
     
     await this.send(request, info);
 
@@ -96,8 +94,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     .catch(function(error){
       console.log(error);
     });
-    this.currentRequires--;
-    console.log("Current Requires awaiting transport access: " + this.currentRequires);
+    
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
       buffer = new NdrBuffer(rply.getStub(), 0);
