@@ -70,7 +70,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     let b = new Array(1024);
     let buffer = new NdrBuffer(b, 0);
     let ndr = new NetworkDataRepresentation();
-
+    
     ndrobj.encode(ndr, buffer);
     let stub = new Array(buffer.getLength());
     let aux = buffer.buf.slice(0, stub.length);

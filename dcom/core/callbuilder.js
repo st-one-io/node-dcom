@@ -643,9 +643,9 @@ class CallBuilder extends NdrObject {
 
 		let orpcthis = new OrpcThis();
 		orpcthis.encode(ndr);
-
+		
 		this.writePacket(ndr);
-
+		
 		//when it ends add 16 zeros.
 		ndr.writeUnsignedLong(0);
 		ndr.writeUnsignedLong(0);

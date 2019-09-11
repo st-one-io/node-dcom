@@ -68,9 +68,9 @@ function serialize(ndr, val, defferedPointers, flag) {
         if ((c != types.COMOBJECT || c != types.DISPATCH) && value instanceof ComObject) {
             c = types.COMOBJECT;
         }
-
+        
         alignMemberWhileEncoding(ndr, c, value);
-
+        
         switch (c){
             case types.COMSTRING:
             case types.POINTER:
@@ -298,6 +298,7 @@ function alignMemberWhileEncoding(ndr, c, obj)
     if (align !== undefined) {
         let i = Math.round(index % align)
         i = (i == 0) ? 0 : align - i;
+        
         ndr.writeOctetArray([...Buffer.alloc(i)], 0, i);
     }
 }
