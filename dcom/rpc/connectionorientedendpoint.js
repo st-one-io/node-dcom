@@ -230,6 +230,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
 
   acquire() {
     let self = this;
+    console.log(this.ee.listenerCount('release'));
     return new Promise(function(resolve, reject){
       if (!self.locked){
         self.locked = true;
