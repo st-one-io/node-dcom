@@ -1172,8 +1172,12 @@ class VariantBody
       let maxLength = newList.length;
       let i = 0;
       let aux_index = x;
-      while(i++ < maxLength)
-			  varDefferedPointers.splice(aux_index++, 0, aux.shift());
+      let begin = varDefferedPointers.slice(0, x);
+      let end = varDefferedPointers.slice(x, varDefferedPointers.length);
+      let middle = newList;
+      varDefferedPointers = begin.concat(middle.concat(end));
+      /*while(i++ < maxLength)
+			  varDefferedPointers.splice(aux_index++, 0, aux.shift());*/
 		}
 
 		if (variant.isArray && variant.safeArrayStruct != null)
