@@ -39,10 +39,11 @@ class UUID{
     //dst.enc_ndr_short(this.node2);
     //dst.enc_ndr_short(this.node3);
 
-    var temp = this.node.slice(0, 6);
-    var temp_i = dst.index;
-    while(temp.length > 0)
-      dst.buf.splice(temp_i++, 1, temp.shift());
+    let begin = dst.buf.slice(0, dst.index);
+    let end = dst.buf.slice(dst.index, dst.length);
+    let middle = this.node.slice(0, 6);
+    dst.buf = begin.concat(middle.concat(end));
+    
     dst.index += 6;
   }
 

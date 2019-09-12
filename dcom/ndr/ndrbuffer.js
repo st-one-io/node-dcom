@@ -93,6 +93,12 @@ NdrBuffer.prototype.readOctetArray = function (b, i, l){
     b.splice(temp_index++, 1, temp.shift());
     i++;
   }
+  /*let first = b.slice(0, i);
+  let end = b.slice(i, b.length);
+  let middle = this.buf.slice(this.index, (this.index + l));
+  
+  b = first.concat(middle.concat(end));
+  console.log("testo");*/
   this.advance(l);
 }
 
