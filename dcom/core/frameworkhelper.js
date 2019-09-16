@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 const Session = require('./session');
 const ComObject = require('./comobject');
 const ComObjectImpl = require('./comobjcimpl');
@@ -6,7 +6,7 @@ const Flags = require('./flags');
 const System = require('../common/system');
 const ErrorCodes = require('../common/errorcodes');
 const InterfacePointer = require('./interfacepointer');
-const NetworkDataRepresentation = require("../ndr/networkdatarepresentation");
+const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 const NdrBuffer = require('../ndr/ndrbuffer');
 
 /** Returns an Interface Pointer representation from raw bytes.
@@ -15,16 +15,16 @@ const NdrBuffer = require('../ndr/ndrbuffer');
  * @param {Session} session
  * @param {Buffer|InterfacePointer|ComObject} obj
  * @param {string} ipAddress
- * @returns {ComObject}
+ * @return {ComObject}
  */
 async function instantiateComObject(session, obj, ipAddress) {
     if (obj instanceof ComObject) {
         if (obj.getAssociatedSession()) {
-            throw new Error("SESSION_ALREADY_ATTACHED" + new ErrorCodes().SESSION_ALREADY_ATTACHED);
+            throw new Error('SESSION_ALREADY_ATTACHED' + new ErrorCodes().SESSION_ALREADY_ATTACHED);
         }
 
         if (obj.isLocalReference()) {
-            throw new Error("COMOBJ_LOCAL_REF" + new ErrorCodes().COMOBJ_LOCAL_REF);
+            throw new Error('COMOBJ_LOCAL_REF' + new ErrorCodes().COMOBJ_LOCAL_REF);
         }
 
         obj = obj.internal_getInterfacePointer();
@@ -42,13 +42,13 @@ async function instantiateComObject(session, obj, ipAddress) {
     ndr.setBuffer(ndrBuffer);
     ndrBuffer.length = obj.length;
 
-    //this is a brand new session.
+    // this is a brand new session.
     if (!session.getStub()) {
         let comServer = new ComServer(session, InterfacePointer.decode(ndr, [], Flags.FLAG_REPRESENTATION_INTERFACEPTR_DECODE2, new Map()), ipAddress);
         return comServer.getInstance();
     } else {
         let retval = instantiateComObject(session, InterfacePointer.decode(ndr, [], Flags.FLAG_REPRESENTATION_INTERFACEPTR_DECODE2, new Map()));
-        //increasing the reference count.
+        // increasing the reference count.
         await retval.addRef();
         return retval;
     }
@@ -62,18 +62,18 @@ async function instantiateComObject(session, obj, ipAddress) {
  */
 function instantiateComObject2(session, ptr) {
     if (!ptr) {
-        throw new Error("COMFACTORY_ILLEGAL_ARG" + new ErrorCodes().COMFACTORY_ILLEGAL_ARG);
+        throw new Error('COMFACTORY_ILLEGAL_ARG' + new ErrorCodes().COMFACTORY_ILLEGAL_ARG);
     }
 
     let retval;
     let stubPtr = session.getStub().getServerInterfacePointer();
     if (!new InterfacePointer().isOxidEqual(stubPtr, ptr)) {
-        //NEW SESSION IDENTIFIED ! for ptr
+        // NEW SESSION IDENTIFIED ! for ptr
 
-        //first check if a session for this OXID does not already exist and thus its stub
+        // first check if a session for this OXID does not already exist and thus its stub
         let newsession = Session.resolveSessionForOxid(new JIOxid(ptr.getOXID()));
         if (!newsession) {
-            //new COM server pointer
+            // new COM server pointer
             newsession = Session.createSession(session);
             newsession.setGlobalSocketTimeout(session.getGlobalSocketTimeout());
             newsession.useSessionSecurity(session.isSessionSecurityEnabled());
@@ -83,7 +83,7 @@ function instantiateComObject2(session, ptr) {
             Session.linkTwoSessions(session, newsession);
         }
 
-        //this is so that the reference gets added correctly.
+        // this is so that the reference gets added correctly.
         session = newsession;
     }
 
@@ -124,17 +124,17 @@ function instantiateLocalComObject(session, javaComponent) {
 function detachEventHandler(comObject, identifier) {
     let connectionInfo = comObject.internal_getConnectionInfo(identifier);
     if (!connectionInfo) {
-        throw new Error("CALLBACK_INVALID_ID" + new ErrorCodes().CALLBACK_INVALID_ID);
+        throw new Error('CALLBACK_INVALID_ID' + new ErrorCodes().CALLBACK_INVALID_ID);
     }
 
     let connectionPointer = connectionInfo[0];
 
-    //first use the cookie to detach.
+    // first use the cookie to detach.
     let object = new JICallBuilder(true);
     object.setOpnum(3);
     object.addInParamAsInt(connectionInfo[1], Flags.FLAG_NULL);
     connectionPointer.call(object);
-    //now release the connectionPointer.
+    // now release the connectionPointer.
     connectionPointer.release();
 }
 
@@ -143,30 +143,30 @@ function detachEventHandler(comObject, identifier) {
  * @param {ComObject} comObject
  * @param {string} sourceUUID
  * @param {ComObject} eventListener
- * @returns {string}
+ * @return {string}
  * @throws JIException
  */
 function attachEventHandler(comObject, sourceUUID, eventListener) {
-    if (!eventListener || !comObject || !sourceUUID || sourceUUID === "") {
-        throw new Error("CALLBACK_INVALID_PARAMS" + new ErrorCodes().CALLBACK_INVALID_PARAMS);
+    if (!eventListener || !comObject || !sourceUUID || sourceUUID === '') {
+        throw new Error('CALLBACK_INVALID_PARAMS' + new ErrorCodes().CALLBACK_INVALID_PARAMS);
     }
 
-    //IID of IConnectionPointContainer :- B196B284-BAB4-101A-B69C-00AA00341D07
-    let connectionPointContainer = comObject.queryInterface("B196B284-BAB4-101A-B69C-00AA00341D07");
+    // IID of IConnectionPointContainer :- B196B284-BAB4-101A-B69C-00AA00341D07
+    let connectionPointContainer = comObject.queryInterface('B196B284-BAB4-101A-B69C-00AA00341D07');
     let object = new CallBuilder(true);
     object.setOpnum(1);
     object.addInParamAsUUID(sourceUUID, Flags.FLAG_NULL);
-    object.addOutParamAsObject("ComObject", Flags.FLAG_NULL);
-    let objects = connectionPointContainer.call(object); //find connection point
+    object.addOutParamAsObject('ComObject', Flags.FLAG_NULL);
+    let objects = connectionPointContainer.call(object); // find connection point
     let connectionPointer = objects[0];
 
     object.reInit();
     object.setOpnum(2);
     object.addInParamAsComObject(eventListener, Flags.FLAG_NULL);
-    object.addOutParamAsType("Integer", Flags.FLAG_NULL);
+    object.addOutParamAsType('Integer', Flags.FLAG_NULL);
     let obj = connectionPointer.call(object);
 
-    //used to unadvise from the connectionpoint
+    // used to unadvise from the connectionpoint
     let dwcookie = obj[0];
     connectionPointContainer.release();
 

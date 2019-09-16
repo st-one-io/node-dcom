@@ -1,70 +1,91 @@
-var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
-var Security = require("../security.js");
+// @ts-check
+const Security = require('../security.js');
 
-function AuthenticationVerifier(authenticationService, protectionLevel, contextId, body){
+/**
+ *
+ * @param {Number} authenticationService
+ * @param {Number} protectionLevel
+ * @param {Number} contextId
+ * @param {Array} body
+ */
+function AuthenticationVerifier(authenticationService, protectionLevel,
+    contextId, body) {
   if (arguments.length == 1) {
     this.body = new Array(authenticationService);
     authenticationService = null;
   }
-  (authenticationService != undefined) ? this.authenticationService = authenticationService :
+  (authenticationService != undefined) ?
+    this.authenticationService = authenticationService :
     this.authenticationService = new Security().AUTHENTICATION_SERVICE_NONE;
 
   (protectionLevel != undefined) ? this.protectionLevel = protectionLevel :
     this.protectionLevel = new Security().PROTECTION_LEVEL_NONE;
 
   (contextId != undefined) ? this.contextId = contextId : this.contextId = 0;
-  if (body instanceof Number || typeof body == "number") {
+  if (body instanceof Number || typeof body == 'number') {
     this.body = new Array(body);
-  }else if(body instanceof Array){
+  } else if (body instanceof Array) {
     (body != undefined) ? this.body = body : this.body = null;
   }
 }
 
-AuthenticationVerifier.prototype.decode = function (ndr, src) {
+/**
+ * @param {NetworkDataRepresentation} ndr
+ * @param {NdrBuffer} src
+ */
+AuthenticationVerifier.prototype.decode = function(ndr, src) {
   src.align(4);
   this.authenticationService = src.dec_ndr_small();
   this.protectionLevel = src.dec_ndr_small();
   src.dec_ndr_small();
   this.contextId = src.dec_ndr_long();
 
-  var temp = src.getBuffer().slice(src.getIndex(), src.getIndex() + this.body.length);
-  var temp_index= 0;
-  while(temp.length > 0){
-    this.body.splice(temp_index++, 1, temp.shift());
+  let temp = src.getBuffer().slice(src.getIndex(), src.getIndex() +
+   this.body.length);
+  let tempIndex= 0;
+  while (temp.length > 0) {
+    this.body.splice(tempIndex++, 1, temp.shift());
   }
   src.index += this.body.length;
 };
 
-AuthenticationVerifier.prototype.encode = function (ndr, dst) {
-  var padding = dst.align(4, 0);
+/**
+ * @param {NetworkDataRepresentation} ndr
+ * @param {NdrBuffer} dst
+ */
+AuthenticationVerifier.prototype.encode = function(ndr, dst) {
+  const padding = dst.align(4, 0);
   dst.enc_ndr_small(this.authenticationService);
   dst.enc_ndr_small(this.protectionLevel);
-  dst.enc_ndr_small(this.padding);
+  dst.enc_ndr_small(padding);
   dst.enc_ndr_small(0);
   dst.enc_ndr_long(this.contextId);
   
-  let begin = dst.buf.slice(0, dst.index);
-  let end = dst.buf.slice(dst.index, dst.length);
-  let middle = this.body;
+  const begin = dst.buf.slice(0, dst.index);
+  const end = dst.buf.slice(dst.index, dst.length);
+  const middle = this.body;
 
   dst.buf = begin.concat(middle.concat(end));
-  /*var temp = this.body.slice(0, this.body.length);
-  var temp_index= dst.getIndex();
-  
-  while (temp.length > 0) dst.getBuffer().splice(temp_index++, 0, temp.shift());*/
   dst.advance(this.body.length);
 };
 
-AuthenticationVerifier.prototype.equals = function (obj) {
+/**
+ * @param {Object} obj
+ * @return {Boolean}
+ */
+AuthenticationVerifier.prototype.equals = function(obj) {
   if (!(obj instanceof AuthenticationVerifier)) return false;
-  var other = obj;
+  let other = obj;
   return (this.authenticationService == other.authenticationService &&
     this.protectionLevel == other.protectionLevel &&
     this.contextId == other.contextId &&
-    ((body.join()) == (other.body.join())));
+    ((this.body.join()) == (other.body.join())));
 };
 
-AuthenticationVerifier.prototype.hashCode = function () {
+/**
+ * @return {Number}
+ */
+AuthenticationVerifier.prototype.hashCode = function() {
   return this.authenticationService ^ this.protectionLevel ^ this.contextId;
 };
 

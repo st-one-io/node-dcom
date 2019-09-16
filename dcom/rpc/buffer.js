@@ -1,5 +1,10 @@
-
+//@ts-check
 class Buffer {
+  /**
+   * 
+   * @param {Array} buffer 
+   * @param {Number} capacityIncrement 
+   */
   constructor(buffer, capacityIncrement){
     this.NO_INCREMENT = 0;
 
@@ -8,41 +13,64 @@ class Buffer {
     }else{ this.buffer = buffer;}
 
     if(capacityIncrement == undefined){
-      this.capacityIncrement = NO_INCREMENT;
+      this.capacityIncrement = this.NO_INCREMENT;
     }else{this.capacityIncrement = capacityIncrement;}
 
     this.index = 0;
     this.length;
   }
 
-  get capacityIncrement(){
+  /**
+   * @returns {Number}
+   */
+  getCapacityIncrement(){
     return this.capacityIncrement;
   }
 
-  get capacity(){
+  /**
+   * @returns {Number}
+   */
+  getCapacity(){
     return this.buffer.length;
   }
 
-  set capacityIncrement(capacityIncrement){
+  setCapacityIncrement(capacityIncrement){
     this.capacityIncrement = capacityIncrement;
   }
 
-  get buffer(){
+  /**
+   * @returns {Array}
+   */
+  getBuffer(){
     return this.buffer;
   }
 
-  set buffer(buffer){
+  /**
+   * 
+   * @param {Array} buffer 
+   */
+  setBuffer(buffer){
     this.buffer = buffer;
   }
 
-  get length(){
+  /**
+   * @retuns {Number}
+   */
+  getLength(){
     return this.length;
   }
 
-  set length(length){
+  /**
+   * 
+   * @param {Number} length 
+   */
+  setLength(length){
     this.length = length;
   }
 
+  /**
+   * @returns {Array}
+   */
   copy(){
     var copy = [this.length];
     var temp = buffer.slice(0, this.length);
@@ -57,56 +85,81 @@ class Buffer {
     this.index = 0;
   }
 
-  get index(){
+  /**
+   * @returns {Number}
+   */
+  getIndex(){
     return this.index;
   }
 
-  getIndex(advance){
+  /**
+   * 
+   * @param {Number} advance 
+   */
+  getIndex2(advance){
     try{
       return this.index;
     }finally{
       this.index += advance;
       if(this.index > this.length) this.length = this.index;
-      if(this.length > this.buffer.length) grow(this.length);
+      if(this.length > this.buffer.length) this.grow(this.length);
     }
   }
 
-  set index(index){
+  /**
+   * 
+   * @param {Number} index 
+   */
+  setIndex(index){
     this.index = index;
     if (this.index > this.length) this.length = this.index;
-    if (this.length > this.buffer.length) grow(this.length);
+    if (this.length > this.buffer.length) this.grow(this.length);
   }
 
+  /**
+   * 
+   * @param {Number} boundary 
+   * @param {Number} value 
+   */
   align(boundary, value){
     var align = this.index % boundary;
     if (align == 0) return 0;
     if(value == undefined){
-      advance(align = boundary - align);
+      this.advance(align = boundary - align, null);
       return align;
     }else{
-      advance(align = boundary - align, value);
+      this.advance(align = boundary - align, value);
       return align;
     }
   }
 
+  /**
+   * 
+   * @param {Number} step 
+   * @param {Number} value 
+   */
   advance(step, value){
     if (value == undefined){
       this.index += step;
     }else{
       for (var finish = this.index + step;this.index < finish; this.index++){
-        buffer[this.index] = value;
+        this.buffer[this.index] = value;
       }
     }
     if (this.index > this.length) this.length = this.index;
     if (this.length > this.buffer.length) grow(this.length);
   }
 
+  /**
+   * 
+   * @param {Number} length 
+   */
   grow(length){
     var newLength = this.buffer.length;
-    while (this.newLength < this.length){
-      this.newLength += capacityIncrement;
+    while (newLength < this.length){
+      newLength += this.capacityIncrement;
     }
-    var newBuffer = [this.newLength];
+    var newBuffer = [newLength];
 
     var temp = this.buffer.slice(0, this.buffer.length);
     var temp_index;

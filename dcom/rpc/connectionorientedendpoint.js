@@ -1,4 +1,5 @@
-const HashMap = require("hashmap");
+// @ts-check
+const HashMap = require('hashmap');
 const RequestCoPdu = require('./pdu/requestcopdu.js');
 const NdrBuffer = require('../ndr/ndrbuffer.js');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
@@ -10,15 +11,17 @@ const PresentationSyntax = require('./core/presentationsyntax.js');
 const PresentationContext = require('./core/presentationcontext.js');
 const BindAcknowledgePdu = require('./pdu/bindacknowledgepdu.js');
 const AlterContextResponsePdu = require('./pdu/altercontextresponsepdu.js');
-const BasicConnectionContext = require('./basicconnectioncontext.js');
+const PresentationResult = require('./core/presentationresult.js');
 const NTLMConnectionContext = require('./security/ntlmconnectioncontext.js');
 const Events = require('events');
+const util = require('util');
+const debug = util.debuglog('dcom');
 
 /**
  * This class is responsible for connection oriented communications
  * in general (TCP based)
  */
-class ConnectionOrientedEndpoint extends Events.EventEmitter{
+class ConnectionOrientedEndpoint extends Events.EventEmitter {
   /**
    *
    * @param {ComTransport} transport
@@ -30,7 +33,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     this.IDEMPOTENT = 0x02;
     this.BROADCAST = 0x04;
 
-    this.CONNECTION_CONTEXT = "rpc.connectionContext";
+    this.CONNECTION_CONTEXT = 'rpc.connectionContext';
     try {
       this.transport = transport;
 
@@ -54,15 +57,29 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     this.ee = new Events.EventEmitter();
   }
 
-  getTransport(){
+  /**
+   * @return {ComTransport}
+   */
+  getTransport() {
     return this.transport;
   }
 
-  getSyntax(){
+  /**
+   * @return {PresentationSyntax}
+   */
+  getSyntax() {
     return this.syntax;
   }
 
-  async call(semantics, object, opnum, ndrobj, info){
+  /**
+   *
+   * @param {String} semantics
+   * @param {Object} object
+   * @param {Number} opnum
+   * @param {Object} ndrobj
+   * @param {Object} info
+   */
+  async call(semantics, object, opnum, ndrobj, info) {
     await this.bind(info);
     let request = new RequestCoPdu();
     request.setContextId(this.contextIdToUse);
@@ -83,36 +100,39 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     request.setOpnum(opnum);
     request.setObject(object);
 
-    if ((semantics & this.MAYBE) != 0){
+    if ((semantics & this.MAYBE) != 0) {
       request.setFlag(new ConnectionOrientedPdu().PFC_MAYBE, true);
     }
     
     await this.send(request, info);
 
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
-    var rply = await this.receive()
-    .catch(function(error){
-      console.log(error);
-    });
-    
-    if (rply instanceof ResponseCoPdu){
+    let rply = await this.receive()
+        .catch(function(error) {
+          debug(error);
+        });
+    if (rply instanceof ResponseCoPdu) {
       ndr.setFormat(rply.getFormat());
       buffer = new NdrBuffer(rply.getStub(), 0);
       await ndrobj.decode(ndr, buffer);
-    } else if (rply instanceof FaultCoPdu){
-      var fault = rply;
+    } else if (rply instanceof FaultCoPdu) {
+      let fault = rply;
       throw fault.getStatus();
-    }  else if (rply instanceof ShutdownPdu){
-      throw new Error("Received shutdown request from server.");
-    } else{
-      throw new Error("Received unexpected PDU from server.");
+    } else if (rply instanceof ShutdownPdu) {
+      throw new Error('Received shutdown request from server.');
+    } else {
+      throw new Error('Received unexpected PDU from server.');
     }
   }
 
-  async rebind(info){
+  /**
+   *
+   * @param {Object} info
+   */
+  async rebind(info) {
     this.info = info;
     this.bound = false;
-    await this.bind(this.info)
+    await this.bind(this.info);
   }
 
   /**
@@ -123,37 +143,39 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     if (this.bound) return;
     if (this.context != null) {
       this.bound = true;
-      
-      let vsctxt = this.uuidsVsContextIds.get(this.getSyntax().toHexString().toUpperCase());
+
+      let vsctxt = this.uuidsVsContextIds.get(
+          this.getSyntax().toHexString().toUpperCase());
       let cid = vsctxt == undefined? vsctxt : Number.parseInt(vsctxt);
-      let pdu = this.context.alter(new PresentationContext(cid == null? ++this.contextIdCounter : cid,
-        this.getSyntax()));
+      let pdu = this.context.alter(new PresentationContext(
+          cid == null? ++this.contextIdCounter : cid, this.getSyntax()));
       let sendAlter = false;
 
-      if (cid == null){
-        this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(), Number.parseInt(this.contextIdCounter));
+      if (cid == null) {
+        this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(),
+            this.contextIdCounter);
         this.contextIdToUse = this.contextIdCounter;
         sendAlter = true;
-      } else{
+      } else {
         this.contextIdToUse = cid;
       }
 
-      if (sendAlter){
-        if (pdu != null)await this.send(pdu, info);
-        while (!this.context.isEstablished()){
+      if (sendAlter) {
+        if (pdu != null) await this.send(pdu, info);
+        while (!this.context.isEstablished()) {
           let recieved = await this.receive()
-            .catch(function(rej) {
-              throw new Error('ConnectionOrientedEndpoint: Bind - ' + rej);
-            });;
-          if ((pdu = this.context.accept(recieved)) != null){
-            switch (pdu.getType()){
-              case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
-                if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
+              .catch(function(rej) {
+                throw new Error('ConnectionOrientedEndpoint: Bind - ' + rej);
+              });
+          if ((pdu = this.context.accept(recieved)) != null) {
+            switch (pdu.getType()) {
+              case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
+                if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION) {
                   this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
                 }
                 break;
-              case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
-                if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION){
+              case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
+                if (pdu.getResultList()[0].reason != PresentationResult.PROVIDER_REJECTION) {
                   this.currentIID = String(recieved.getContextList()[0].abstractSyntax.getUuid());
                 }
                 break;
@@ -163,53 +185,69 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
           }
         }
       }
-    }else{
+    } else {
       await this.connect(info);
     }
   }
 
-  async send(request, info){
+  /**
+   *
+   * @param {*} request
+   * @param {Object} info
+   */
+  async send(request, info) {
     await this.bind(this.info);
     this.context.getConnection().transmit(request, this.getTransport(), info);
   }
 
-  async receive(){
+  /**
+   * @return {Promise}
+   */
+  async receive() {
     return await this.context.getConnection().receive(this.getTransport());
   }
 
-  async detach(){
+  /**
+   * Try to detach the endpoint
+   */
+  async detach() {
     this.bound = false;
     this.context = null;
     await this.getTransport().close();
   }
 
-  async connect(info){
+  /**
+   *
+   * @param {Object} info
+   */
+  async connect(info) {
     this.bound = true;
     this.contextIdCounter = 0;
     this.currentIID = null;
 
-    this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(), Number.parseInt(this.contextIdCounter));
+    this.uuidsVsContextIds.set(this.getSyntax().toHexString().toUpperCase(),
+        this.contextIdCounter);
     this.context = this.createContext();
 
-    var pdu = this.context.init(new PresentationContext(this.contextIdCounter, this.getSyntax()),
-      info);
+    let pdu = this.context.init(
+        new PresentationContext(this.contextIdCounter, this.getSyntax()), info);
     this.contextIdToUse = this.contextIdCounter;
 
     if (pdu != null) await this.send(pdu, info);
     
-    while (!this.context.isEstablished()){
-      var received = await this.receive();
+    while (!this.context.isEstablished()) {
+      let received = await this.receive();
       pdu = this.context.accept(received);
 
-      if (pdu != null){
-        switch (pdu.getType()){
-          case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
-            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION){
+      if (pdu != null) {
+        switch (pdu.getType()) {
+          case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
+            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION) {
               this.currentIID = String(received.getContextList()[0].abstractSyntax.getUuid());
             }
             break;
-          case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
-            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION){
+          case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
+            if (pdu.getResultList()[0].reason != new PresentationResult().PROVIDER_REJECTION) {
               this.currentIID = String(received.getContextList()[0].abstractSyntax.getUuid());
             }
             break;
@@ -220,19 +258,28 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     }
   }
 
-  createContext(info){
-    var properties = this.properties;
+  /**
+   *
+   * @param {Object} info
+   * @return {NTLMConnectionContext}
+   */
+  createContext(info) {
+    let properties = this.properties;
     if (!properties) return this.properties = new NTLMConnectionContext();
-    conso
-    var context = String(properties.CONNECTION_CONTEXT);
-    if(!context)return new NTLMConnectionContext();
+    
+    let context = String(properties.CONNECTION_CONTEXT);
+    if (!context) return new NTLMConnectionContext();
   }
 
+  /**
+   * Basic lock for transport use
+   * @return {Promise}
+   */
   acquire() {
     let self = this;
     console.log(this.ee.listenerCount('release'));
-    return new Promise(function(resolve, reject){
-      if (!self.locked){
+    return new Promise(function(resolve, reject) {
+      if (!self.locked) {
         self.locked = true;
         return resolve();
       }
@@ -248,10 +295,14 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     });
   }
 
+  /**
+   * Release for the preivously defined lock
+   */
   release() {
     this.locked = false;
     setImmediate(() => this.ee.emit('release'));
   }
 }
-ConnectionOrientedEndpoint.IDEMPOTENT = ConnectionOrientedEndpoint.prototype.IDEMPOTENT;
+ConnectionOrientedEndpoint.IDEMPOTENT =
+  ConnectionOrientedEndpoint.prototype.IDEMPOTENT;
 module.exports = ConnectionOrientedEndpoint;

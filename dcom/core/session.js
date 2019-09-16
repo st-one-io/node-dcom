@@ -24,14 +24,16 @@ let debug;
 /**
  * This class defines a basic session
  */
-class Session
-{
-  constructor(){
+class Session {
+  /**
+   * Initializes all session variables and objects.
+   */
+  constructor() {
     this._init();
     this.oxidResolverPort = -1;
     this.localhost = [127, 0, 0, 1];
-    this.localhostStr = "127.0.0.1";
-    this.localhostStr2 = "LOCALHOST";
+    this.localhostStr = '127.0.0.1';
+    this.localhostStr2 = 'LOCALHOST';
     this.sessionIdentifier = -1;
     this.username = null;
     this.password = null;
@@ -89,8 +91,7 @@ class Session
   }
 
   // TODO: how to do a constant running function in nodejs
-  async cleanUp()
-  {
+  async cleanUp() {
     try {
       while (true) {
         var r = this.referenceQueueOfCOMObjects.remove();
@@ -132,66 +133,27 @@ class Session
     }
   }
 
-  getLocalHost(destination)
-  {
+  getLocalHost(destination) {
     var sock;
     var intendedDestination;
 
     try {
       sock = Net.createServer((c) => {
-        debug("client connected");
+        debug('client connected');
         c.on('end', () => {
-          debug("client disconnected");
+          debug('client disconnected');
         })
       });
       DNS.lookup(destination, function(err, address, family){
         intendedDestination = address;
       })
     } catch (e) {
-      return "127.0.0.1";
+      return '127.0.0.1';
     }
 
   }
 
-  notSure(){
-    this.localhost = ip.address();
-    this.localhostStr = String(ip.address());
-    this.localhostStr2 = String(os.hostname());
-
-    this.cleanUp();
-
-    ComOxidRuntime.startResolver();
-    ComOxidRuntime.startResolverTimer();
-   this. oxidResolverPort = ComOxidRuntime.getOxidResolverPort();
-
-    // TODO: see how to do a timer
-    this.releaseRefsTimer;
-  }
-
-  async addShutdownHook()
-  {
-    var i = 0;
-    while (i < this.listOfSessions.size()) {
-      var session = this.listOfSessions.get(i);
-      try {
-        await this.destroySession(session);
-      } catch (e) {
-        throw new Erro("Session - addShutdownHook" + String(e));
-      }
-      i++;
-    }
-    this.internal_writeProgIdsToFile();
-    ComOxidRuntime.stopResolver();
-    this.releaseRefsTimer.cancel();
-    this.mapofSessionIdsVsSessions.clear();
-    this.mapOfObjects.clear();
-    this.listOfSessions.clear();
-  }
-
-  setReleaseRefTimerFrequency(){};
-
-  releaseReferencesTimerTask()
-  {
+  releaseReferencesTimerTask() {
     try {
       var listOfSessionsClone = this.listOfSessions.slice(0, this.listOfSessions.length);
 
@@ -209,7 +171,7 @@ class Session
             var ipid = deferencedIpids[j];
             listToKIll.push(session.prepareForReleaseRef(ipid));
           } catch(e){
-            debug("Release_References_TimerTask:[RUN] Exception preparing for release " + String(e));
+            debug('Release_References_TimerTask:[RUN] Exception preparing for release ' + String(e));
           }
         }
 
@@ -225,55 +187,48 @@ class Session
         try {
           session.releaseRefs(array, false);
         } catch(e){
-          debug("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+          debug('Session - Release_References_TimerTask:run() - Exception in internal GC ' + String(e));
         }
         i++;
       }
     } catch (e){
-      debug("Session - Release_References_TimerTask:run() - Exception in internal GC " + String(e));
+      debug('Session - Release_References_TimerTask:run() - Exception in internal GC ' + String(e));
     }
   }
 
-  setTargetServer(targetServer)
-  {
-    if (targetServer == "127.0.0.1") {
+  setTargetServer(targetServer) {
+    if (targetServer == '127.0.0.1') {
       this.targetServer = String(ip.address());
     } else {
       this.targetServer = targetServer;
 
-      if (this.localhostStr == "127.0.0.1" || this.localhostStr == "0.0.0.0") {
+      if (this.localhostStr == '127.0.0.1' || this.localhostStr == '0.0.0.0') {
         this.localhostStr = this.getLocalHost(targetServer);
       }
     }
   }
 
-  getLocalHostAddressAsIp()
-  {
+  getLocalHostAddressAsIp() {
     return this.localhost;
   }
 
-  getLocalHostAsIpString()
-  {
+  getLocalHostAsIpString() {
     return this.localhostStr;
   }
 
-  getLocalHostCanonicalAddressAsString()
-  {
+  getLocalHostCanonicalAddressAsString() {
     return this.localhostStr2;
   }
 
-  getTargetServer()
-  {
+  getTargetServer() {
     return this.targetServer;
   }
 
-  getOxidResolverPort()
-  {
+  getOxidResolverPort() {
     return oxidResolverPort;
   }
 
-  getAuthInfo()
-  {
+  getAuthInfo() {
     return this.authInfo;
   }
 
@@ -308,13 +263,11 @@ class Session
     }
   }
 
-  isSSOEnalbed()
-  {
+  isSSOEnalbed() {
     return this.isSSO;
   }
 
-  async destroySession(session)
-  {
+  async destroySession(session) {
     if (session == null) {
       return;
     }
@@ -416,8 +369,7 @@ class Session
     }
   }
 
-  async postDestroy(session)
-  {
+  async postDestroy(session) {
     for (var i = 0; i < session.links.length; i++) {
       await this.destroySession(session.links.get(i));
     }
@@ -426,29 +378,24 @@ class Session
     await this.pingResolver.destroySessionOIDs(this);
   }
 
-  setStub(stub)
-  {
+  setStub(stub) {
     this.stub = stub;
     this.mapOfOxidsVsSessions.set(new Oxid(stub.getServerInterfacePointer().getOXID()), this);
   }
 
-  setStub2(stub)
-  {
+  setStub2(stub) {
     this.stub2 = stub;
   }
 
-  getStub()
-  {
+  getStub() {
     return this.stub;
   }
 
-  getStub2()
-  {
+  getStub2() {
     return this.stub2;
   }
 
-  addToSession(comObject, oid)
-  {
+  addToSession(comObject, oid) {
     if (this.sessionInDestroy) {
       return;
     }
@@ -460,18 +407,16 @@ class Session
     this.updateReferenceForIPID(comObject.getIpid(), refCount);
   }
 
-  async addRef_ReleaseRef(IPID, obj, refcount)
-  {
+  async addRef_ReleaseRef(IPID, obj, refcount) {
     this.updateReferenceForIPID(IPID, refcount);
     await this.getStub2().addRef_ReleaseRef(obj);
   }
 
-  updateReferenceForIPID(ipid, refcount)
-  {
+  updateReferenceForIPID(ipid, refcount) {
     var value = this.mapOfIPIDsVsRefcounts.get(ipid);
     if (value == null) {
       if (refcount < 0) {
-        debug("[updateReferenceForIPID] Released IPID not found: " + ipid);
+        debug('[updateReferenceForIPID] Released IPID not found: ' + ipid);
         return;
       } else {
         value = new Number(0);
@@ -486,8 +431,7 @@ class Session
     }
   }
 
-  addWeakReference(comObject, oid)
-  {
+  addWeakReference(comObject, oid) {
     var holder = new IPID_SessionID_Holder(comObject.getIpid(), this.getSessionIdentifier(), false, oid);
     this.mapOfObjects.set([comObject, this.referenceQueueOfCOMObjects], holder);
 
@@ -498,8 +442,7 @@ class Session
     this.mapOfIPIDsvsWeakReferences.set(comObject.getIpid(), new Number(count + 1));
   }
 
-  removeWeakReference(ipid)
-  {
+  removeWeakReference(ipid) {
     var weakRefsRemaining = 0;
     var count = this.mapOfIPIDsvsWeakReferences.get(ipid);
     if (count = 0) {
@@ -514,8 +457,7 @@ class Session
     }
   }
 
-  addToSessionIPID(IPID, oid, dontping)
-  {
+  addToSessionIPID(IPID, oid, dontping) {
     if (dontping) {
       if (this.sessionInDestroy) return;
 
@@ -529,7 +471,7 @@ class Session
       let joid = new ObjectId([...oid], dontping);
       this.addPingObject(this, IPID, joid);
       //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
-      debug("addToSession: Adding IPID: " + IPID + " to session: " + this.getSessionIdentifier());
+      debug('addToSession: Adding IPID: ' + IPID + ' to session: ' + this.getSessionIdentifier());
     }
   }
 
@@ -567,8 +509,8 @@ class Session
   async releaseRefs(IPID, numinstances){
     numinstances = (numinstances == undefined) ? 5 : numinstances;
 
-    debug("releaseRef: Reclaiming from Session: " + this.getSessionIdentifier()
-      + " , the IPID: " + IPID + ", numinstances is " + numinstances);
+    debug('releaseRef: Reclaiming from Session: ' + this.getSessionIdentifier()
+      + ' , the IPID: ' + IPID + ', numinstances is ' + numinstances);
 
     var obj = new CallBuilder(true);
     obj.setParentIpid(IPID);
@@ -579,7 +521,7 @@ class Session
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
-    debug("releaseRef: Releasing numinstances " + numinstances + " references of IPID: " + IPID + " session: " + thisgetSessionIdentifier())
+    debug('releaseRef: Releasing numinstances ' + numinstances + ' references of IPID: ' + IPID + ' session: ' + thisgetSessionIdentifier())
     await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
@@ -605,18 +547,16 @@ class Session
     await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
-  addDeferencedIpids(IPID)
-  {
-    debug("addDereferencedIpids for session : " + getSessionIdentifier() + " , IPID is: " + IPID);
+  addDeferencedIpids(IPID) {
+    debug('addDereferencedIpids for session : ' + getSessionIdentifier() + ' , IPID is: ' + IPID);
     if (!this.listOfDeferencedIpids.includes(IPID)) {
       this.listOfDeferencedIpids.push(IPID);
     }
   }
 
-  async releaseRefs(arrayOfStructs, fromDestroy)
-  {
-    	debug("In releaseRefs for session : " + this.getSessionIdentifier()
-        + " , array length is: " + Number(arrayOfStructs.getArrayInstance().length));
+  async releaseRefs(arrayOfStructs, fromDestroy) {
+    	debug('In releaseRefs for session : ' + this.getSessionIdentifier()
+        + ' , array length is: ' + Number(arrayOfStructs.getArrayInstance().length));
 
       var obj = new CallBuilder(true);
       obj.setOpnum(2);
@@ -627,8 +567,7 @@ class Session
       await this.stub.addRef_ReleaseRef(obj);
   }
 
-  prepareForReleaseRef(IPID, refcount)
-  {
+  prepareForReleaseRef(IPID, refcount) {
     if (refcount == undefined) {
       var refCount = this.mapOfIPIDsVsRefcounts.get(IPID);
       var releaseCount = 5 + 5;
@@ -641,35 +580,30 @@ class Session
     remInterface.addMember(new ComValue(new UUID(IPID), types.UUID));
     remInterface.addMember(refcount);
     remInterface.addMember(0);
-    debug("prepareForReleaseRef: Releasing " + refcount + " references of IPID: "
-      + IPID + " session: " + this.getSessionIdentifier());
+    debug('prepareForReleaseRef: Releasing ' + refcount + ' references of IPID: '
+      + IPID + ' session: ' + this.getSessionIdentifier());
     this.updateReferenceForIPID(IPID, -1 * refcount);
 
     return remInterface;
   }
 
-  getUserName()
-  {
+  getUserName() {
     return this.authInfo == null ? this.username : this.authInfo.getUserName();
   }
 
-  getPassword()
-  {
+  getPassword() {
     return this.authInfo == null ? this.password : this.authInfo.getPassword();
   }
 
-  getDomain()
-  {
+  getDomain() {
     return this.authInfo == null ? this.domain : this.authInfo.getDomain();
   }
 
-  getSessionIdentifier()
-  {
+  getSessionIdentifier() {
     return this.sessionIdentifier;
   }
 
-  equals(obj)
-  {
+  equals(obj) {
     if (obj == null || !(obj instanceof Session)) {
       return false;
     }
@@ -677,67 +611,55 @@ class Session
     return temp.sessionIdentifier == this.sessionIdentifier;
   }
 
-  hashCode()
-  {
+  hashCode() {
     return this.sessionIdentifier;
   }
 
-  async finalize()
-  {
+  async finalize() {
     try {
       await destroySession(this);
     } catch (e) {
-      debug("Exception in finalize when destroying session " + e.getMessage());
+      debug('Exception in finalize when destroying session ' + e.getMessage());
     }
   }
 
-  getUnreferencedHandler(ipid)
-  {
+  getUnreferencedHandler(ipid) {
     return this.mapOfUnreferencedHandlers.get(ipid);
   }
 
-  registerUnreferencedHandler(ipid, unreferenced)
-  {
+  registerUnreferencedHandler(ipid, unreferenced) {
     this.mapOfUnreferencedHandlers.set(ipid, unreferenced);
   }
 
-  unregisterUnreferencedHandler(ipid)
-  {
+  unregisterUnreferencedHandler(ipid) {
     this.mapOfUnreferencedHandlers.delete(ipid);
   }
 
-  setGlobalSocketTimeout(timeout)
-  {
+  setGlobalSocketTimeout(timeout) {
     this.timeout = timeout;
   }
 
-  getGlobalSocketTimeout()
-  {
+  getGlobalSocketTimeout() {
     return this.timeout;
   }
 
-  useSessionSecurity(enable)
-  {
+  useSessionSecurity(enable) {
     this.useSessionSecurity = enable;
   }
 
-  useNTLMv2(enable)
-  {
+  useNTLMv2(enable) {
     this.useNTLMv2 = enable;
   }
 
-  isSessionSecurityEnabled()
-  {
+  isSessionSecurityEnabled() {
     return !this.isSSO & this.useSessionSecurity;
   }
 
-  isNTLMv2Enabled()
-  {
+  isNTLMv2Enabled() {
     return !this.isSSO & this.useNTLMv2;
   }
 
-  linkTwoSessions(src, target)
-  {
+  linkTwoSessions(src, target) {
     if (src.sessionInDestroy || target.sessionInDestroy) {
       return;
     }
@@ -751,8 +673,7 @@ class Session
     }
   }
 
-  unlinkSession(src, tobeunlinked)
-  {
+  unlinkSession(src, tobeunlinked) {
     if (src.sessionInDestroy)
 			return;
 
@@ -762,30 +683,25 @@ class Session
 		src.links.remove(tobeunlinked);
   }
 
-  resolveSessionForOxid(oxid)
-  {
+  resolveSessionForOxid(oxid) {
     return this.mapOfOxidsVsSessions.get(oxid);
   }
 
-  isSessionInDestroy()
-  {
+  isSessionInDestroy() {
     return this.sessionInDestroy;
   }
 
-  registerCustomMarshallerUnMarshalerTemplate(CLSID, customClass)
-  {
+  registerCustomMarshallerUnMarshalerTemplate(CLSID, customClass) {
     this.mapOfCustomCLSIDs.put(CLSID.toLowerCase(), customClass);
   }
 
-  getCustomMarshallerUnMarshallerTemplate(CLSID)
-  {
+  getCustomMarshallerUnMarshallerTemplate(CLSID) {
     return this.mapOfCustomCLSIDs(CLSID.toLowerCase());
   }
 }
 
 class IPID_SessionID_Holder {
-  constructor(IPID, sessionID, isOnlySessionId, oid)
-  {
+  constructor(IPID, sessionID, isOnlySessionId, oid) {
     this.IPID = IPID;
     this.sessionID = new Number(sessionID);
     this.isOnlySessionId = isOnlySessionId;

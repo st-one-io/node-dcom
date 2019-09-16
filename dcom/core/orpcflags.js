@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 module.exports = Object.freeze({
     ORPCF_NULL: 0,  // no additional info in packet

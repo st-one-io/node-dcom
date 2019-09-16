@@ -13,13 +13,22 @@ let inited = false;
  * a random number and put a reference to it here
  */
 const objectIDs = new WeakMap();
+
+/**
+ * @return {Number}
+ */
 function randomInt() {
     return Math.trunc(Math.random() * 0xFFFFFFFF);
 }
 const primitiveIDs = new Map();
+/**
+ * Hashes any given object
+ * @param {Object} obj
+ * @return {Number}
+ */
 function getObjectHash(obj) {
     if (primitiveIDs.has(obj)) {
-        //test for primitives first ...
+        // test for primitives first ...
         return primitiveIDs.get(obj);
     } else if (objectIDs.has(obj)) {
         // ... then for existing objects ...
@@ -68,7 +77,7 @@ class Pointer {
             this._isNull = true;
         }
 
-        if (value.getValue() !== null && value.getValue() !== undefined){
+        if (value.getValue() !== null && value.getValue() !== undefined) {
             this.referentId = randomInt();
         }
     }
@@ -84,13 +93,15 @@ class Pointer {
 
 	/** Sets the flags associated with the referent.
 	 *
-	 * @exclude
 	 * @param {number} flags Flags only.
 	 */
     setFlags(flags) {
         this.flags = flags;
     }
 
+    /**
+     * If is a pointer that references a type
+     */
     setIsReferenceTypePtr() {
         this.isReferenceTypePtr = true;
     }
@@ -98,7 +109,7 @@ class Pointer {
 
 	/** Returns the referent encapsulated by this pointer.
 	 *
-	 * @returns {ComValue}
+	 * @return {ComValue}
 	 */
     getReferent() {
         if (this.referent instanceof ComValue) {
@@ -108,21 +119,20 @@ class Pointer {
     }
 
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
-     * @param {?} defferedPointers  
-     * @param {number} flag 
+     * @param {?} defferedPointers
+     * @param {number} flag
      */
     encode(ndr, defferedPointers, flag) {
-
         flag = flag | this.flags;
         if (this._isNull) {
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(0, types.INTEGER), defferedPointers, flag);
             return;
         }
 
-        //it is deffered or part of an array, this logic will not get called twice since the
-        //deffered list will come in withb FLAG_NULL
+        // it is deffered or part of an array, this logic will not get called twice since the
+        // deffered list will come in withb FLAG_NULL
         if (!this._isNull && (this.isDeffered || (flag & Flags.FLAG_REPRESENTATION_ARRAY) == Flags.FLAG_REPRESENTATION_ARRAY)) {
             let referentIdToPut = this.referentId == -1 ? getObjectHash(this.referent) : this.referentId;
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(referentIdToPut, types.INTEGER), defferedPointers, flag);
@@ -145,17 +155,16 @@ class Pointer {
         MarshalUnMarshalHelper.serialize(ndr, this.referent, defferedPointers, flag);
     }
 
-    //class of type being decoded. If the type being expected is an array , the varType
-    //should be the actual array type and not JIArray.
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
-     * @param {Pointer[]} defferedPointers 
-     * @param {number} flag 
-     * @param {Map} additionalData 
+     * @param {Pointer[]} defferedPointers
+     * @param {number} flag
+     * @param {Map} additionalData
+     * @return {Array}
      */
     decode(ndr, defferedPointers, flag, additionalData) {
-        //shallowClone();
+        // shallowClone();
         flag = flag | this.flags;
 
         let retVal = new Pointer();
@@ -163,12 +172,12 @@ class Pointer {
         retVal._isNull = this._isNull;
         retVal.nullSpecial = this.nullSpecial;
 
-        //retVal.isDeffered = isDeffered;
+        // retVal.isDeffered = isDeffered;
         if (this.isDeffered || (flag & Flags.FLAG_REPRESENTATION_ARRAY) == Flags.FLAG_REPRESENTATION_ARRAY) {
             retVal.referentId = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), defferedPointers, flag, additionalData);
-            retVal.referent = this.referent; //will only be the class or object
+            retVal.referent = this.referent; // will only be the class or object
             if (retVal.referentId.getValue() == 0 && !this.nullSpecial) {
-                //null pointer
+                // null pointer
                 // just return
                 retVal._isNull = true;
                 retVal.isDeffered = false;
@@ -182,11 +191,11 @@ class Pointer {
         }
 
         if (!this.isReferenceTypePtr) {
-            //referentId = ndr.readUnsignedLong();
+            // referentId = ndr.readUnsignedLong();
             retVal.referentId = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), defferedPointers, flag, additionalData)
-            retVal.referent = this.referent; //will only be the class or object
+            retVal.referent = this.referent; // will only be the class or object
             if (retVal.referentId.getValue() == 0 && !this.nullSpecial) {
-                //null pointer
+                // null pointer
                 // just return
                 retVal._isNull = true;
                 return new ComValue(retVal, types.POINTER);
@@ -199,55 +208,55 @@ class Pointer {
     }
 
     /**
-     * 
-     * @param {boolean} deffered 
+     *
+     * @param {boolean} deffered
      */
     setDeffered(deffered) {
         this.isDeffered = deffered;
     }
-
+    
+    /**
+     * @return {Boolean}
+     */
     getDeffered() {
         return this.isDeffered;
     }
 
     /**
-     * 
-     * @param {number} referent 
+     *
+     * @param {number} referent
      */
     setReferent(referent) {
         this.referentId = referent;
     }
 
-	/** Returns status whether this is a reference type pointer or not.
-	 *
-	 * @return <code>true</code> if this is a reference type pointer.
-	 */
+    /**
+     * @return {Boolean}
+     */
     isReference() {
         return this.isReferenceTypePtr;
     }
 
-	/** Returns the referent identifier.
-	 *
-	 * @return
-	 */
+    /**
+     * @return {Number}
+     */
     getReferentIdentifier() {
         return this.referentId;
     }
 
     /**
-     * @exclude
-     * @return
+     * @return {Number}
      */
     getLength() {
         if (this._isNull) {
             return 4;
         }
-        //4 for pointer
+        // 4 for pointer
         return 4 + MarshalUnMarshalHelper.getLengthInBytes(this.referent, Flags.FLAG_NULL);
     }
 
     /**
-     * 
+     * Replace the current pointer with a new one
      * @param {Pointer} replacement
      */
     replaceSelfWithNewPointer(replacement) {
@@ -257,21 +266,24 @@ class Pointer {
         this.referent = replacement.getValue().referent;
     }
 
-	/** Returns status if this pointer is <code>null</code>.
-	 *
-	 * @return <code>true</code> if the pointer is <code>null</code>.
-	 */
+    /**
+     * Returns the isNull flag
+     * @return {Boolean}
+     */
     isNull() {
         return this._isNull;
     }
 
     /**
-     * @param {ComValue} value 
+     * @param {ComValue} value
      */
     setValue(value) {
         this.referent = value;
     }
 
+    /**
+     * @return {String}
+     */
     toString() {
         return this.referent == null ? "[null]" : "[" + this.referent.toString() + "]";
     }

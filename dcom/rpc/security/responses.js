@@ -1,10 +1,11 @@
 // @ts-check
-
 const Crypto = require('crypto');
 const LegacyEncoding = require('legacy-encoding');
 
-class Responses
-{
+/**
+ * Generate NTLM challenge responses
+ */
+class Responses {
     constructor(){}
 
     /**
@@ -12,8 +13,7 @@ class Responses
      * @param {String} password 
      * @param {Array} challenge 
      */
-    getLMResponse (password, challenge)
-    {
+    getLMResponse (password, challenge) {
         let lmHash = this.lmHash(password);
         return this.lmResponse(lmHash, challenge);
     }
@@ -23,23 +23,21 @@ class Responses
      * @param {String} password 
      * @param {Array} challenge 
      */
-    getNTLMResponse (password, challenge)
-    {
+    getNTLMResponse (password, challenge) {
         let ntlmHash = this.ntlmHash(password);
         return this.lmResponse(ntlmHash, challenge);
     }
 
     /**
-     * 
-     * @param {String} target 
-     * @param {String} user 
-     * @param {String} password 
-     * @param {Array} targetInformation 
-     * @param {Array} challenge 
-     * @param {Array} clientNonce 
+     *
+     * @param {String} target
+     * @param {String} user
+     * @param {String} password
+     * @param {Array} targetInformation
+     * @param {Array} challenge
+     * @param {Array} clientNonce
      */
-    getNTLMv2Response (target, user, password, targetInformation, challenge, clientNonce)
-    {
+    getNTLMv2Response (target, user, password, targetInformation, challenge, clientNonce) {
         let retval = new Array(2);
         let ntlmv2Hash = this.ntlmv2Hash(target, user, password);
         let blob = this.createBlob(targetInformation, clientNonce);
@@ -58,20 +56,18 @@ class Responses
      * @param {Array} challenge 
      * @param {Array} clientNonce 
      */
-    getLMv2Response (target, user, password, challenge, clientNonce)
-    {
+    getLMv2Response (target, user, password, challenge, clientNonce) {
         let ntlmv2Hash = this.ntlmv2Hash(target, user, password);
         return this.lmv2Response(ntlmv2Hash, clientNonce, challenge);
     }
 
     /**
-     * 
-     * @param {String} password 
-     * @param {Buffer} challenge 
-     * @param {Buffer} clientNonce 
+     *
+     * @param {String} password
+     * @param {Buffer} challenge
+     * @param {Buffer} clientNonce
      */
-    getNTLM2SessionResponse(password, challenge, clientNonce)
-    {        
+    getNTLM2SessionResponse(password, challenge, clientNonce) {        
         // create a hash of the given password
         let ntlm = this.ntlmHash(password);
         let md5 = Crypto.createHash('md5');
@@ -90,8 +86,7 @@ class Responses
      * 
      * @param {String} password 
      */
-    lmHash (password)
-    {
+    lmHash (password) {
         let oemPassword = [...Buffer.from(password.toUpperCase())];
         let length = Math.min(oemPassword.length, 14);
         let keyBytes = new Array(14);
@@ -126,8 +121,7 @@ class Responses
      * 
      * @param {String} password 
      */
-    ntlmHash (password)
-    {
+    ntlmHash (password) {
         let unicodePassword = Buffer.from(password, 'utf16le');
 
         let md4 = Crypto.createHash('md4');
@@ -143,8 +137,7 @@ class Responses
      * @param {String} user 
      * @param {String} password 
      */
-    ntlmv2Hash (target, user, password)
-    {
+    ntlmv2Hash (target, user, password) {
         let ntlmHash = this.ntlmHash(password);
         let identity = user.toUpperCase() + target;
 
@@ -156,8 +149,7 @@ class Responses
      * @param {Buffer} hash 
      * @param {Array} challenge 
      */
-    lmResponse (hash, challenge)
-    {
+    lmResponse (hash, challenge) {
         let keyBytes = Buffer.from([0, 0, 0, 0, 0], 'utf16le');
         keyBytes = Buffer.concat([hash, keyBytes], (hash.length + keyBytes.length));
         
@@ -190,8 +182,7 @@ class Responses
      * @param {Array} clientData 
      * @param {Array} challenge 
      */
-    lmv2Response (hash, clientData, challenge)
-    {
+    lmv2Response (hash, clientData, challenge) {
         let data = new Array(challenge.length + clientData.length);
 
         let aux = challenge.slice(0, challenge.length);
@@ -216,8 +207,7 @@ class Responses
      * @param {Array} targetInformation 
      * @param {Array} clientNonce 
      */
-    createBlob (targetInformation, clientNonce)
-    {
+    createBlob (targetInformation, clientNonce) {
         let blobSignature = [0x01, 0x01, 0x00, 0x00];
 
         let reserved = [0x00, 0x00, 0x00, 0x00];
@@ -254,8 +244,7 @@ class Responses
      * @param {Array} data 
      * @param {Array} key 
      */
-    hmacMD5 (data, key)
-    {
+    hmacMD5 (data, key) {
         let ipad = new Array(64);
         let opad = new Array(64);
 
@@ -302,8 +291,7 @@ class Responses
      * @param {Buffer} bytes 
      * @param {Number} offset 
      */
-    createDESKey (bytes, offset)
-    {
+    createDESKey (bytes, offset) {
         let keyBytes = bytes.slice(offset, 7 + offset);
         
         let material = Buffer.alloc(8);
@@ -324,8 +312,7 @@ class Responses
      * 
      * @param {Buffer} bytes 
      */
-    oddParity (bytes)
-    {
+    oddParity (bytes) {
         for (let index = 0; index < bytes.length; index++) {
             let b = bytes[index];
             let needsParity = (((b >>> 7) ^ (b >>> 6) ^ (b >>> 5) ^

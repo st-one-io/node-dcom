@@ -1,3 +1,4 @@
+//@ts-check
 const NdrBuffer = require('../ndr/ndrbuffer.js');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
 const AuthenticationVerifier = require('./core/authenticationverifier.js');
@@ -14,7 +15,6 @@ const OrphanedPdu = require('./pdu/orphanedpdu.js');
 const RequestCoPdu = require('./pdu/requestcopdu.js');
 const ResponseCoPdu = require('./pdu/responsecopdu.js');
 const ShutdownPdu = require('./pdu/shutdownpdu.js');
-const Events = require('events');
 const util = require('util');
 const debug = util.debuglog('dcom');
 
@@ -262,40 +262,40 @@ class DefaultConnection
       var pdu = null;
       
       switch (type) {
-        case new AlterContextPdu().ALTER_CONTEXT_TYPE:
+        case AlterContextPdu.ALTER_CONTEXT_TYPE:
           pdu = new AlterContextPdu();
           break;
-        case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
+        case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
           pdu = new AlterContextResponsePdu();
           break;
-        case new Auth3Pdu().AUTH3_TYPE:
+        case Auth3Pdu.AUTH3_TYPE:
           pdu = new Auth3Pdu();
           break;
-        case new BindPdu().BIND_TYPE:
+        case BindPdu.BIND_TYPE:
           pdu = new BindPdu();
           break;
-        case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
+        case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
           pdu = new BindAcknowledgePdu();
           break;
-        case new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE:
+        case BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE:
           pdu = new BindNoAcknowledgePdu();
           break;
-        case new CancelCoPdu().CANCEL_TYPE:
+        case CancelCoPdu.CANCEL_TYPE:
           pdu = new CancelCoPdu();
           breakl
-        case new FaultCoPdu().FAULT_TYPE:
+        case FaultCoPdu.FAULT_TYPE:
           pdu = new FaultCoPdu();
           break;
-        case new OrphanedPdu().ORPHANED_TYPE:
+        case OrphanedPdu.ORPHANED_TYPE:
           pdu = new OrphanedPdu();
           break;
-        case new RequestCoPdu().REQUEST_TYPE:
+        case RequestCoPdu.REQUEST_TYPE:
           pdu = new RequestCoPdu();       
           break;
-        case new ResponseCoPdu().RESPONSE_TYPE:
+        case ResponseCoPdu.RESPONSE_TYPE:
           pdu = new ResponseCoPdu();
           break;
-        case new ShutdownPdu().SHUTDOWN_TYPE:
+        case ShutdownPdu.SHUTDOWN_TYPE:
           pdu = new ShutdownPdu();
           break;
         default:
@@ -337,22 +337,22 @@ class DefaultConnection
     var logMsg = true;
 
     switch (buffer.dec_ndr_small()) {
-      case new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE:
+      case BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE:
         if (logMsg){
           debug("Received BIND_ACK");
           logMsg = false;
         }
-      case new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE:
+      case AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE:
         if (logMsg){
           debug("Received ALTER_CTX_RESP");
           logMsg = false;
         }
-      case new BindPdu().BIND_TYPE:
+      case BindPdu.BIND_TYPE:
         if (logMsg){
           debug("Received BIND");
           logMsg = false;
         }
-      case new AlterContextPdu().ALTER_CONTEXT_TYPE:
+      case AlterContextPdu.ALTER_CONTEXT_TYPE:
         if (logMsg){
           debug("Received ALTER_CTX");
           logMsg = false;
@@ -363,27 +363,27 @@ class DefaultConnection
           this.incomingRebind(verifier);
         }
         break;
-      case new FaultCoPdu().FAULT_TYPE:
+      case FaultCoPdu.FAULT_TYPE:
         if (logMsg){
           debug("Received FAULT");
           logMsg = false;
         }
-      case new CancelCoPdu().CANCEL_TYPE:
+      case CancelCoPdu.CANCEL_TYPE:
         if (logMsg){
           debug("Received CANCEL");
           logMsg = false;
         }
-      case new OrphanedPdu().ORPHANED_TYPE:
+      case OrphanedPdu.ORPHANED_TYPE:
         if (logMsg){
           debug("Received ORPHANED");
           logMsg = false;
         }
-      case new ResponseCoPdu().RESPONSE_TYPE:
+      case ResponseCoPdu.RESPONSE_TYPE:
         if (logMsg) {
           debug("Received RESPONSE");
           logMsg = false;
         }
-      case new RequestCoPdu().REQUEST_TYPE:
+      case RequestCoPdu.REQUEST_TYPE:
         if (logMsg) {
           debug("Received REQUEST");
           logMsg = false;
@@ -397,14 +397,14 @@ class DefaultConnection
           this.detachAuthentication(buffer);
         }
         break;
-      case new Auth3Pdu().AUTH3_TYPE:
+      case Auth3Pdu.AUTH3_TYPE:
         if (logMsg) {
           logMsg = false;
         }
         incomingRebind(detatchAuthentication2(buffer));
         break;
-      case new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE:
-      case new ShutdownPdu().SHUTDOWN_TYPE:
+      case BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE:
+      case ShutdownPdu.SHUTDOWN_TYPE:
         return;
       default:
         throw new Error("Invalid incoming PDU type");
@@ -418,27 +418,27 @@ class DefaultConnection
 
     let pduType = this.ndr.readUnsignedSmall();
     switch (pduType) {
-      case (new BindPdu().BIND_TYPE):
+      case (BindPdu.BIND_TYPE):
         if (logMsg){
           debug("Sending BIND");
           logMsg = false;
         }
-      case (new Auth3Pdu().AUTH3_TYPE):
+      case (Auth3Pdu.AUTH3_TYPE):
         if (logMsg) {
           debug("Sending AUTH3");
           logMsg = false;
         }
-      case (new BindAcknowledgePdu().BIND_ACKNOWLEDGE_TYPE):
+      case (BindAcknowledgePdu.BIND_ACKNOWLEDGE_TYPE):
         if (logMsg){
           debug("Sending BIND_ACK");
           logMsg = false;
         }
-      case (new AlterContextResponsePdu().ALTER_CONTEXT_RESPONSE_TYPE):
+      case (AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE):
         if (logMsg){
           debug("Sending ALTER_CTX_RESP");
           logMsg = false;
         }
-      case (new RequestCoPdu().REQUEST_TYPE):
+      case (RequestCoPdu.REQUEST_TYPE):
         if (logMsg) {
           debug("Sending REQUEST");
           logMsg = false;
@@ -446,7 +446,7 @@ class DefaultConnection
         var verifier = this.outgoingRebind(info, pduType);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
-      case (new AlterContextPdu().ALTER_CONTEXT_TYPE):
+      case (AlterContextPdu.ALTER_CONTEXT_TYPE):
         if (logMsg){
           debug("Sending ALTER_CTX");
           logMsg = false;
@@ -454,22 +454,22 @@ class DefaultConnection
         var verifier = this.outgoingRebind(info, pduType);
         if (verifier != null) this.attachAuthentication(verifier);
         break;
-      case (new FaultCoPdu().FAULT_TYPE):
+      case (FaultCoPdu.FAULT_TYPE):
         if (logMsg){
           debug("Sending FAULT");
           logMsg = false;
         }
-      case (new CancelCoPdu().CANCEL_TYPE):
+      case (CancelCoPdu.CANCEL_TYPE):
         if (logMsg){
           debug("Sending CANCEL");
           logMsg = false;
         }
-      case (new OrphanedPdu().ORPHANED_TYPE):
+      case (OrphanedPdu.ORPHANED_TYPE):
         if (logMsg){
           debug("Sending ORPHANED");
           logMsg = false;
         }
-      case (new ResponseCoPdu().RESPONSE_TYPE):
+      case (ResponseCoPdu.RESPONSE_TYPE):
         if (logMsg) {
           debug("Sending RESPONSE");
           logMsg = false;
@@ -478,8 +478,8 @@ class DefaultConnection
           this.signAndSeal(this.ndr);
         }
         break;
-      case (new BindNoAcknowledgePdu().BIND_NO_ACKNOWLEDGE_TYPE):
-      case (new ShutdownPdu().SHUTDOWN_TYPE):
+      case (BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE):
+      case (ShutdownPdu.SHUTDOWN_TYPE):
         return;
       default:
         throw new Error("Invalid outgoing PDU type");

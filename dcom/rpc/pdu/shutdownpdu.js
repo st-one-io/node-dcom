@@ -3,7 +3,6 @@ const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 class ShutdownPdu extends ConnectionOrientedPdu {
   constructor(){
     super();
-    this.SHUTDOWN_TYPE = 0x11;
   }
 
   /**
@@ -14,4 +13,5 @@ class ShutdownPdu extends ConnectionOrientedPdu {
   }
 }
 
+ShutdownPdu.SHUTDOWN_TYPE = 0x11;
 module.exports = ShutdownPdu;

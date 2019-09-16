@@ -1,28 +1,34 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+// @ts-check
+const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
 
-class Auth3Pdu extends ConnectionOrientedPdu
-{
-  constructor(){
+/**
+ * This class represents a basic dcerpc authentication packet
+ */
+class Auth3Pdu extends ConnectionOrientedPdu {
+  /**
+   * This constructor only sets the type variable and the callid
+   */
+  constructor() {
     super();
-
-    this.AUTH3_TYPE = 0x10;
+    this.type = 0x10;
     this.setCallId(0);
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getType(){
-    return this.AUTH3_TYPE;
+  getType() {
+    return this.type;
   }
 
   /**
-   * 
-   * @param {NetworkDataRepresentation} ndr 
+   *
+   * @param {NetworkDataRepresentation} ndr
    */
-  writeBody(ndr){
+  writeBody(ndr) {
     ndr.writeUnsignedLong(0);
   }
 }
 
+Auth3Pdu.AUTH3_TYPE = 0x10;
 module.exports = Auth3Pdu;

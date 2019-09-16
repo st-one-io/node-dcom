@@ -1,8 +1,8 @@
+// @ts-check
 var Unreferenced = require('../common/unreferenced.js');
 var ComObject = require('./comobject.js');
 
-class ComObjectWrapper extends ComObject
-{
+class ComObjectWrapper extends ComObject {
   constructor(comObject)
   {
     this.serialVersionUID = "6142976024482507753L";

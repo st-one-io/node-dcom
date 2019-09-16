@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 let inited = false;
 let Pointer;
@@ -11,15 +11,15 @@ let DualStringArray;
 let types;
 let ComValue;
 
-const OBJREF_SIGNATURE = [0x4d, 0x45, 0x4f, 0x57];  // 'MEOW'
-const OBJREF_STANDARD = 0x1;  // standard marshaled objref
-const OBJREF_HANDLER = 0x2;  // handler marshaled objref
-const OBJREF_CUSTOM = 0x4;  // custom marshaled objref
+const OBJREF_SIGNATURE = [0x4d, 0x45, 0x4f, 0x57]; // 'MEOW'
+const OBJREF_STANDARD = 0x1; // standard marshaled objref
+const OBJREF_HANDLER = 0x2; // handler marshaled objref
+const OBJREF_CUSTOM = 0x4; // custom marshaled objref
 
 // Flag values for a STDOBJREF (standard part of an OBJREF).
 // SORF_OXRES1 - SORF_OXRES8 are reserved for the object exporters
 // use only, object importers must ignore them and must not enforce MBZ.
-const SORF_OXRES1 = 0x1;  // reserved for exporter
+const SORF_OXRES1 = 0x1; // reserved for exporter
 const SORF_OXRES2 = 0x20; // reserved for exporter
 const SORF_OXRES3 = 0x40; // reserved for exporter
 const SORF_OXRES4 = 0x80; // reserved for exporter
@@ -27,18 +27,20 @@ const SORF_OXRES5 = 0x100;// reserved for exporter
 const SORF_OXRES6 = 0x200;// reserved for exporter
 const SORF_OXRES7 = 0x400;// reserved for exporter
 const SORF_OXRES8 = 0x800;// reserved for exporter
-const SORF_NULL = 0x0;   // convenient for initializing SORF
+const SORF_NULL = 0x0; // convenient for initializing SORF
 const SORF_NOPING = 0x1000;// Pinging is not required
 
+/**
+ * This class represents an InterfacePointer object.
+ */
 class InterfacePointer {
-
     /**
-     * 
+     *
      * @param {string} [iid]
      * @param {number|InterfacePointerBody} [port]
      * @param {*} [objref]
      */
-    constructor(iid, port, objref){
+    constructor(iid, port, objref) {
         this.OBJREF_STANDARD = 0x1;
         this.OBJREF_CUSTOM = 0x4;
 
@@ -52,33 +54,34 @@ class InterfacePointer {
     }
 
     /**
-     * @returns {boolean}
+     * @return {boolean}
      */
     isCustomObjRef() {
         return this.member.getValue().getReferent().isCustomObjRef();
     }
 
     /**
-     * @returns {string}
+     * @return {string}
      */
     getCustomCLSID() {
         return this.member.getValue().getReferent().getCustomCLSID();
     }
 
     /**
-     * 
-     * @param {boolean} deffered 
+     *
+     * @param {boolean} deffered
      */
     setDeffered(deffered) {
         this.member.getValue().setDeffered(true);
     }
 
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
-     * @param {Pointer[]} defferedPointers 
+     * @param {Pointer[]} defferedPointers
      * @param {number} flag
-     * @param {Map} additionalData 
+     * @param {Map} additionalData
+     * @return {Object}
      */
     decode(ndr, defferedPointers, flag, additionalData) {
         let ptr = new InterfacePointer();
@@ -89,91 +92,97 @@ class InterfacePointer {
             let iBodyPtr = new ComValue(new Pointer(new ComValue(null, types.INTERFACEPOINTERBODY)), types.POINTER);
             ptr.member = MarshalUnMarshalHelper.deSerialize(ndr, iBodyPtr, defferedPointers, flag, additionalData);
         }
-        //the pointer is null, no point of it's wrapper being present, so return null from here as well
+        // the pointer is null, no point of it's wrapper being present, so return null from here as well
         if (ptr.member.getValue().isNull()) {
             ptr = null;
         }
         return ptr;
     }
 
+    /**
+     * @return {Object}
+     */
     getObjectType() {
         return this.member.getValue().getReferent().getObjectType();
     }
 
     /**
-     * @param {number} objectType
-     * @return
+     * @param {Number} objectType
+     * @return {Number}
      */
     getObjectReference(objectType) {
         return this.member.getValue().getReferent().getObjectReference(objectType);
     }
 
     /**
-     * @returns {string}
+     * @return {string}
      */
     getIID() {
         return this.member.getValue().getReferent().getIID();
     }
 
     /**
-     * @returns {string}
+     * @return {string}
      */
     getIPID() {
         return this.member.getValue().getReferent().getIPID();
     }
 
     /**
-     * @returns {number[]}
+     * @return {number[]}
      */
     getOID() {
         return this.member.getValue().getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getObjectId();
     }
 
     /**
-     * @returns {number[]}
+     * @return {number[]}
      */
     getOXID() {
         return this.member.getValue().getReferent().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getOxid();
     }
 
     /**
-     * @returns {DualStringArray}
+     * @return {DualStringArray}
      */
     getStringBindings() {
         return this.member.getValue().getReferent().getStringBindings();
     }
 
     /**
-     * @returns {number}
+     * @return {number}
      */
     getLength() {
         return this.member.getValue().getReferent().getLength();
     }
 
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
-     * @param {Pointer[]} defferedPointers 
+     * @param {Pointer[]} defferedPointers
      * @param {number} flag
      */
     encode(ndr, defferedPointers, flag) {
-
         if ((flag & Flags.FLAG_REPRESENTATION_SET_JIINTERFACEPTR_NULL_FOR_VARIANT) == Flags.FLAG_REPRESENTATION_SET_JIINTERFACEPTR_NULL_FOR_VARIANT) {
-            //just encode a null.
+            // just encode a null.
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(0, types.INTEGER), defferedPointers, flag);
             return;
         }
         MarshalUnMarshalHelper.serialize(ndr, this.member, defferedPointers, flag);
     }
 
+    /**
+     * @return {String}
+     */
     toString() {
         return `JIInterfacePointer[IID: ${this.getIID()} , ObjRef: ${this.getObjectReference(InterfacePointer.OBJREF_STANDARD)}]`;
     }
 
     /**
-     * 
+     *
      * @param {InterfacePointer} src
      * @param {InterfacePointer} target
+     * @return {Boolean}
      */
     isOxidEqual(src, target) {
         if (!src || !target) {
@@ -195,7 +204,7 @@ class InterfacePointer {
         MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
         NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
         DualStringArray = require('./dualstringarray');
-        
+
         types = require('./types');
         ComValue = require('./comvalue');
         inited = true;

@@ -1,41 +1,63 @@
-var UUID = require('../rpc/core/uuid.js');
+// @ts-check
+const UUID = require('../rpc/core/uuid.js');
 
-class Clsid
-{
-  constructor(uuid)
-  {
-    if (!this.checkSyntax(uuid)) throw new Error("Invalid Clsid Syntax");
+/**
+ * Represents a Class ID object. Class IDS are unique identifier used on Windows
+ * environements to identify each application.
+ */
+class Clsid {
+  /**
+   *
+   * @param {String} uuid
+   */
+  constructor(uuid) {
+    if (!this.checkSyntax(uuid)) throw new Error('Invalid Clsid Syntax');
     this.nestedUUID = new UUID(uuid);
     this.autoRegister = false;
   }
 
-  setAutoRegistration(autoRegister)
-  {
+  /**
+   *
+   * @param {Boolean} autoRegister
+   */
+  setAutoRegistration(autoRegister) {
     this.autoRegister = autoRegister;
   }
 
-  isAutoRegistrationSet()
-  {
+  /**
+   * @return {Boolean}
+   */
+  isAutoRegistrationSet() {
     return this.autoRegister;
   }
 
-  valueOf(uuid)
-  {
+  /**
+   * @param {String} uuid
+   * @return {Clsid}
+   */
+  valueOf(uuid) {
     if (uuid == null) {
       return null;
     }
     return new Clsid(uuid);
   }
 
-  getClsid()
-  {
+  /**
+   * @return {String}
+   */
+  getClsid() {
     return this.nestedUUID.toString();
   }
 
+  /**
+   * Verifies if the current CLSID (string) has the appropriate syntax
+   * @param {Clsid} clsid
+   * @return {Boolean}
+   */
   checkSyntax(clsid) {
-    let exp = new RegExp('[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}');
+    const exp = new RegExp('[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}');
     return clsid.match(exp);
-}
+  }
 }
 
 module.exports = Clsid;

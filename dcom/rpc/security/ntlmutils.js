@@ -3,23 +3,27 @@ const Crypto = require('crypto');
 const Encdec = require('../../ndr/encdec.js');
 const LegacyEncoding = require('legacy-encoding');
 
-class NtlmUtils 
-{
-    constructor()
-    {
+/**
+ * NTLM authentication utility functions
+ */
+class NtlmUtils {
+    /**
+    * Initialize a variable. Take no input parameters.
+    */
+    constructor() {
         this.S8 = [0x4b, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25];
     }
 
     /**
-     * 
-     * @param {Array} responseKeyNT 
-     * @param {Array} serverChallenge 
-     * @param {Array} clientChallenge 
-     * @param {Number} nanos1601 
-     * @param {avPairs} avPairs 
+     *
+     * @param {Array} responseKeyNT
+     * @param {Array} serverChallenge
+     * @param {Array} clientChallenge
+     * @param {Number} nanos1601
+     * @param {avPairs} avPairs
+     * @return {Array}
      */
-    getNTLMv2Response(responseKeyNT, serverChallenge, clientChallenge, nanos1601, avPairs)
-    {
+    getNTLMv2Response(responseKeyNT, serverChallenge, clientChallenge, nanos1601, avPairs) {
         let avPairsLength = avPairs != null ? avPairs.length : 0;
         let temp =[...Buffer.from(new Array(28 + avPairsLength + 4))];
 
@@ -54,8 +58,7 @@ class NtlmUtils
      * @param {Array} serverChallenge 
      * @param {Array} clientChallenge 
      */
-    getLMv2Response(responeKeyLM, serverChallenge, clientChallenge)
-    {
+    getLMv2Response(responeKeyLM, serverChallenge, clientChallenge) {
         return this.computeResponse(responeKeyLM, serverChallenge, clientChallenge, 0, clientChallenge.length);
     }
 
@@ -67,8 +70,7 @@ class NtlmUtils
      * @param {Number} offset 
      * @param {Number} length 
      */
-    computeResponse(responseKey, serverChallenge, clientData, offset, length)
-    {
+    computeResponse(responseKey, serverChallenge, clientData, offset, length) {
         let hmac = Crypto.createHmac('md5',responseKey);
         hmac.update(serverChallenge);
         hmac.update(clientData);
@@ -95,8 +97,7 @@ class NtlmUtils
      * @param {String} username 
      * @param {String} password 
      */
-    nTOWFv2 (domain, username, password)
-    {
+    nTOWFv2(domain, username, password) {
         let md4 = Crypto.createHmac('md4', '');
         md4.update(LegacyEncoding.encode(password, 'utf16-le'));
 
@@ -111,10 +112,9 @@ class NtlmUtils
      * 
      * @param {String} password 
      */
-    nTOWFv1 (password)
-    {
+    nTOWFv1(password) {
         if (password == null) {
-            throw new Error("Password parameter is required.");
+            throw new Error('Password parameter is required.');
         }
         
         let md4 = Crypto.createHmac('md4', '');
@@ -129,8 +129,7 @@ class NtlmUtils
      * @param {Array} serverChallenge 
      * @param {Array} clientChallenge 
      */
-    getNTLM2Response(nTOWFv1, serverChallenge, clientChallenge)
-    {
+    getNTLM2Response(nTOWFv1, serverChallenge, clientChallenge) {
         let sessionHash = new Array(8);
 
         let md5 = Crypto.createHmac('md5', '');
@@ -160,8 +159,7 @@ class NtlmUtils
      * @param {Array} challenge 
      * @param {Array} clienteChallenge 
      */
-    getLMv2Reponse (domain, user, password, challenge, clienteChallenge)
-    {
+    getLMv2Reponse(domain, user, password, challenge, clienteChallenge) {
         let response = new Array(24);
         let md4 = Cryptol.createHmac('md4', '');
 
@@ -190,8 +188,7 @@ class NtlmUtils
      * @param {String} password 
      * @param {Array} challenge 
      */
-    getNTLMResponse (password, challenge)
-    {
+    getNTLMResponse(password, challenge) {
         let p21 = new Array(21);
         let p24 = new Array(24);
 
@@ -215,8 +212,7 @@ class NtlmUtils
      * @param {String} password 
      * @param {Array} challenge 
      */
-    getPreNTLMResponse (tc, password, challenge)
-    {
+    getPreNTLMResponse(tc, password, challenge) {
         let p14 = new Array(14);
         let p21 = new Array(21);
         let p24 = new Array(24);
@@ -236,7 +232,7 @@ class NtlmUtils
         return p24;
     }
 
-    E (key, data, e ) {
+    E(key, data, e ) {
         let key7 = new Array(7);
         let e8 = new Array(8);
 
