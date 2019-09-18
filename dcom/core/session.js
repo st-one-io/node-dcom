@@ -1,3 +1,6 @@
+/* eslint-disable indent */
+/* eslint-disable no-tabs */
+/* eslint-disable no-mixed-spaces-and-tabs */
 // @ts-check
 let HashMap;
 let ObjHash;
@@ -26,7 +29,7 @@ let debug;
  */
 class Session {
   /**
-   * Initializes all session variables and objects.
+   * Initializes all session letiables and objects.
    */
   constructor() {
     this._init();
@@ -45,15 +48,15 @@ class Session {
     this.stub = null;
     this.stub2 = null;
     this.mapofSessionIdsVsSessions = new HashMap();
-    this.listOfSessions = new Array();
-    this.listOfDeferencedIpids = new Array();
+    this.listOfSessions = [];
+    this.listOfDeferencedIpids = [];
     this.releaseRefsTimer;
     this.mapOfUnreferencedHandlers = new HashMap();
     this.timeout = 0;
     this.useSessionSecurity = false;
     this.useNTLMv2 = false;
     this.isSSO = false;
-    this.links = new Array();
+    this.links = [];
     this.pingResolver;
     this.mapOfOxidsVsSessions = new HashMap();
     this.mapOfCustomCLSIDs = new HashMap();
@@ -64,7 +67,7 @@ class Session {
     this.referenceQueueOfCOMObjects; // wait and see if is necessary
   }
 
-  _init(){
+  _init() {
     if (inited) return;
     UUID = require('../rpc/core/uuid');
     ComValue = require('./comvalue');
@@ -86,42 +89,44 @@ class Session {
     util = require('util');
     debug = util.debuglog('dcom');
     ErrorCodes = require('../common/errorcodes');
-
     inited = true;
   }
 
-  // TODO: how to do a constant running function in nodejs
+  /**
+   * Clean everything that was previously instantiated.
+   */
   async cleanUp() {
     try {
       while (true) {
-        var r = this.referenceQueueOfCOMObjects.remove();
+        let r = this.referenceQueueOfCOMObjects.remove();
 
         if (r != null) {
-          var holder = null;
+          let holder = null;
           holder = this.mapOfObjects.delete(r);
           if (holder == null) {
             continue;
           }
 
-          var session = null;
+          let session = null;
           session = this.mapofSessionIdsVsSessions.get(holder.sessionID);
           if (holder.isOnlySessionIDPresent) {
-              await this.destroySession(session);
+            await this.destroySession(session);
           } else {
             if (session == null) {
               continue;
             }
-            var IPID = holder.IPID;
+            let IPID = holder.IPID;
           }
 
-          var weakRefsRemaining = session.removeWeakReference(IPID);
-          ComOxidRuntime.dellIPIDReference(IPID, new ObjectId(holder.oid, false), session);
+          let weakRefsRemaining = session.removeWeakReference(IPID);
+          ComOxidRuntime.dellIPIDReference(IPID,
+              new ObjectId(holder.oid, false), session);
 
           if (weakRefsRemaining > 0) continue;
 
           session.addDeferencedIpids(IPID);
           holder = null;
-          var unreferenced = session.getUnreferencedHandler(IPID);
+          let unreferenced = session.getUnreferencedHandler(IPID);
           if (unreferenced != null) {
             unreferenced.unReferenced();
           }
@@ -133,69 +138,82 @@ class Session {
     }
   }
 
+  /**
+   *
+   * @param {String} destination
+   * @return {String}
+   */
   getLocalHost(destination) {
-    var sock;
-    var intendedDestination;
+    let sock;
+    let intendedDestination;
 
     try {
       sock = Net.createServer((c) => {
         debug('client connected');
         c.on('end', () => {
           debug('client disconnected');
-        })
+        });
       });
-      DNS.lookup(destination, function(err, address, family){
+      DNS.lookup(destination, function(err, address, family) {
         intendedDestination = address;
-      })
+      });
     } catch (e) {
       return '127.0.0.1';
     }
-
   }
 
+  /**
+   * Stops all timers.
+   */
   releaseReferencesTimerTask() {
     try {
-      var listOfSessionsClone = this.listOfSessions.slice(0, this.listOfSessions.length);
+      let listOfSessionsClone = this.listOfSessions.slice(0,
+          this.listOfSessions.length);
 
-      var i = 0;
+      let i = 0;
       while (i < listOfSessionsClone.length) {
-        var session = listOfSessionsClone[i];
+        let session = listOfSessionsClone[i];
 
-        var listToKIll = new Array();
-        var deferencedIpids = null;
+        let listToKIll = [];
+        let deferencedIpids = null;
 
-        deferencedIpdIds = session.listOfDeferencedIpids.slice(0, this.listOfDeferencedIpids.length);
+        deferencedIpdIds = session.listOfDeferencedIpids.slice(0,
+            this.listOfDeferencedIpids.length);
 
-        for (var j = 0; j < deferencedIpids.length; j++) {
+        for (let j = 0; j < deferencedIpids.length; j++) {
           try {
-            var ipid = deferencedIpids[j];
+            let ipid = deferencedIpids[j];
             listToKIll.push(session.prepareForReleaseRef(ipid));
-          } catch(e){
+          } catch (e) {
             debug('Release_References_TimerTask:[RUN] Exception preparing for release ' + String(e));
           }
         }
 
-        var index = 0
+        let index = 0;
         while (deferencedIpids.length > 0) {
           index = this.listOfDeferencedIpids.indexOf(deferencedIpids.pop());
           this.listOfDeferencedIpids.splice(index, 1);
         }
 
         if (listToKill.length > 0) {
-          var array = new IArray(listToKIll, true);
+          let array = new IArray(listToKIll, true);
         }
         try {
           session.releaseRefs(array, false);
-        } catch(e){
+        } catch (e) {
           debug('Session - Release_References_TimerTask:run() - Exception in internal GC ' + String(e));
         }
         i++;
       }
-    } catch (e){
+    } catch (e) {
       debug('Session - Release_References_TimerTask:run() - Exception in internal GC ' + String(e));
     }
   }
 
+  /**
+   *
+   * @param {String} targetServer
+   */
   setTargetServer(targetServer) {
     if (targetServer == '127.0.0.1') {
       this.targetServer = String(ip.address());
@@ -208,104 +226,143 @@ class Session {
     }
   }
 
+  /**
+   * @return {Array}
+   */
   getLocalHostAddressAsIp() {
     return this.localhost;
   }
 
+  /**
+   * @return {String}
+   */
   getLocalHostAsIpString() {
     return this.localhostStr;
   }
 
+  /**
+   * @return {String}
+   */
   getLocalHostCanonicalAddressAsString() {
     return this.localhostStr2;
   }
 
+  /**
+   * @return {String}
+   */
   getTargetServer() {
     return this.targetServer;
   }
 
+  /**
+   * @return {Number}
+   */
   getOxidResolverPort() {
-    return oxidResolverPort;
+    return this.oxidResolverPort;
   }
 
+  /**
+   * @return {Object}
+   */
   getAuthInfo() {
     return this.authInfo;
   }
 
-  createSession(){
+  /**
+   * Creates a session
+   * @return {Session}
+   */
+  createSession() {
     if (arguments.length == 0) {
-      var session = new Session();
+      let session = new Session();
       session.sessionIdentifier = ObjHash(new Object()) ^ Math.random();
       session.isSSO = true;
 
-      this.mapofSessionIdsVsSessions.put(new Number(session.sessionIdentifier), session);
+      this.mapofSessionIdsVsSessions.put(
+          new Number(session.sessionIdentifier), session);
       this.listOfSessions.push(session);
 
       return session;
     } else if (arguments.length == 1) {
-      var newSession = this.createSession(session.getDomain(), session.getUserName(), sesson.getPassword());
+      let newSession = this.createSession(
+          session.getDomain(), session.getUserName(), sesson.getPassword());
       newSession.authInfo = session.authInfo;
       return newSession;
     } else if (arguments.length == 3) {
-      if (arguments[0] == null || arguments[1] == null || arguments[2] == null) {
+      if (arguments[0] == null || arguments[1] == null ||
+          arguments[2] == null) {
         throw new Error(new ErrorCodes().AUTH_NOT_SUPPLIED);
       }
 
-      var session = new Session();
+      let session = new Session();
       session.username = arguments[1];
       session.password = arguments[2];
       session.domain = arguments[0];
-      session.sessionIdentifier = ObjHash(session.username) ^ ObjHash(session.password) ^ ObjHash(session.domain) ^ ObjHash(new Object()) ^ Math.random();
+      session.sessionIdentifier = ObjHash(session.username) ^
+        ObjHash(session.password) ^
+        ObjHash(session.domain) ^ ObjHash(new Object()) ^ Math.random();
 
-      this.mapofSessionIdsVsSessions.set(new Number(session.sessionIdentifier), session);
+      this.mapofSessionIdsVsSessions.set(
+          new Number(session.sessionIdentifier), session);
       this.listOfSessions.push(session);
       return session;
     }
   }
 
+  /**
+   * @return {Boolean}
+   */
   isSSOEnalbed() {
     return this.isSSO;
   }
 
+  /**
+   * Given a session object, releases all references and closes all connections
+   * associated with it.
+   * @param {Session} session
+   * @return {null}
+   */
   async destroySession(session) {
     if (session == null) {
       return;
     }
 
     if (session.stub == null) {
-      this.mapofSessionIdsVsSessions.delete(Number(session.getSessionIdentifier()));
+      this.mapofSessionIdsVsSessions.delete(
+          Number(session.getSessionIdentifier()));
       this.listOfSessions.remove(session);
 
       await this.postDestroy(session);
       return;
     }
 
-    
-    var list = new Array();
-    var listOfFreeIPIDs = new Array();
+
+    let list = [];
+    let listOfFreeIPIDs = [];
 
     if (session.sessionInDestroy) {
       return;
     }
 
-    for (var j = 0; j < session.listOfDeferencedIpids.length; i++){
+    for (let j = 0; j < session.listOfDeferencedIpids.length; i++) {
       list.push(session.prepareForReleaseRef(
-        String(session.listOfDeferencedIpids[session.listOfDeferencedIpids.indexOf(j)])
+          String(session.listOfDeferencedIpids[
+              session.listOfDeferencedIpids.indexOf(j)])
       ));
     }
 
-    for (var i = 0; i < session.listOfDeferencedIpids.length; i++) {
+    for (let i = 0; i < session.listOfDeferencedIpids.length; i++) {
       listOfFreeIPIDs.push(session.listOfDeferencedIpids[i]);
     }
-    session.listOfDeferencedIpids = new Array();
+    session.listOfDeferencedIpids = [];
 
-    var entries = this.mapOfObjects.entries();
-    for (var i = 0; i < entries.length; i++) {
-      var holder = entries[i][1];
+    let entries = this.mapOfObjects.entries();
+    for (let i = 0; i < entries.length; i++) {
+      let holder = entries[i][1];
       if (session.getSessionIdentifier() != Number(holder.sessionID)) {
         continue;
       }
-      var ipid = holder.IPID;
+      let ipid = holder.IPID;
       if (ipid == null) {
         continue;
       }
@@ -315,9 +372,12 @@ class Session {
     }
 
     if (session.stub.getServerInterfacePointer() != null) {
-      if (!listOfFreeIPIDs.includes(session.stub.getServerInterfacePointer().getIPID())) {
-        list.push(session.prepareForReleaseRef(session.stub.getServerInterfacePointer().getIPID()));
-        listOfFreeIPIDs.push(session.stub.getServerInterfacePointer().getIPID());
+      if (!listOfFreeIPIDs.includes(
+          session.stub.getServerInterfacePointer().getIPID())) {
+        list.push(session.prepareForReleaseRef(
+            session.stub.getServerInterfacePointer().getIPID()));
+        listOfFreeIPIDs.push(
+            session.stub.getServerInterfacePointer().getIPID());
       }
     }
 
@@ -329,19 +389,20 @@ class Session {
         temporary.push(new ComValue(list[i], types.STRUCT));
       }
       let temp = new ComValue(temporary, types.STRUCT);
-      var array = new ComArray(temp, true);
-      
+      let array = new ComArray(temp, true);
+
       // im not sure if this stub should be closed if we still have refs to release
-      //await session.stub.closeStub();
+      // await session.stub.closeStub();
       let self = this;
-      await session.releaseRefs(array, true).then(async function(data){
-        self.mapofSessionIdsVsSessions.delete(new Number(session.getSessionIdentifier()));
+      await session.releaseRefs(array, true).then(async function(data) {
+        self.mapofSessionIdsVsSessions.delete(
+            new Number(session.getSessionIdentifier()));
         self.removeSession(session);
 
         if (session.stub.getServerInterfacePointer() != null) {
           self.mapOfOxidsVsSessions.delete(new Oxid(session.stub.getServerInterfacePointer().getOXID()));
         }
-        // pushing the stubs to be close here guarantee that nothing else will remain on this session before 
+        // pushing the stubs to be close here guarantee that nothing else will remain on this session before
         // actually closing the connection
         await session.stub.closeStub();
         await session.stub2.closeStub();
@@ -350,9 +411,9 @@ class Session {
         session.stub = null;
         session.stub2 = null;
       })
-      .catch(function(reject){
-        debug(reject);
-      });
+          .catch(function(reject) {
+            debug(reject);
+          });
     }
   }
 
@@ -369,8 +430,12 @@ class Session {
     }
   }
 
+  /**
+   * Procedure to guarantee that the given session was really ended.
+   * @param {Session} session
+   */
   async postDestroy(session) {
-    for (var i = 0; i < session.links.length; i++) {
+    for (let i = 0; i < session.links.length; i++) {
       await this.destroySession(session.links.get(i));
     }
 
@@ -378,42 +443,76 @@ class Session {
     await this.pingResolver.destroySessionOIDs(this);
   }
 
+  /**
+   *
+   * @param {Array} stub
+   */
   setStub(stub) {
     this.stub = stub;
-    this.mapOfOxidsVsSessions.set(new Oxid(stub.getServerInterfacePointer().getOXID()), this);
+    this.mapOfOxidsVsSessions.set(
+        new Oxid(stub.getServerInterfacePointer().getOXID()), this);
   }
 
+  /**
+   *
+   * @param {Array} stub
+   */
   setStub2(stub) {
     this.stub2 = stub;
   }
 
+  /**
+   * @return {Array}
+   */
   getStub() {
     return this.stub;
   }
 
+  /**
+   * @return {Array}
+   */
   getStub2() {
     return this.stub2;
   }
 
+  /**
+   *
+   * @param {ComObject} comObject
+   * @param {Object} oid
+   */
   addToSession(comObject, oid) {
     if (this.sessionInDestroy) {
       return;
     }
 
     this.addWeakReference(comObject, oid);
-    this.addToSessionIPID(comObject.getIpid(), oid, comObject.internal_getInterfacePointer().getObjectReference(InterfacePointer.OBJREF_STANDARD).getFlags() == 0x00001000);
+    this.addToSessionIPID(comObject.getIpid(), oid,
+        comObject.internal_getInterfacePointer().getObjectReference(
+            InterfacePointer.OBJREF_STANDARD).getFlags() == 0x00001000);
 
-    var refCount =  comObject.internal_getInterfacePointer().getObjectReference(InterfacePointer.OBJREF_STANDARD).getPublicRefs();
+    let refCount =  comObject.internal_getInterfacePointer().getObjectReference(
+        InterfacePointer.OBJREF_STANDARD).getPublicRefs();
     this.updateReferenceForIPID(comObject.getIpid(), refCount);
   }
 
+  /**
+   *
+   * @param {String} IPID
+   * @param {Object} obj
+   * @param {Number} refcount
+   */
   async addRef_ReleaseRef(IPID, obj, refcount) {
     this.updateReferenceForIPID(IPID, refcount);
     await this.getStub2().addRef_ReleaseRef(obj);
   }
 
+  /**
+   *
+   * @param {String} ipid
+   * @param {Number} refcount
+   */
   updateReferenceForIPID(ipid, refcount) {
-    var value = this.mapOfIPIDsVsRefcounts.get(ipid);
+    let value = this.mapOfIPIDsVsRefcounts.get(ipid);
     if (value == null) {
       if (refcount < 0) {
         debug('[updateReferenceForIPID] Released IPID not found: ' + ipid);
@@ -423,7 +522,7 @@ class Session {
       }
     }
 
-    var newCount = value + refcount;
+    let newCount = value + refcount;
     if (newCount > 0) {
       this.mapOfIPIDsVsRefcounts.set(ipid, newCount);
     } else {
@@ -431,55 +530,75 @@ class Session {
     }
   }
 
+  /**
+   *
+   * @param {ComObject} comObject
+   * @param {Object} oid
+   */
   addWeakReference(comObject, oid) {
-    var holder = new IPID_SessionID_Holder(comObject.getIpid(), this.getSessionIdentifier(), false, oid);
+    let holder = new IPID_SessionID_Holder(comObject.getIpid(),
+        this.getSessionIdentifier(), false, oid);
     this.mapOfObjects.set([comObject, this.referenceQueueOfCOMObjects], holder);
 
-    var count = this.mapOfIPIDsvsWeakReferences.get(comObject.getIpid());
+    let count = this.mapOfIPIDsvsWeakReferences.get(comObject.getIpid());
     if (count = null) {
       count = new Number(0);
     }
-    this.mapOfIPIDsvsWeakReferences.set(comObject.getIpid(), new Number(count + 1));
+    this.mapOfIPIDsvsWeakReferences.set(
+        comObject.getIpid(), new Number(count + 1));
   }
 
+  /**
+   *
+   * @param {String} ipid
+   */
   removeWeakReference(ipid) {
-    var weakRefsRemaining = 0;
-    var count = this.mapOfIPIDsvsWeakReferences.get(ipid);
+    let weakRefsRemaining = 0;
+    let count = this.mapOfIPIDsvsWeakReferences.get(ipid);
     if (count = 0) {
       weakRefsRemaining = 0;
     } else {
       weakRefsRemaining = count - 1;
       if (weakRefsRemaining > 0) {
-        this.mapOfIPIDsvsWeakReferences.set(ipid, new Number(weakRefsRemaining));
+        this.mapOfIPIDsvsWeakReferences.set(ipid,
+            new Number(weakRefsRemaining));
       } else {
         this.mapOfIPIDsvsWeakReferences.delete(ipid);
       }
     }
   }
 
+  /**
+   *
+   * @param {String} IPID
+   * @param {Object} oid
+   * @param {Boolean} dontping
+   */
   addToSessionIPID(IPID, oid, dontping) {
     if (dontping) {
       if (this.sessionInDestroy) return;
 
       this.addWeakReference(IPID, oid);
 
-      //this.addToSession(IPID.getIpid(), oid,
+      // this.addToSession(IPID.getIpid(), oid,
       // IPID.internal_getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD)).getFlags() == 0x00001000);
-      let refcount = IPID.internal_getInterfacePointer().getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
+      let refcount = IPID.internal_getInterfacePointer().getObjectReference(
+          new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
       this.updateReferenceForIPID(IPID.getIpid(), refcount);
     } else {
       let joid = new ObjectId([...oid], dontping);
       this.addPingObject(this, IPID, joid);
-      //ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
-      debug('addToSession: Adding IPID: ' + IPID + ' to session: ' + this.getSessionIdentifier());
+      // ComOxidRuntime.addUpdateOXIDs(this, IPID, joid);
+      debug('addToSession: Adding IPID: ' + IPID + ' to session: ' +
+        this.getSessionIdentifier());
     }
   }
 
   /**
-   * 
+   *
    * @param {Session} session
-   * @param {ComObjImpl} IPID 
-   * @param {ObjectId} oid 
+   * @param {ComObjImpl} IPID
+   * @param {ObjectId} oid
    */
   addPingObject(session, IPID, oid) {
     let holder = this.mapOfSessionvsIPIDPingHolders.get(session);
@@ -488,7 +607,7 @@ class Session {
       holder.username = session.getUserName();
       holder.password = session.getPassword();
       holder.domain = session.getDomain();
-      // we are using the static part to add it to the hash since using 
+      // we are using the static part to add it to the hash since using
       // the whole object was problematic since a single change caused it
       // to add the same IPID more than once because of lastpingtime
       holder.currentSetOIDs.set(oid.oid, oid);
@@ -506,22 +625,30 @@ class Session {
     oid.incrementIPIDRefCountBy1();
   }
 
-  async releaseRefs(IPID, numinstances){
+  /**
+   *
+   * @param {String} IPID
+   * @param {Number} numinstances
+   */
+  async releaseRefs(IPID, numinstances) {
     numinstances = (numinstances == undefined) ? 5 : numinstances;
 
-    debug('releaseRef: Reclaiming from Session: ' + this.getSessionIdentifier()
-      + ' , the IPID: ' + IPID + ', numinstances is ' + numinstances);
+    debug('releaseRef: Reclaiming from Session: ' +
+      this.getSessionIdentifier() + ' , the IPID: ' +
+      IPID + ', numinstances is ' + numinstances);
 
-    var obj = new CallBuilder(true);
+    let obj = new CallBuilder(true);
     obj.setParentIpid(IPID);
     obj.setOpnum(2);
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    var array = new ComArray([new UUID(IPID)], true);
+    let array = new ComArray([new UUID(IPID)], true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
     obj.addInParamAsInt(numinstances, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
-    debug('releaseRef: Releasing numinstances ' + numinstances + ' references of IPID: ' + IPID + ' session: ' + thisgetSessionIdentifier())
+    debug('releaseRef: Releasing numinstances ' + numinstances +
+     ' references of IPID: ' + IPID + ' session: ' +
+     this.getSessionIdentifier());
     await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
@@ -535,7 +662,7 @@ class Session {
 
     obj.setParentIpid(IPID);
     obj.setOpnum(2);
-    
+
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
     let array = new ComArray(new ComValue([new UUID(IPID)], types.UUID), true);
@@ -547,74 +674,116 @@ class Session {
     await this.addRef_ReleaseRef(IPID, obj, -5);
   }
 
+  /**
+   *
+   * @param {String} IPID
+   */
   addDeferencedIpids(IPID) {
-    debug('addDereferencedIpids for session : ' + getSessionIdentifier() + ' , IPID is: ' + IPID);
+    debug('addDereferencedIpids for session : ' +
+      getSessionIdentifier() + ' , IPID is: ' + IPID);
     if (!this.listOfDeferencedIpids.includes(IPID)) {
       this.listOfDeferencedIpids.push(IPID);
     }
   }
 
+  /**
+   *
+   * @param {Array} arrayOfStructs
+   * @param {Boolean} fromDestroy
+   */
   async releaseRefs(arrayOfStructs, fromDestroy) {
-    	debug('In releaseRefs for session : ' + this.getSessionIdentifier()
-        + ' , array length is: ' + Number(arrayOfStructs.getArrayInstance().length));
+    debug('In releaseRefs for session : ' + this.getSessionIdentifier() +
+      ' , array length is: ' +
+      Number(arrayOfStructs.getArrayInstance().length));
 
-      var obj = new CallBuilder(true);
-      obj.setOpnum(2);
+    let obj = new CallBuilder(true);
+    obj.setOpnum(2);
 
-      obj.addInParamAsShort(arrayOfStructs.getArrayInstance().length, Flags.FLAG_NULL);
-      obj.addInParamAsArray(arrayOfStructs, Flags.FLAG_NULL);
-      obj.fromDestroySession = fromDestroy;
-      await this.stub.addRef_ReleaseRef(obj);
+    obj.addInParamAsShort(
+        arrayOfStructs.getArrayInstance().length, Flags.FLAG_NULL);
+    obj.addInParamAsArray(arrayOfStructs, Flags.FLAG_NULL);
+    obj.fromDestroySession = fromDestroy;
+    await this.stub.addRef_ReleaseRef(obj);
   }
 
+  /**
+   *
+   * @param {String} IPID
+   * @param {Number} refcount
+   * @return {Struct}
+   */
   prepareForReleaseRef(IPID, refcount) {
     if (refcount == undefined) {
-      var refCount = this.mapOfIPIDsVsRefcounts.get(IPID);
-      var releaseCount = 5 + 5;
+      let refCount = this.mapOfIPIDsVsRefcounts.get(IPID);
+      let releaseCount = 5 + 5;
       if (refCount != null) {
         refcount = refCount;
       }
     }
 
-    var remInterface = new Struct();
+    let remInterface = new Struct();
     remInterface.addMember(new ComValue(new UUID(IPID), types.UUID));
     remInterface.addMember(refcount);
     remInterface.addMember(0);
-    debug('prepareForReleaseRef: Releasing ' + refcount + ' references of IPID: '
-      + IPID + ' session: ' + this.getSessionIdentifier());
+    debug('prepareForReleaseRef: Releasing ' +
+      refcount + ' references of IPID: ' +
+      IPID + ' session: ' + this.getSessionIdentifier());
     this.updateReferenceForIPID(IPID, -1 * refcount);
 
     return remInterface;
   }
 
+  /**
+   * @return {String}
+   */
   getUserName() {
     return this.authInfo == null ? this.username : this.authInfo.getUserName();
   }
 
+  /**
+   * @return {String}
+   */
   getPassword() {
     return this.authInfo == null ? this.password : this.authInfo.getPassword();
   }
 
+  /**
+   * @return {String}
+   */
   getDomain() {
     return this.authInfo == null ? this.domain : this.authInfo.getDomain();
   }
 
+  /**
+   * @return {Number}
+   */
   getSessionIdentifier() {
     return this.sessionIdentifier;
   }
 
+  /**
+   *
+   * @param {Object} obj
+   * @return {Boolean}
+   */
   equals(obj) {
     if (obj == null || !(obj instanceof Session)) {
       return false;
     }
-    var temp = obj;
+    let temp = obj;
     return temp.sessionIdentifier == this.sessionIdentifier;
   }
 
+  /**
+   * @return {Number}
+   */
   hashCode() {
     return this.sessionIdentifier;
   }
 
+  /**
+   * Alias to destroySession
+   */
   async finalize() {
     try {
       await destroySession(this);
@@ -623,42 +792,82 @@ class Session {
     }
   }
 
+  /**
+   *
+   * @param {String} ipid
+   * @return {String}
+   */
   getUnreferencedHandler(ipid) {
     return this.mapOfUnreferencedHandlers.get(ipid);
   }
 
+  /**
+   *
+   * @param {String} ipid
+   * @param {Number} unreferenced
+   */
   registerUnreferencedHandler(ipid, unreferenced) {
     this.mapOfUnreferencedHandlers.set(ipid, unreferenced);
   }
 
+  /**
+   *
+   * @param {String} ipid
+   */
   unregisterUnreferencedHandler(ipid) {
     this.mapOfUnreferencedHandlers.delete(ipid);
   }
 
+  /**
+   *
+   * @param {Number} timeout
+   */
   setGlobalSocketTimeout(timeout) {
     this.timeout = timeout;
   }
 
+  /**
+   * @return {Number}
+   */
   getGlobalSocketTimeout() {
     return this.timeout;
   }
 
+  /**
+   *
+   * @param {Boolean} enable
+   */
   useSessionSecurity(enable) {
     this.useSessionSecurity = enable;
   }
 
+  /**
+   *
+   * @param {Boolean} enable
+   */
   useNTLMv2(enable) {
     this.useNTLMv2 = enable;
   }
 
+  /**
+   * @return {Number}
+   */
   isSessionSecurityEnabled() {
     return !this.isSSO & this.useSessionSecurity;
   }
 
+  /**
+   * @return {Number}
+   */
   isNTLMv2Enabled() {
     return !this.isSSO & this.useNTLMv2;
   }
 
+  /**
+   *
+   * @param {Session} src
+   * @param {Session} target
+   */
   linkTwoSessions(src, target) {
     if (src.sessionInDestroy || target.sessionInDestroy) {
       return;
@@ -673,34 +882,69 @@ class Session {
     }
   }
 
+  /**
+   *
+   * @param {Session} src
+   * @param {Session} tobeunlinked
+   */
   unlinkSession(src, tobeunlinked) {
-    if (src.sessionInDestroy)
-			return;
+    if (src.sessionInDestroy) {
+		  return;
+    }
 
-		if (src.equals(tobeunlinked))
+		if (src.equals(tobeunlinked)) {
 			return;
-
+    }
 		src.links.remove(tobeunlinked);
   }
 
+  /**
+   *
+   * @param {Object} oxid
+   * @return {Object}
+   */
   resolveSessionForOxid(oxid) {
     return this.mapOfOxidsVsSessions.get(oxid);
   }
 
+  /**
+   * @return {Boolean}
+   */
   isSessionInDestroy() {
     return this.sessionInDestroy;
   }
 
+  /**
+   *
+   * @param {Clsid} CLSID
+   * @param {Object} customClass
+   */
   registerCustomMarshallerUnMarshalerTemplate(CLSID, customClass) {
     this.mapOfCustomCLSIDs.put(CLSID.toLowerCase(), customClass);
   }
 
+  /**
+   * @param {Clsid} CLSID
+   * @return {Clsid}
+   */
   getCustomMarshallerUnMarshallerTemplate(CLSID) {
     return this.mapOfCustomCLSIDs(CLSID.toLowerCase());
   }
 }
 
+/**
+ * This class represents a sessionID holder
+ * and stores information about a session and
+ * it's IPIDs
+ */
 class IPID_SessionID_Holder {
+  /**
+   *
+   * @param {String} IPID
+   * @param {Number} sessionID
+   * @param {Boolean} isOnlySessionId
+   * @param {Object} oid
+   */
   constructor(IPID, sessionID, isOnlySessionId, oid) {
     this.IPID = IPID;
     this.sessionID = new Number(sessionID);
@@ -708,7 +952,14 @@ class IPID_SessionID_Holder {
   }
 }
 
+/**
+ * This class represents a group of objects
+ * which reference is meant to be kept "alive" .
+ */
 class IPID_PingHolder {
+  /**
+   * Initializes a few variables. Takes no input parameters.
+   */
   constructor() {
     this.username;
     this.password;
@@ -722,7 +973,7 @@ class IPID_PingHolder {
   }
 }
 
-//emulate static members
+// emulate static members
 Session.resolveSessionForOxid = Session.prototype.resolveSessionForOxid;
 Session.unlinkSession = Session.prototype.unlinkSession;
 Session.linkTwoSessions = Session.prototype.linkTwoSessions;

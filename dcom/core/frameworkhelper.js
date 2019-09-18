@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 // @ts-check
 const Session = require('./session');
 const ComObject = require('./comobject');
@@ -34,7 +35,7 @@ async function instantiateComObject(session, obj, ipAddress) {
         let retval = instantiateComObject2(session, obj);
         addComObjectToSession(retval.getAssociatedSession(), retval);
         return retval;
-    } 
+    }
 
 
     let ndr = new NetworkDataRepresentation();
@@ -55,7 +56,7 @@ async function instantiateComObject(session, obj, ipAddress) {
 }
 
 /**
- * 
+ *
  * @param {Session} session
  * @param {InterfacePointer} ptr
  * @return {ComObject}
@@ -71,7 +72,7 @@ function instantiateComObject2(session, ptr) {
         // NEW SESSION IDENTIFIED ! for ptr
 
         // first check if a session for this OXID does not already exist and thus its stub
-        let newsession = Session.resolveSessionForOxid(new JIOxid(ptr.getOXID()));
+        let newsession = Session.resolveSessionForOxid(new Oxid(ptr.getOXID()));
         if (!newsession) {
             // new COM server pointer
             newsession = Session.createSession(session);
@@ -95,7 +96,7 @@ function instantiateComObject2(session, ptr) {
 }
 
 /**
- * 
+ *
  * @param {Session} session
  * @param {ComObject} comObject
  */
@@ -104,15 +105,15 @@ function addComObjectToSession(session, comObject) {
 }
 
 
-/** Returns an Interface Pointer representation for the Java Component
+/**
  *
  * @exclude
  * @param {Session} session
- * @param {LocalCoClass} javaComponent
+ * @param {Object} component
  * @return {ComObject}
  */
-function instantiateLocalComObject(session, javaComponent) {
-    return new ComObjectImpl(session, ComOxidRuntime.getInterfacePointer(session, javaComponent), true);
+function instantiateLocalComObject(session, component) {
+    return new ComObjectImpl(session, ComOxidRuntime.getInterfacePointer(session, component), true);
 }
 
 /**
