@@ -54,7 +54,7 @@ class DefaultConnection
       if (index >= pdu_length) {
         throw new Error("No such element.");
       }
-
+      
       // we cannot rely fully on Object.assign() so do it step by step
       let fragment = new RequestCoPdu();
       fragment.setContextId(pdu.getContextId());
@@ -84,8 +84,6 @@ class DefaultConnection
 
       this.transmitFragment(fragment, transport, info);
     }
-
-
   }
 
   async receive(transport)
@@ -94,7 +92,7 @@ class DefaultConnection
     // flag indicating if this is a single packet
     var first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
     var last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
-    var flag =  first && last;      
+    var flag =  first && last;
     
     if (!this.bytesRemainingInReceiveBuffer && flag){
       return fragment;
@@ -163,7 +161,7 @@ class DefaultConnection
           while (this.receiveBuffer.length <= new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET){
             var tmpBuffer = new NdrBuffer([10], 0);
             await transport.receive(tmpBuffer);
-
+            console.log("splice");
             var aux = tmpBuffer.buf.slice(0, tmpBuffer.length);
             var aux_i = 0;
             while (aux.length > 0)
@@ -200,6 +198,7 @@ class DefaultConnection
         var remainingBytes = fragmentLength - this.receiveBuffer.length;
 
         while (fragmentLength > counter){
+          console.log("splice");
           var aux = this.receiveBuffer.buf.slice(0, lengthOfArrayTobeRead);
           var aux_i = counter;
           while(aux.length > 0)
@@ -223,15 +222,13 @@ class DefaultConnection
 
         }
       } else {
-        var aux = this.receiveBuffer.buf.slice(0, fragmentLength);
-        var aux_i = 0;
+        newBuffer = this.receiveBuffer.buf.slice(0, fragmentLength);
 
-        while(aux.length > 0)
-          newBuffer.splice(aux_i++, 1, aux.shift());
         trimSize = this.receiveBuffer.length - fragmentLength;
       }
 
       if (trimSize > 0){
+        let aux;
         aux = this.receiveBuffer.buf.slice(this.receiveBuffer.length - trimSize, ((this.receiveBuffer.length - trimSize) + trimSize));
         this.receiveBuffer.buf = aux;
         //while (aux.length > 0)

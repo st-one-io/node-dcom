@@ -843,7 +843,11 @@ class CallBuilder extends NdrObject {
 					let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, this.outparamFlags[index], additionalData);
 					listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); //this should replace the value in the original place.	
 					x++;
-					listOfDefferedPointers.splice(x, 0, ...newList);
+					let begin = listOfDefferedPointers.slice(0, x);
+					let end = listOfDefferedPointers.slice(x, listOfDefferedPointers.length);
+					let middle = newList;
+					listOfDefferedPointers = begin.concat(middle.concat(end));
+					//listOfDefferedPointers.splice(x, 0, ...newList);
 				}
 				index++;
 			}

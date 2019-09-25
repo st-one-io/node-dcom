@@ -132,7 +132,8 @@ NdrBuffer.prototype.enc_ndr_small = function (s){
 
 NdrBuffer.prototype.dec_ndr_small = function (){
   let val = this.buf[this.index] & 0xFF;
-  let val2 = Buffer.from(this.buf).readUInt8(this.index);
+  //let val2 = Buffer.from(this.buf).readUInt8(this.index);
+  //console.log(val, val2);
   this.advance(1);
   return val;
 }

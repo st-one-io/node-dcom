@@ -237,7 +237,7 @@ class Session
   setTargetServer(targetServer)
   {
     if (targetServer == "127.0.0.1") {
-      this.targetServer = String(ip.address());
+      this.targetServer = String(Ip.address());
     } else {
       this.targetServer = targetServer;
 

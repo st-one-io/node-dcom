@@ -88,13 +88,13 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     }
     
     await this.send(request, info);
-
+    
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
     var rply = await this.receive()
     .catch(function(error){
       console.log(error);
     });
-    
+    //console.log(rply);
     if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
       buffer = new NdrBuffer(rply.getStub(), 0);

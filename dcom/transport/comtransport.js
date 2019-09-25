@@ -27,7 +27,7 @@ class ComTransport extends events.EventEmitter
     this.readReadyHandoffTimeoutSecs = this.DEFAULT_READ_READY_HANDOFF_TIMEOUT_SECS;
     this.channelWrapper;
     this.recvPromise = null;
-    this.receivedBuffer = new Array();
+    this.receivedBuffer = Buffer.from('');
     this.aux;
     this.timeout = timeout;
     this.parse(address);
@@ -99,7 +99,7 @@ class ComTransport extends events.EventEmitter
       */
       channel.on('data', function(data){
         if (self.recvPromise == null) {
-          self.receivedBuffer.concat(data);
+          self.receivedBuffer = Buffer.concat([self.receivedBuffer,data]);
         } else {
           self.recvPromise.resolve(data);
           self.recvPromise = null;
@@ -162,16 +162,7 @@ class ComTransport extends events.EventEmitter
     if (!this.attached) {
       throw new Error("Transport not attached.");
     }
-    /**
-     * FIXME this await won't work. To make an awaitable receive function
-     * we need to listen on the 'data' event at socket creation time create
-     * a synchronization mechanism: store the received data, and everytime
-     * this here is called, check if there's anything stored, sending it;
-     * and storing the "resolve" of the created promise, calling it whenever
-     * the 'data' event is fired, with the received buffer
-     */
-
-    
+   
     let self = this;
     this.timeout;
     return new Promise(function(resolve, reject){
@@ -179,10 +170,12 @@ class ComTransport extends events.EventEmitter
         clearTimeout(timer);
         reject(new Error('connection timeout'));
       }, self.timeout);
-
+      
       if (self.receivedBuffer.length > 0) {
         clearTimeout(timer);
-        resolve(buffer = self.receivedBuffer);
+        let ret = self.receivedBuffer;
+        self.receivedBuffer = Buffer.from('');
+        resolve(ret);
       } else {
         if (self.recvPromise == null){
           self.recvPromise = {resolve: resolve, reject: reject, timer: timer};  
