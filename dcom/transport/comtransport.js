@@ -151,7 +151,7 @@ class ComTransport extends events.EventEmitter
     let length = buffer.length;
     
     try{
-      this.channelWrapper.write(Buffer.from(buf.slice(0, length)));
+      this.channelWrapper.write(buf.slice(0, length));
     } catch(e){
       debug(e);
     }

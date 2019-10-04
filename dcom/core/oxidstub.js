@@ -81,15 +81,15 @@ class OXIDStub extends Stub{
         let info = oxid.info;
         let timeout = oxid.server.session.timeout;
         debug("sending ping");
-        console.log("SENDING PING!");
+        //console.log("SENDING PING!");
         await oxid.call(Endpoint.IDEMPOTENT, pingObject, info, timeout)
           .catch(function(reject) {
             debug(new Error("Ping: " + reject));
-            console.log("ERRO");
+            //console.log("ERRO");
             clearInterval(oxid.timer);
           });
         holder.setId = pingObject.setId;
-        console.log("PING SUCCESSFULL");
+        //console.log("PING SUCCESSFULL");
         clearInterval(oxid.timer);
         oxid.timer = setTimeout(oxid.pingIPIDS, 120000, oxid)
         holder.modified = false;

@@ -40,9 +40,10 @@ class UUID{
     //dst.enc_ndr_short(this.node3);
 
     let begin = dst.buf.slice(0, dst.index);
-    let end = dst.buf.slice(dst.index, dst.length);
-    let middle = this.node.slice(0, 6);
-    dst.buf = begin.concat(middle.concat(end));
+    let end = dst.buf.slice((this.node.length + dst.index), dst.buf.byteLength);
+    let middle = Buffer.from(this.node.slice(0, 6));
+    dst.buf = Buffer.concat([begin, middle, end]);
+    //dst.buf = begin.concat(middle.concat(end));
     
     dst.index += 6;
   }
@@ -54,10 +55,7 @@ class UUID{
     this.clockSeqHighAndReserved = src.dec_ndr_small();
     this.clockSeqLow = src.dec_ndr_small();
 
-    var temp = src.buf.slice(src.index, (src.index + 6));
-    var temp_index= 0;
-    while(temp.length > 0)
-      this.node.splice(temp_index++, 1, temp.shift());
+    this.node = src.buf.slice(src.index, (src.index + 6));
     src.index += 6;
   }
 

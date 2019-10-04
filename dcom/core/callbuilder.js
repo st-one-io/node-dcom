@@ -639,7 +639,7 @@ class CallBuilder extends NdrObject {
 		//reset buffer size here...
 		//calculate rough length required length + 16 for the last bytes
 		//plus adding 30 more for the verifier etc. 
-		ndr.getBuffer().buf = new Array(this.bufferLength() + 16);
+		ndr.getBuffer().buf = Buffer.from(new Array(this.bufferLength() + 16));
 
 		let orpcthis = new OrpcThis();
 		orpcthis.encode(ndr);
@@ -753,6 +753,12 @@ class CallBuilder extends NdrObject {
 							let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, this.outparamFlags[index], additionalData);
 							listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); //this should replace the value in the original place.	
 							x++;
+							/*let begin = listOfDefferedPointers.slice(0, x);
+							let end = listOfDefferedPointers.slice(x, listOfDefferedPointers.length);
+							let middle = newList;
+							middle.push(...end);
+      						begin.push(...middle);
+							listOfDefferedPointers = begin;*/
 							listOfDefferedPointers.splice(x, 0, ...newList);
 						}
 						index++;

@@ -74,7 +74,6 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     ndrobj.encode(ndr, buffer);
     let stub = new Array(buffer.getLength());
     let aux = buffer.buf.slice(0, stub.length);
-    let aux_i = 0;
     //while (aux.length > 0)
       //stub.splice(aux_i++, 1, aux.shift());
 

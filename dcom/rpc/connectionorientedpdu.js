@@ -174,7 +174,6 @@ class ConnectionOrientedPdu {
     ndr.writeUnsignedShort(0); //frag length, to be later overriden
     ndr.writeUnsignedShort(0); //auth length, to be later overriden
     ndr.writeUnsignedLong(this.useCallIdCounter ? callIdCounter++ : this.callId);
-
   }
 
   readBody(ndr){

@@ -27,7 +27,7 @@ AuthenticationVerifier.prototype.decode = function (ndr, src) {
   src.dec_ndr_small();
   this.contextId = src.dec_ndr_long();
 
-  var temp = src.getBuffer().slice(src.getIndex(), src.getIndex() + this.body.length);
+  var temp = [...src.getBuffer().slice(src.getIndex(), src.getIndex() + this.body.length)];
   var temp_index= 0;
   while(temp.length > 0){
     this.body.splice(temp_index++, 1, temp.shift());
@@ -44,10 +44,11 @@ AuthenticationVerifier.prototype.encode = function (ndr, dst) {
   dst.enc_ndr_long(this.contextId);
   
   let begin = dst.buf.slice(0, dst.index);
-  let end = dst.buf.slice(dst.index, dst.length);
-  let middle = this.body;
+  let end = dst.buf.slice((this.body.length + dst.index), dst.buf.byteLength);
+  let middle = Buffer.from(this.body);
 
-  dst.buf = begin.concat(middle.concat(end));
+  dst.buf = Buffer.concat([begin, middle, end]);
+  //dst.buf = begin.concat(middle.concat(end));
   /*var temp = this.body.slice(0, this.body.length);
   var temp_index= dst.getIndex();
   

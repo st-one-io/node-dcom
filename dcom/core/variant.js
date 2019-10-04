@@ -1095,7 +1095,7 @@ class VariantBody
 
 		let variant = null;
 
-		var varDefferedPointers = new Array();
+		var varDefferedPointers = [];
 		if((variantType & Variant.VT_ARRAY) == 0x2000)
 		{
 			var isByRef = (variantType & Variant.VT_BYREF) == 0 ? false : true;
@@ -1173,7 +1173,10 @@ class VariantBody
       let begin = varDefferedPointers.slice(0, x);
       let end = varDefferedPointers.slice(x, varDefferedPointers.length);
       let middle = newList;
-      varDefferedPointers = begin.concat(middle.concat(end));
+      //varDefferedPointers = begin.concat(middle.concat(end));
+      middle.push(...end);
+      begin.push(...middle);
+      varDefferedPointers = begin;
 		}
 
 		if (variant.isArray && variant.safeArrayStruct != null)

@@ -65,7 +65,8 @@ class Struct {
     }
 
     // arrays can only be the last element of this struct.
-    if (member != undefined && member.constructor.name == "ComArray") {
+    //if (member != undefined && member.constructor.name == "ComArray") {
+    if (member != undefined && member.constructor.name == "ComArray") {  
       if (position != this.listOfMembers.length) {
         throw new Error("STRUCT_ARRAY_ONLY_AT_END" + new ErrorCodes().STRUCT_ARRAY_ONLY_AT_END);
       }
