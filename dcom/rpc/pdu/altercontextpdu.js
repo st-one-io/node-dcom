@@ -1,14 +1,18 @@
 // @ts-check
-const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
-const PresentationContext = require("../core/presentationcontext.js");
+const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
+const PresentationContext = require('../core/presentationcontext.js');
 
-class AlterContextPdu  extends ConnectionOrientedPdu{
-  constructor(){
+/**
+ * This class represents an AlterContext data packet
+ */
+class AlterContextPdu extends ConnectionOrientedPdu {
+  /**
+   * Initializes a few variables and receive no input parameter
+   */
+  constructor() {
     super();
-    this.ALTER_CONTEXT_TYPE = 0x0e;
-
     this.contextList;
-
+    this.type = 0x0e;
     this.maxTransmitFramgent = -1;
     this.maxReceiveFragment = -1;
 
@@ -16,92 +20,92 @@ class AlterContextPdu  extends ConnectionOrientedPdu{
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getType(){
-    return this.ALTER_CONTEXT_TYPE;
+  getType() {
+    return this.type;
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getMaxTransmitFramgent(){
+  getMaxTransmitFramgent() {
     return this.maxTransmitFramgent;
   }
 
   /**
-   * @param {Number} maxTransmitFramgent 
+   * @param {Number} maxTransmitFramgent
    */
-  setMaxTransmitFramgent(maxTransmitFramgent){
+  setMaxTransmitFramgent(maxTransmitFramgent) {
     this.maxTransmitFramgent = maxTransmitFramgent;
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getMaxReceiveFragment(){
+  getMaxReceiveFragment() {
     return this.maxReceiveFragment;
   }
 
   /**
-   * @param {Number} maxReceiveFragment 
+   * @param {Number} maxReceiveFragment
    */
-  setMaxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment) {
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getAssociationGroupId(){
+  getAssociationGroupId() {
     return this.associationGroupId;
   }
 
   /**
-   * 
-   * @param {Number} associationGroupId 
+   *
+   * @param {Number} associationGroupId
    */
-  setAssociationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId) {
     this.associationGroupId = associationGroupId;
   }
 
   /**
-   * @returns {Array}
+   * @return {Array}
    */
-  getContextList(){
+  getContextList() {
     return this.contextList;
   }
 
   /**
    * 
-   * @param {Array} contextList 
+   * @param {Array} contextList
    */
-  setContextList(contextList){
+  setContextList(contextList) {
     this.contextList = contextList;
   }
 
   /**
    * 
-   * @param {NetworkDataRepresentation} ndr 
+   * @param {NetworkDataRepresentation} ndr
    */
-  readBody(ndr){
+  readBody(ndr) {
     this.maxTransmitFramgent = ndr.readUnsingedShort();
     this.maxReceiveFragment = ndr.readUnsingedShort();
     this.associationGroupId = Number.parseInt(ndr.readUnsingedShort());
     let count = ndr.readUnsignedSmall();
     let contextList = [count];
-    for (let i = 0; i < count; i++){
+    for (let i = 0; i < count; i++) {
       contextList[i] = new PresentationContext();
       contextList[i].read(ndr);
     }
-    contextList(contextList);
+    this.setContextList(contextList);
   }
 
   /**
-   * 
-   * @param {NetworkDataRepresentation} ndr 
+   *
+   * @param {NetworkDataRepresentation} ndr
    */
-  writeBody(ndr){
+  writeBody(ndr) {
     let maxTransmitFramgent = this.getMaxTransmitFramgent();
     let maxReceiveFragment = this.getMaxReceiveFragment();
     ndr.writeUnsignedShort((maxTransmitFramgent == -1) ?
@@ -112,10 +116,11 @@ class AlterContextPdu  extends ConnectionOrientedPdu{
     let contextList = this.getContextList();
     let count = contextList.length;
     ndr.writeUnsignedSmall(count);
-    for (let i = 0; i < count; i++){
+    for (let i = 0; i < count; i++) {
       contextList[i].write(ndr);
     }
   }
 }
 
+AlterContextPdu.ALTER_CONTEXT_TYPE = 0x0e;
 module.exports = AlterContextPdu;

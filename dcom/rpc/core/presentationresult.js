@@ -1,7 +1,11 @@
-var PresentationSyntax = require("./presentationsyntax.js");
-var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
+// @ts-check
+const PresentationSyntax = require('./presentationsyntax.js');
+const NetworkDataRepresentation = require('../../ndr/networkdatarepresentation.js');
 
-function PresentationResult(){
+/**
+ * Initializes a few variables. Takes no input parameter.
+ */
+function PresentationResult() {
   this.ACCEPTANCE = 0;
 
   this.USER_REJECTION = 1;
@@ -18,10 +22,11 @@ function PresentationResult(){
 
   this.result = this.ACCEPTANCE;
   this.reason = this.REASON_NOT_SPECIFIED;
-  this.transferSyntax = new PresentationSyntax(new NetworkDataRepresentation().NDR_SYNTAX);
+  this.transferSyntax =
+    new PresentationSyntax(new NetworkDataRepresentation().NDR_SYNTAX);
 }
 
-PresentationResult.prototype.read = function (ndr) {
+PresentationResult.prototype.read = function(ndr) {
   ndr.getBuffer().align(4);
   this.result = ndr.readUnsignedShort();
   this.reason = ndr.readUnsignedShort();
@@ -30,13 +35,13 @@ PresentationResult.prototype.read = function (ndr) {
   this.transferSyntax.decode(ndr, ndr.getBuffer());
 };
 
-PresentationResult.prototype.write = function (ndr) {
+PresentationResult.prototype.write = function(ndr) {
   ndr.getBuffer().alignt(4, 0);
   ndr.writeUnsignedShort(this.result);
   ndr.writeUnsignedShort(this.reason);
 
-  if (this.transferSyntax != null){
-    transferSyntax.encode(ndr, ndr.getBuffer());
+  if (this.transferSyntax != null) {
+    this.transferSyntax.encode(ndr, ndr.getBuffer());
   }
 };
 

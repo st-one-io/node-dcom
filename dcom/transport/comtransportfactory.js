@@ -1,17 +1,31 @@
-var ComTransport = require('./comtransport.js');
+// @ts-check
+const ComTransport = require('./comtransport.js');
 
+/**
+ * Transport factory
+ */
 class ComTransportFactory {
-  constructor(){
+  /**
+   * Initializes the object. Takes no input parameters.
+   */
+  constructor() {
     this.instance;
   }
 
-  createTransport(address, timeout)
-  {
+  /**
+   *
+   * @param {String} address
+   * @param {Number} timeout
+   * @return {ComTransport}
+   */
+  createTransport(address, timeout) {
     return new ComTransport(address, timeout);
   }
 
-  getSingleton()
-  {
+  /**
+   * @return {ComTransportFactory}
+   */
+  getSingleton() {
     if (this.instance == null) {
       try {
         this.instance = new ComTransportFactory();
@@ -23,8 +37,10 @@ class ComTransportFactory {
     return this.instance;
   }
 
-  getSingleTon()
-  {
+  /**
+   * @return {ComTransportFactory}
+   */
+  getSingleTon() {
     return this.getSingleton();
   }
 }

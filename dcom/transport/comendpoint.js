@@ -1,14 +1,24 @@
-var ConnectionOrientedEndoint = require('../rpc/connectionorientedendpoint.js');
+// @ts-check
+let ConnectionOrientedEndoint = require('../rpc/connectionorientedendpoint.js');
 
-class ComEndpoint extends ConnectionOrientedEndoint
-{
-  constructor(transport, syntax)
-  {
+/**
+ * Abstraction for a ComEndpoint from ConnectionOrientedEndpoint
+ */
+class ComEndpoint extends ConnectionOrientedEndoint {
+  /**
+   *
+   * @param {ComTransport} transport
+   * @param {PresentationSyntax} syntax
+   */
+  constructor(transport, syntax) {
     super(transport, syntax);
   }
 
-  async rebindEndpoint(info)
-  {
+  /**
+   * Try to re-bind this endpoint to a remote interface.
+   * @param {Object} info
+   */
+  async rebindEndpoint(info) {
     await this.rebind(info);
   }
 }

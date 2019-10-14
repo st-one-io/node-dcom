@@ -1,15 +1,14 @@
+/* eslint-disable indent */
 // @ts-check
 
 /**
  * ServerActivation Interface
  */
-class ServerActivation
-{
+class ServerActivation {
     /**
      * constructor
      */
-    constructor()
-    {
+    constructor() {
         this.RPC_C_IMP_LEVEL_IDENTIFY = 2;
         this.TPC_C_IMP_LEVEL_IMPERSONATE = 3;
     }

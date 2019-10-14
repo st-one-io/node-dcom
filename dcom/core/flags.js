@@ -1,4 +1,4 @@
-//@ts-check
+// @ts-check
 
 module.exports = {
   FLAG_NULL: 0,

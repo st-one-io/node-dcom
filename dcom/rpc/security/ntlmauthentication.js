@@ -11,19 +11,19 @@ const Responses = require('./responses.js');
 /**
  *  NTLM Authentication class
  */
-class NTLMAuthentication
-{
+class NTLMAuthentication {
   /**
    *
-   * @param {Object} domain 
+   * @param {Object} domain
    */
-  constructor(domain)
-  {
+  constructor(domain) {
     this.AUTHENTICATION_SERVICE_NTLM = 10;
     this.UNICODE_SUPPORTED = true;
 
-    this.BASIC_FLAGS = NtlmFlags.NTLMSSP_REQUEST_TARGET | NtlmFlags.NTLMSSP_NEGOTIATE_NTLM |
-      NtlmFlags.NTLMSSP_NEGOTIATE_OEM | NtlmFlags.NTLMSSP_NEGOTIATE_ALWAYS_SIGN |
+    this.BASIC_FLAGS = NtlmFlags.NTLMSSP_REQUEST_TARGET |
+      NtlmFlags.NTLMSSP_NEGOTIATE_NTLM |
+      NtlmFlags.NTLMSSP_NEGOTIATE_OEM |
+      NtlmFlags.NTLMSSP_NEGOTIATE_ALWAYS_SIGN |
       (this.UNICODE_SUPPORTED ? NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE : 0);
 
     this.security;
@@ -34,10 +34,11 @@ class NTLMAuthentication
     this.keyExchange;
     this.useNtlm2sessionsecurity = false;
     this.useNtlmV2 = false;
-    
+
     let user = domain.username;
     let password = domain.password;
-    // FIXME: most of these came from properties and have these values by default
+    // FIXME: most of these came from properties and have these
+    // values by default
     this.lanManagerkey = false;
     this.seal = false;
     this.sign = false;
@@ -46,7 +47,7 @@ class NTLMAuthentication
     const keyLength = 128;
     if (keyLength != null) {
       try {
-        this.keyLength = Number.parseInt(keyLength);
+        this.keyLength = (keyLength);
       } catch (err) {
         throw new Error('Invalid key length: ' + keyLength);
       }
@@ -58,8 +59,9 @@ class NTLMAuthentication
     const security = new Security();
     this.user = security.USERNAME;
     this.password = security.PASSWORD;
-    
-    this.credentials = {domain: domain.domain, username: user, password: password};
+
+    this.credentials = {domain: domain.domain, username: user,
+      password: password};
   }
 
   /**
@@ -77,14 +79,16 @@ class NTLMAuthentication
       return this.authenticationSource;
     }
 
-    return new AuthenticationSrouce.getDefaultInstance();
+    return new AuthenticationSource.getDefaultInstance();
   }
 
-  getDefaultFlags()
-  {
-    var flags = this.BASIC_FLAGS;
+  /**
+   * @return {Number}
+   */
+  getDefaultFlags() {
+    let flags = this.BASIC_FLAGS;
 
-    if (this.lanManagerkey) flags |= NtlmFlags.NTLMSSp_NEGOTIATE_LM_KEY;
+    if (this.lanManagerkey) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_LM_KEY;
     if (this.sign) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_SIGN;
     if (this.sign) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_SEAL;
     if (this.keyExchange) flags |= NtlmFlags.NTLMSSP_NEGOTIATE_KEY_EXCH;
@@ -95,14 +99,19 @@ class NTLMAuthentication
     return flags;
   }
 
-  adjustFlags(flags)
-  {
-    if (this.UNICODE_SUPPORTED && ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE) != 0)) {
-        flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
-        flags |= NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE;
+  /**
+   *
+   * @param {Number} flags
+   * @return {Number}
+   */
+  adjustFlags(flags) {
+    if (this.UNICODE_SUPPORTED &&
+      ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE) != 0)) {
+      flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
+      flags |= NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE;
     } else {
-        flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE;
-        flags |= NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
+      flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE;
+      flags |= NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
     }
     if (!this.lanManagerKey) flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_LM_KEY;
     if (!(this.sign || this.seal)) flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_SIGN;
@@ -112,21 +121,29 @@ class NTLMAuthentication
     if (this.keyLength < 56) flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_56;
     //        if (!useNtlm2sessionsecurity)
     //        {
-    //        	flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2;
+    //        flags &= ~NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2;
     //        }
     return flags;
   }
 
-  createType1(domain)
-  {
-    var flags = this.getDefaultFlags();
+  /**
+   *
+   * @param {String} domain
+   * @return {Type1Message}
+   */
+  createType1(domain) {
+    let flags = this.getDefaultFlags();
     return new Type1Message(null, flags, domain,
-      os.hostname());
+        os.hostname());
   }
 
-  createType2(type1)
-  {
-    var flags;
+  /**
+   *
+   * @param {Type1Message} type1
+   * @return {Type2Message}
+   */
+  createType2(type1) {
+    let flags;
     if (type1 == null) {
       flags = this.getDefaultFlags();
     } else {
@@ -135,14 +152,14 @@ class NTLMAuthentication
     // challenge accept response flag
     flags |= 0x00020000;
 
-    var type2Message = new Type2Message(flags, [1,2,3,4,5,6,7,8],
-      this.credentials.domain);
+    let type2Message = new Type2Message(flags, [1, 2, 3, 4, 5, 6, 7, 8],
+        this.credentials.domain, null);
 
     return type2Message;
   }
 
   /**
-   * 
+   *
    * @param {Type2Message} type2
    * @param {Object} info
    * @return {Type3Message}
@@ -178,19 +195,19 @@ class NTLMAuthentication
             this.credentials.username, this.credentials.password,
             type2.getTargetInformation(), type2.getChallenge(), clientNonce);
         const ntlmv2Response = retval[0];
-        
+
         type3 = new Type3Message(flags, lmv2Response, ntlmv2Response, target,
             this.credentials.username,
             new Type3Message().getDefaultWorkstation());
       } catch (err) {
-        throw new Error('Exception occured while forming NTLMv2 Type3Response',
-            e);
+        throw new Error('Exception occured while forming NTLMv2 Type3Response' +
+            err);
       }
-    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY)
-         != 0) {
+    } else if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY)!= 
+      0) {
       flags = this.adjustFlags(flags);
       flags &= ~0x00020000;
-                
+
       const challenge = type2.getChallenge();
       let lmResponse = new Array(24);
 
@@ -200,14 +217,17 @@ class NTLMAuthentication
       while (aux.length > 0) lmResponse.splice(aux_i++, 1, aux.shift());
       while (aux_i < lmResponse.length) lmResponse[aux_i++] = 0;
       let ntResponse;
-      
+
       try {
         ntResponse = new Responses().getNTLM2SessionResponse(
-            this.credentials.password, Buffer.from(challenge), Buffer.from(clientNonce));
+            this.credentials.password, Buffer.from(challenge),
+            Buffer.from(clientNonce));
       } catch (e) {
-        throw new Error('Exception occured while forming Session Security Type3Response',e);
+        throw new Error(
+            'Exception occured while forming Session Security Type3Response' +
+            e);
       }
-      
+
       type3 = new Type3Message(flags, lmResponse, ntResponse, target,
           this.credentials.username, os.hostname());
     } else {
@@ -221,10 +241,10 @@ class NTLMAuthentication
           this.credentials.username, new Type3Message().getDefaultWorkstation());
 
       if ((flags & NtlmFlags.NTLMSSP_NEGOTIATE_KEY_EXCH) != 0) {
-	      throw new RuntimeException('Key Exchange not supported by Library !');
+        throw new RuntimeException('Key Exchange not supported by Library !');
       }
     }
-    
+
     if (this.useNtlm2sessionsecurity && (flags & NtlmFlags.NTLMSSP_NEGOTIATE_NTLM2) != 0) {
       var ntlmKeyFactory = new NTLMKeyFactory();
       var userSessionKey;
@@ -232,50 +252,54 @@ class NTLMAuthentication
       if (this.useNtlmV2) {
         try {
           userSessionKey = ntlmKeyFactory.getNTLMv2UserSessionKey(target,
-            this.credentials.username, this.credentials.password,
-            type2.getChallenge(), blob);
+              this.credentials.username, this.credentials.password,
+              type2.getChallenge(), blob);
         } catch (e) {
-          throw new Error("Exception occured while forming NTLMv2 with NTLM2 Session Security for Type3Response ",e);
+          throw new Error('Exception occured while forming NTLMv2 with NTLM2 Session Security for Type3Response ', e);
         }
       } else {
-        var servernonce;
+        let servernonce;
         servernonce = type2.getChallenge().slice(0, type2.getChallenge().length);
         servernonce.concat(servernonce, clientNonce);
 
         try {
           userSessionKey = ntlmKeyFactory.getNTLM2SessionResponseUserSessionKey(
-            this.credentials.password(), this.credentials.password(),
-            servernonce);
+              this.credentials.password(), this.credentials.password(),
+              servernonce);
         } catch (e) {
-          	throw new Error("Exception occured while forming Session Security for Type3Response ",e);
+          throw new Error('Exception occured while forming Session Security for Type3Response ', e);
         }
 
         try {
-          var secondayMasterKey = ntlmKeyFactory.getSecondarySessionKey();
+          let secondayMasterKey = ntlmKeyFactory.getSecondarySessionKey();
 					type3.setSessionKey(ntlmKeyFactory.encryptSecondarySessionKey(secondayMasterKey, userSessionKey));
-          this.security = new Ntlm1(flags, secondayMasterKey,false);
+          this.security = new Ntlm1(flags, secondayMasterKey, false);
         } catch (e) {
-        	throw new Error("Exception occured while forming Session Security for Type3Response",e);
+          throw new Error('Exception occured while forming Session Security for Type3Response', e);
         }
       }
     }
-    
+
     return type3;
   }
 
-  getTargetFromTargetInformation(targetInformation)
-  {
-    var target = null;
-    var i = 0;
+  /**
+   *
+   * @param {Object} targetInformation
+   * @return {Object}
+   */
+  getTargetFromTargetInformation(targetInformation) {
+    let target = null;
+    let i = 0;
     while (i < targetInformation.length) {
       switch (new Encdec().dec_uint16le(targetInformation, i)) {
         case 1:
           i++;
           i++;
-          var length = new Encdec.dec_uint16le(targetInformation, i);
+          let length = new Encdec.dec_uint16le(targetInformation, i);
           i++;
           i++
-          var domainb = new Array(length);
+          let domainb = new Array(length);
           domainb = targetInformation.slice(i, length);
           try {
             target = String(domainb);
@@ -288,7 +312,7 @@ class NTLMAuthentication
         default:
           i++;
           i++;
-          length = new Encdec().dec_uint16le(targetInformation,i);
+          length = new Encdec().dec_uint16le(targetInformation, i);
           i++;
           i++
           i = i + length;
@@ -297,15 +321,18 @@ class NTLMAuthentication
     return target;
   }
 
-  createSecurityWhenServer(type3)
-  {
-    var type3Message = type3;
+  /**
+   *
+   * @param {Type3Message} type3
+   */
+  createSecurityWhenServer(type3) {
+    let type3Message = type3;
 
-    var flags = type3Message.getFlags();
-    var ntlmKeyFactory = new ntlmKeyFactory();
+    let flags = type3Message.getFlags();
+    let ntlmKeyFactory = new ntlmKeyFactory();
 
-    var secondayMasterKey;
-    var sessionResponseUserSessionKey = null;
+    let secondayMasterKey;
+    let sessionResponseUserSessionKey = null;
 
     if (type3Message.getFlag(0x00000800)) {
       sessionResponseUserSessionKey = new Array(16);
@@ -313,25 +340,27 @@ class NTLMAuthentication
       // TODO: create the key
       var h = 0;
     } else {
-      //now create the key for the session
-      //this key will be used to RC4 a 16 byte random key and set to the type3 message
-      var servernonce;
-      var challenge = new Array(1,2,3,4,5,6,7,8); //challenge is fixed
+      // now create the key for the session
+      // this key will be used to RC4 a 16 byte random key and set to the type3 message
+      let servernonce;
+      let challenge = new Array(1, 2, 3, 4, 5, 6, 7, 8); // challenge is fixed
       servernonce = challenge.slice(0, challenge.length);
-      servernonce.concat(type3Message.getLMResponse().slice(0, 8));//first 8 bytes only , the rest are all 0x00 and not required.
+      servernonce.concat(type3Message.getLMResponse().slice(0, 8));// first 8 bytes only , the rest are all 0x00 and not required.
       try {
-        sessionResponseUserSessionKey = ntlmKeyFactory.getNTLM2SessionResponseUserSessionKey(this.credentials.password, servernonce);
+        sessionResponseUserSessionKey =
+            ntlmKeyFactory.getNTLM2SessionResponseUserSessionKey(
+                this.credentials.password, servernonce);
       } catch (e) {
-        throw new RuntimeException("Exception occured while forming Session Security from Type3 AUTH",e);
+        throw new RuntimeException('Exception occured while forming Session Security from Type3 AUTH', e);
       }
     }
 
     try {
-      //now RC4 decrypt the session key
+      // now RC4 decrypt the session key
       secondayMasterKey = ntlmKeyFactory.decryptSecondarySessionKey(type3Message.getSessionKey(), sessionResponseUserSessionKey);
-      this.security = new Ntlm1(flags, secondayMasterKey,true);
-    } catch (e){
-     throw new RuntimeException("Exception occured while forming Session Security Type3Response",e);
+      this.security = new Ntlm1(flags, secondayMasterKey, true);
+    } catch (e) {
+     throw new RuntimeException('Exception occured while forming Session Security Type3Response', e);
     }
   }
 }

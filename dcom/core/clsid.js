@@ -35,8 +35,13 @@ class Clsid {
     return this.nestedUUID.toString();
   }
 
+  /**
+   * Verifies if the current CLSID (string) has the appropriate syntax
+   * @param {Clsid} clsid
+   * @return {Boolean}
+   */
   checkSyntax(clsid) {
-    let exp = new RegExp('[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}');
+    const exp = new RegExp('[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}');
     return clsid.match(exp);
   }
 }

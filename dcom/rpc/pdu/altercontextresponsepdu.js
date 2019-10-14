@@ -1,14 +1,20 @@
-const Port = require("../core/port.js");
-const PresentationResult = require("../core/presentationresult.js");
-const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+// @ts-check
+const Port = require('../core/port.js');
+const PresentationResult = require('../core/presentationresult.js');
+const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
 
-class AlterContextResponsePdu extends ConnectionOrientedPdu{
-  constructor(){
+/**
+ * This class represents the response equivalent to the AlterContext packet
+ */
+class AlterContextResponsePdu extends ConnectionOrientedPdu {
+  /**
+   * Initializes a few variables but takes no input parameter
+   */
+  constructor() {
     super();
-    this.ALTER_CONTEXT_RESPONSE_TYPE = 0x0f;
 
     this.resultList;
-
+    this.type = 0x0f;
     this.maxTransmitFragment = -1;
     this.maxReceiveFragment = -1;
 
@@ -18,102 +24,102 @@ class AlterContextResponsePdu extends ConnectionOrientedPdu{
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getType(){
-    return this.ALTER_CONTEXT_RESPONSE_TYPE;
+  getType() {
+    return this.type;
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getMaxTransmitFragment(){
+  getMaxTransmitFragment() {
     return this.maxTransmitFragment;
   }
   
   /**
    * 
-   * @param {Number} maxTransmitFragment 
+   * @param {Number} maxTransmitFragment
    */
-  setMaxTransmitFragment(maxTransmitFragment){
+  setMaxTransmitFragment(maxTransmitFragment) {
     this.maxTransmitFragment = maxTransmitFragment;
   }
 
   /**
-   * @returns {Number}
+   * @return {Number}
    */
-  getMaxReceiveFragment(){
+  getMaxReceiveFragment() {
     return this.maxReceiveFragment;
   }
 
   /**
-   * 
-   * @param {Number} maxReceiveFragment 
+   *
+   * @param {Number} maxReceiveFragment
    */
-  setMaxReceiveFragment(maxReceiveFragment){
+  setMaxReceiveFragment(maxReceiveFragment) {
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
   /**
-   * @returns {Array}
+   * @return {Number}
    */
-  getAssociationGroupId(){
+  getAssociationGroupId() {
     return this.associationGroupId;
   }
 
   /**
    * 
-   * @param {Number} associationGroupId 
+   * @param {Number} associationGroupId
    */
-  setAssociationGroupId(associationGroupId){
+  setAssociationGroupId(associationGroupId) {
     this.associationGroupId = associationGroupId;
   }
 
   /**
-   * @returns {Number}
+   * @return {Port}
    */
-  getSecondaryAddress(){
+  getSecondaryAddress() {
     return this.secondaryAddress;
   }
 
   /**
    * 
-   * @param {Number} secondaryAddress 
+   * @param {Port} secondaryAddress
    */
-  setSecondaryAddress(secondaryAddress){
+  setSecondaryAddress(secondaryAddress) {
     this.secondaryAddress = secondaryAddress;
   }
 
   /**
-   * @returns {Array}
+   * @return {Array}
    */
-  getResultList(){
+  getResultList() {
     return this.resultList;
   }
 
   /**
-   * 
-   * @param {Array} resultList 
+   *
+   * @param {Array} resultList
    */
-  setResultList(resultList){
+  setResultList(resultList) {
     this.resultList = resultList;
   }
 
   /**
-   * 
-   * @param {NetworkDataRepresentation} ndr 
+   *
+   * @param {NetworkDataRepresentation} ndr
    */
-  readBody(ndr){
+  readBody(ndr) {
     this.maxTransmitFragment = ndr.readUnsignedShort();
     this.maxReceiveFragment = ndr.readUnsignedShort();
     this.associationGroupId = ndr.readUnsignedLong();
-    var secondaryAddress = new Port();
+    let secondaryAddress = new Port();
     secondaryAddress.read(ndr);
     this.secondaryAddress = secondaryAddress;
     ndr.getBuffer().align(4);
-    var count = ndr.readUnsignedSmall();
-    var resultList = new Array(count);
-    for (var i = 0; i < count; i++){
+    let count = ndr.readUnsignedSmall();
+    let resultList = new Array(count);
+    for (let i = 0; i < count; i++) {
       resultList[i] = new PresentationResult();
       resultList[i].read(ndr);
     }
@@ -121,28 +127,29 @@ class AlterContextResponsePdu extends ConnectionOrientedPdu{
   }
 
   /**
-   * 
-   * @param {NetworkDataRepresentation} ndr 
+   *
+   * @param {NetworkDataRepresentation} ndr
    */
-  writeBody(ndr){
-    var maxTransmitFragment = maxTransmitFragment();
-    var maxReceiveFragment = maxReceiveFragment();
+  writeBody(ndr) {
+    let maxTransmitFragment = maxTransmitFragment();
+    let maxReceiveFragment = maxReceiveFragment();
     ndr.writeUnsignedShort((maxTransmitFragment() == -1) ?
       ndr.getBuffer().getCapacity() : maxTransmitFragment);
     ndr.writeUnsignedShort((maxReceiveFragment() == -1) ?
       ndr.getBuffer().getCapacity() : maxReceiveFragment);
     ndr.writeUnsignedLong(associationGroupId());
-    var secondaryAddress = secondaryAddress();
+    let secondaryAddress = secondaryAddress();
     if (secondaryAddress == null) secondaryAddress = new Port();
     secondaryAddress.write(ndr);
     ndr.getBuffer().align(4);
-    var resultList = resultList();
-    var count = resultList.length;
+    let resultList = resultList();
+    let count = resultList.length;
     ndr.writeUnsignedSmall(Numbaer.parseInt(count));
-    for (var i = 0; i < count; i++){
+    for (let i = 0; i < count; i++) {
       resultList[i].write(ndr);
     }
   }
 }
 
+AlterContextResponsePdu.ALTER_CONTEXT_RESPONSE_TYPE = 0x0f;
 module.exports = AlterContextResponsePdu;

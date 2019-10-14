@@ -1,117 +1,180 @@
+// @ts-check
 
+/**
+ * Buffer class
+ */
 class Buffer {
-  constructor(buffer, capacityIncrement){
+  /**
+   *
+   * @param {Array} buffer
+   * @param {Number} capacityIncrement
+   */
+  constructor(buffer, capacityIncrement) {
     this.NO_INCREMENT = 0;
 
-    if(buffer == undefined){
+    if (buffer == undefined) {
       this.buffer = null;
-    }else{ this.buffer = buffer;}
+    } else {
+      this.buffer = buffer;
+    }
 
-    if(capacityIncrement == undefined){
-      this.capacityIncrement = NO_INCREMENT;
-    }else{this.capacityIncrement = capacityIncrement;}
+    if(capacityIncrement == undefined) {
+      this.capacityIncrement = this.NO_INCREMENT;
+    } else {
+      this.capacityIncrement = capacityIncrement;
+    }
 
     this.index = 0;
     this.length;
   }
 
-  get capacityIncrement(){
+  /**
+   * @return {Number}
+   */
+  getCapacityIncrement() {
     return this.capacityIncrement;
   }
 
-  get capacity(){
+  /**
+   * @return {Number}
+   */
+  getCapacity() {
     return this.buffer.length;
   }
 
-  set capacityIncrement(capacityIncrement){
+  setCapacityIncrement(capacityIncrement) {
     this.capacityIncrement = capacityIncrement;
   }
 
-  get buffer(){
+  /**
+   * @return {Array}
+   */
+  getBuffer() {
     return this.buffer;
   }
 
-  set buffer(buffer){
+  /**
+   *
+   * @param {Array} buffer
+   */
+  setBuffer(buffer) {
     this.buffer = buffer;
   }
 
-  get length(){
+  /**
+   * @return {Number}
+   */
+  getLength() {
     return this.length;
   }
 
-  set length(length){
+  /**
+   *
+   * @param {Number} length
+   */
+  setLength(length) {
     this.length = length;
   }
 
-  copy(){
-    var copy = [this.length];
-    var temp = buffer.slice(0, this.length);
-    var temp_index= 0;
-    while(temp > 0)
+  /**
+   * @return {Array}
+   */
+  copy() {
+    let copy = [this.length];
+    let temp = buffer.slice(0, this.length);
+    let temp_index= 0;
+    while (temp > 0) {
       copy.splice(temp_index++, 0, temp.shift());
+    }
     return copy;
   }
 
-  reset(){
+  reset() {
     this.lenght = 0
     this.index = 0;
   }
 
-  get index(){
+  /**
+   * @return {Number}
+   */
+  getIndex() {
     return this.index;
   }
 
-  getIndex(advance){
-    try{
+  /**
+   * @param {Number} advance
+   * @return {Number}
+   */
+  getIndex2(advance) {
+    try {
       return this.index;
-    }finally{
+    } finally {
       this.index += advance;
-      if(this.index > this.length) this.length = this.index;
-      if(this.length > this.buffer.length) grow(this.length);
+      if (this.index > this.length) this.length = this.index;
+      if (this.length > this.buffer.length) this.grow(this.length);
     }
   }
 
-  set index(index){
+  /**
+   *
+   * @param {Number} index
+   */
+  setIndex(index) {
     this.index = index;
     if (this.index > this.length) this.length = this.index;
-    if (this.length > this.buffer.length) grow(this.length);
+    if (this.length > this.buffer.length) this.grow(this.length);
   }
 
-  align(boundary, value){
-    var align = this.index % boundary;
+  /**
+   * @param {Number} boundary
+   * @param {Number} value
+   * @return {Number}
+   */
+  align(boundary, value) {
+    let align = this.index % boundary;
     if (align == 0) return 0;
-    if(value == undefined){
-      advance(align = boundary - align);
+    if (value == undefined) {
+      this.advance(align = boundary - align, null);
       return align;
-    }else{
-      advance(align = boundary - align, value);
+    } else {
+      this.advance(align = boundary - align, value);
       return align;
     }
   }
 
-  advance(step, value){
-    if (value == undefined){
+  /**
+   *
+   * @param {Number} step
+   * @param {Number} value
+   */
+  advance(step, value) {
+    if (value == undefined) {
       this.index += step;
-    }else{
-      for (var finish = this.index + step;this.index < finish; this.index++){
-        buffer[this.index] = value;
+    } else {
+      for (let finish = this.index + step; this.index < finish; this.index++) {
+        this.buffer[this.index] = value;
       }
     }
     if (this.index > this.length) this.length = this.index;
-    if (this.length > this.buffer.length) grow(this.length);
+    if (this.length > this.buffer.length) this.grow(this.length);
   }
 
-  grow(length){
-    var newLength = this.buffer.length;
-    while (this.newLength < this.length){
-      this.newLength += capacityIncrement;
+  /**
+   *
+   * @param {Number} length
+   */
+  grow(length) {
+    let newLength = this.buffer.length;
+    while (newLength < this.length) {
+      newLength += this.capacityIncrement;
     }
-    var newBuffer = [this.newLength];
+    let newBuffer = [newLength];
 
-    var temp = this.buffer.slice(0, this.buffer.length);
-    var temp_index;
-    while(temp.length > 0)
+    let temp = this.buffer.slice(0, this.buffer.length);
+    let temp_index;
+    while (temp.length > 0) {
       newBuffer.splice(temp_index, 0, temp.shift());
+    }
     this.buffer = newBuffer;
   }
 }

@@ -1,36 +1,59 @@
-var NdrBuffer = require("../../ndr/ndrbuffer.js");
-var NdrObject = require("../../ndr/ndrobject.js");
-var NetworkDataRepresentation = require("../../ndr/networkdatarepresentation.js");
+const NdrBuffer = require('../../ndr/ndrbuffer.js');
+const NdrObject = require('../../ndr/ndrobject.js');
+const NetworkDataRepresentation = require('../../ndr/networkdatarepresentation.js');
 
-function ProtocolVersion (){
+/**
+ * Instantiates the object.
+ */
+function ProtocolVersion() {
   this.majorVersion;
   this.minorVersion;
 };
 
-ProtocolVersion.prototype.getMajorVersion = function (){
+/**
+ * @return {Number}
+ */
+ProtocolVersion.prototype.getMajorVersion = function() {
   return this.majorVersion;
-}
+};
 
-ProtocolVersion.prototype.setMajorVersion = function (majorVersion){
+/**
+ * @param {Number} majorVersion
+ */
+ProtocolVersion.prototype.setMajorVersion = function(majorVersion) {
   this.majorVersion = majorVersion;
-}
+};
 
-ProtocolVersion.prototype.getMinorVersion = function (){
+/**
+ * @return {Number}
+ */
+ProtocolVersion.prototype.getMinorVersion = function() {
   return this.minorVersion;
-}
+};
 
-ProtocolVersion.prototype.setMinorVersion = function (minorVersion){
+/**
+ * @param {Number} minorVersion
+ */
+ProtocolVersion.prototype.setMinorVersion = function(minorVersion) {
   this.minorVersion = minorVersion;
-}
+};
 
-ProtocolVersion.prototype.encode = function (ndr, dst){
+/**
+ * @param {NetworkDataRepresentation} ndr
+ * @param {NdrBuffer} dst
+ */
+ProtocolVersion.prototype.encode = function(ndr, dst) {
   dst.enc_ndr_small(this.majorVersion);
   dst.enc_ndr_small(this.minorVersion);
-}
+};
 
-ProtocolVersion.prototype.decode = function (ndr, src){
+/**
+ * @param {NetworkDataRepresentation} ndr
+ * @param {NdrBuffer} src
+ */
+ProtocolVersion.prototype.decode = function(ndr, src) {
   this.majorVersion = src.dec_ndr_small();
   this.minorVersion = src.dec_ndr_small();
-}
+};
 
 module.exports = ProtocolVersion;

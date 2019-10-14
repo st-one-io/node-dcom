@@ -1,4 +1,5 @@
-//@ts-check
+/* eslint-disable indent */
+// @ts-check
 
 let inited = false;
 let Oxid;
@@ -7,21 +8,24 @@ let NetworkDataRepresentation;
 let MarshalUnMarshalHelper;
 let UUID;
 
+/**
+ * This class represents an object referenced
+ * in the server.
+ */
 class StdObjRef {
-
     /**
-     * 
-     * @param {string} [ipid] 
-     * @param {Oxid} [oxid] 
-     * @param {ObjectId} [oid] 
+     *
+     * @param {string} [ipid]
+     * @param {Oxid} [oxid]
+     * @param {ObjectId} [oid]
      */
     constructor(ipid, oxid, oid) {
         this._init();
-        this.flags = 0x0; //int
-        this.publicRefs = -1; //int
-        this.oxid = null; //byte[]
-        this.oid = null; //byte[]
-        this.ipidOfthisObjectRef = null; //String
+        this.flags = 0x0; // int
+        this.publicRefs = -1; // int
+        this.oxid = null; // byte[]
+        this.oid = null; // byte[]
+        this.ipidOfthisObjectRef = null; // String
 
         if (ipid === undefined && oxid === undefined && oid === undefined) return;
 
@@ -32,9 +36,9 @@ class StdObjRef {
     }
 
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
-     * @returns {StdObjRef}
+     * @return {StdObjRef}
      */
     decode(ndr) {
         let objRef = new StdObjRef();
@@ -50,28 +54,43 @@ class StdObjRef {
         return objRef;
     }
 
+    /**
+     * @return {Number}
+     */
     getFlags() {
         return this.flags;
     }
 
+    /**
+     * @return {Number}
+     */
     getPublicRefs() {
         return this.publicRefs;
     }
 
+    /**
+     * @return {Array}
+     */
     getOxid() {
         return this.oxid.slice();
     }
 
+    /**
+     * @return {Array}
+     */
     getObjectId() {
         return this.oid.slice();
     }
 
+    /**
+     * @return {String}
+     */
     getIpid() {
         return this.ipidOfthisObjectRef;
     }
 
     /**
-     * 
+     *
      * @param {NetworkDataRepresentation} ndr
      */
     encode(ndr) {
@@ -84,6 +103,9 @@ class StdObjRef {
         ipid.encode(ndr, ndr.getBuffer());
     }
 
+    /**
+     * @return {String}
+     */
     toString() {
         return `StdObjRef[IPID: ${this.ipidOfthisObjectRef}]`;
     }

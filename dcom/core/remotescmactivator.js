@@ -1,9 +1,17 @@
-var UUID = require('../rpc/core/uuid.js');
-var NdrObject = require('../ndr/ndrobject.js');
+const UUID = require('../rpc/core/uuid.js');
+const NdrObject = require('../ndr/ndrobject.js');
 
-class RemoteSCMActivator extends NdrObject
-{
-  constructor(targetServer, clsid){
+/**
+ * Alternative method of activating a server interface.
+ */
+class RemoteSCMActivator extends NdrObject {
+  /**
+   *
+   * @param {ComServer} targetServer
+   * @param {Clsid} clsid
+   */
+  constructor(targetServer, clsid) {
+    super();
     this.targetClsid = clsid;
     this.targetServer = targetServer;
     this.oxid = null;
@@ -19,13 +27,17 @@ class RemoteSCMActivator extends NdrObject
     this.isActivationSuccessful = false;
   }
 
-  isActivationSuccessful()
-  {
+  /**
+   * @return {Boolean}
+   */
+  isActivationSuccessful() {
     return this.isActivationSuccessful;
   }
 
-  getDualStringArrayForOxid()
-  {
+  /**
+   * @return {DualStringArrayForOxid}
+   */
+  getDualStringArrayForOxid() {
     return this.dualStringArrayForOxid;
   }
 }

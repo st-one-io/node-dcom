@@ -1,14 +1,25 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
+// @ts-check
+const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
 
-class CancelCoPdu extends ConnectionOrientedPdu{
-  constructor(){
+/**
+ * This class represents a Cancell dcerpc packet
+ */
+class CancelCoPdu extends ConnectionOrientedPdu {
+  /**
+   * Initializes the type variable but receive no input parameter
+   */
+  constructor() {
     super();
-    this.CANCEL_TYPE = 0x12;
+    this.type = 0x12;
   }
 
-  getType(){
-    return this.CANCEL_TYPE;
+  /**
+   * @return {Number}
+   */
+  getType() {
+    return this.type;
   }
 }
 
+CancelCoPdu.CANCEL_TYPE = 0x12;
 module.exports = CancelCoPdu;

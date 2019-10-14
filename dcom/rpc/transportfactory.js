@@ -4,6 +4,5 @@ class TransportFactory {
   }
 
   createTransport(address, properties){}
-
-  
+ 
 }

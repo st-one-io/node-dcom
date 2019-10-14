@@ -1,83 +1,132 @@
-var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
-var PresentationContext = require("../core/presentationcontext.js");
+// @ts-check
+const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
+const PresentationContext = require('../core/presentationcontext.js');
 
-class BindPdu extends ConnectionOrientedPdu{
-  constructor(){
+/**
+ * This class represents the Bind dcerpc data packet
+ */
+class BindPdu extends ConnectionOrientedPdu {
+  /**
+   * Initializes a few variables and receives no input parameters
+   */
+  constructor() {
     super();
-    this.BIND_TYPE = 0x0b;
 
     this.contextList;
-
+    this.type = 0x0b;
     this.maxTransmitFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
     this.maxReceiveFragment = this.MUST_RECEIVE_FRAGMENT_SIZE;
 
     this.associationGroupId = 0;
   }
 
-  resetCallIdCounter(){
+  /**
+   * Reset the CallId counter to 0
+   */
+  resetCallIdCounter() {
     super.resetCallIdCounter();
   }
 
-  getType(){
-    return this.BIND_TYPE;
+  /**
+   * @return {Number}
+   */
+  getType() {
+    return this.type;
   }
 
-  getMaxTransmitFragment(){
+  /**
+   * @return {Number}
+   */
+  getMaxTransmitFragment() {
     return this.maxTransmitFragment;
   }
 
-  setMaxTransmitFragment(maxTransmitFragment){
+  /**
+   *
+   * @param {Number} maxTransmitFragment
+   */
+  setMaxTransmitFragment(maxTransmitFragment) {
     this.maxTransmitFragment = maxTransmitFragment;
   }
 
-  getMaxReceiveFragment(){
+  /**
+   * @return {Number}
+   */
+  getMaxReceiveFragment() {
     return this.maxReceiveFragment;
   }
 
-  setMaxReceiveFragment(maxReceiveFragment){
+  /**
+   *
+   * @param {Number} maxReceiveFragment
+   */
+  setMaxReceiveFragment(maxReceiveFragment) {
     this.maxReceiveFragment = maxReceiveFragment;
   }
 
-  getAssociationGroupId(){
+  /**
+   * @return {Number}
+   */
+  getAssociationGroupId() {
     return this.associationGroupId;
   }
 
-  setAssociationGroupId(associationGroupId){
+  /**
+   *
+   * @param {Number} associationGroupId
+   */
+  setAssociationGroupId(associationGroupId) {
     this.associationGroupId = associationGroupId;
   }
 
-  getContextList(){
+  /**
+   * @return {Array}
+   */
+  getContextList() {
     return this.contextList;
   }
 
-  setContextList(contextList){
+  /**
+   *
+   * @param {Array} contextList
+   */
+  setContextList(contextList) {
     this.contextList = contextList;
   }
 
-  readBody(ndr){
-    maxTransmitFragment(ndr.readUnsignedShort());
-    maxReceiveFragment(ndr.readUnsignedShort());
-    associationGroupId(Number.parseInt(ndr.readUnsignedLong()));
-    var count = ndr.readUnsignedSmall();
-    var contextList = [count];
-    for (var i = 0; i < count; i++) {
+  /**
+   *
+   * @param {NetworkDataRepresentation} ndr
+   */
+  readBody(ndr) {
+    this.setMaxTransmitFragment(ndr.readUnsignedShort());
+    this.setMaxReceiveFragment(ndr.readUnsignedShort());
+    this.setAssociationGroupId(Number.parseInt(ndr.readUnsignedLong()));
+    let count = ndr.readUnsignedSmall();
+    let contextList = [count];
+    for (let i = 0; i < count; i++) {
       contextList[i] = new PresentationContext();
       contextList[i].read(ndr);
     }
-    contextList(contextList);
+    this.setContextList(contextList);
   }
 
-  writeBody(ndr){
+  /**
+   *
+   * @param {NetworkDataRepresentation} ndr
+   */
+  writeBody(ndr) {
     ndr.writeUnsignedShort(this.getMaxTransmitFragment());
     ndr.writeUnsignedShort(this.getMaxReceiveFragment());
     ndr.writeUnsignedLong(this.getAssociationGroupId());
-    var contextList = this.getContextList();
-    var count = contextList.length;
+    let contextList = this.getContextList();
+    let count = contextList.length;
     ndr.writeUnsignedSmall(count);
-    for (var i = 0; i < count; i++) {
-        contextList[i].write(ndr);
+    for (let i = 0; i < count; i++) {
+      contextList[i].write(ndr);
     }
   }
 }
 
+BindPdu.BIND_TYPE = 0x0b;
 module.exports = BindPdu;

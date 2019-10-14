@@ -3,7 +3,6 @@ const ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 class OrphanedPdu extends ConnectionOrientedPdu {
   constructor(){
     super();
-    this.ORPHANED_TYPE = 0x13;
   }
 
   /**
@@ -14,4 +13,5 @@ class OrphanedPdu extends ConnectionOrientedPdu {
   }
 }
 
+OrphanedPdu.ORPHANED_TYPE = 0x13;
 module.exports = OrphanedPdu;
