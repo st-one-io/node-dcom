@@ -370,17 +370,17 @@ class ComServer extends Stub {
   }
 
   /**
-   * @returns {ComObject} represents the ComServer, To be user only with <code>ComServer(Session, InterfacePointer, String)</code> constructor
+   * @return {ComObject} represents the ComServer, To be user only with <code>ComServer(Session, InterfacePointer, String)</code> constructor
    */
   getInstance() {
     if (!this.interfacePtrCtor) {
-      debug(String(new Error(new System().getLocalizedMessage(new ErrorCodes()._COMSTUB_WRONGCALLGETINSTANCE))));
+      debug(String(new Error(new System().getLocalizedMessage(new ErrorCodes().COMSTUB_WRONGCALLGETINSTANCE))));
     }
 
     let comObject;
     
     if (this.serverInstantiated) {
-      debug(String(new Error(new ErrorCodes().JI_OBJECT_ALREADY_INSTANTIATED)));
+      debug(String(new Error(String(new ErrorCodes().OBJECT_ALREADY_INSTANTIATED))));
     }
 
     comObject = FrameworkHelper.instantiateComObject(this.session, this.interfacePtrCtor, "");
@@ -396,7 +396,7 @@ class ComServer extends Stub {
     return ((this.serverActivation == null)? this.interfacePtrCtor : this.serverActivation.getMInterfacePointer());
   }
 
-  getSyntax(){
+  getSyntax() {
     return this.syntax;
   }
 
@@ -409,12 +409,12 @@ class ComServer extends Stub {
     }
 
     if (this.interfacePtrCtor != null) {
-      throw new Error(String(new ErrorCodes().JI_COMSTUB_WRONGCALLGETINSTANCE));
+      throw new Error(String(new ErrorCodes().COMSTUB_WRONGCALLGETINSTANCE));
     }
     let comObject = null;
 
     if (this.serverInstantiated) {
-      throw new Error(new ErrorCodes().JI_OBJECT_ALREADY_INSTANTIATED);
+      throw new Error(String(new ErrorCodes().OBJECT_ALREADY_INSTANTIATED));
     }
 
     comObject = await FrameworkHelper.instantiateComObject(this.session,
@@ -457,7 +457,7 @@ class ComServer extends Stub {
     
     await retVal.addRef();
 
-    // this part is only relevant when IDispatch suport is implemented
+    // this part is only relevant when Dispatch suport is implemented
     if (iid.toLowerCase() == "00020400-0000-0000-c000-000000000046") {
       let success = true;
 

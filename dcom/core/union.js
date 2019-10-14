@@ -31,8 +31,6 @@ class Union {
 	 *
 	 * @param {*} discriminant
 	 * @param {*} member
-	 * @throws JIException
-	 * @throws IllegalArgumentException if any parameter is <code>null</code>
 	 */
     addMember(discriminant, member) {
 
@@ -55,21 +53,18 @@ class Union {
      *
      * @param discriminant
      * @param member
-     * @throws JIException
-     * @throws IllegalArgumentException if <code>discriminant</code> is <code>null</code>
      */
-    //used both for reading and writing
     addMember(discriminant, member) {
         if (discriminant == null) {
-            throw new IllegalArgumentException(JISystem.getLocalizedMessage(new ErrorCodes().UNION_NULL_DISCRMINANT));
+            throw new IllegalArgumentException(System.getLocalizedMessage(new ErrorCodes().UNION_NULL_DISCRMINANT));
         }
 
         if (!discriminant.getClass().equals(discriminantClass)) {
-            throw new JIException(new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
+            throw new Error(new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
         }
 
         if (member == null) {
-            member = JIStruct.MEMBER_IS_EMPTY;
+            member = Struct.MEMBER_IS_EMPTY;
         }
 
         this.dsVsMember.set(discriminant, member);

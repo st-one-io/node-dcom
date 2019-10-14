@@ -146,7 +146,7 @@ class Pointer {
     }
 
     //class of type being decoded. If the type being expected is an array , the varType
-    //should be the actual array type and not JIArray.
+    //should be the actual array type and not Array.
     /**
      * 
      * @param {NetworkDataRepresentation} ndr

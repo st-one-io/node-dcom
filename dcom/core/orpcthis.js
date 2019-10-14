@@ -36,7 +36,7 @@ class OrpcThis {
     constructor(casualityIdentifier) {
         this.cid = casualityIdentifier ? casualityIdentifier.toString() : generateUUID();
         this.flags = 0
-        this.arry = null; //JIOrpcExtentArray[]
+        this.arry = null; //OrpcExtentArray[]
         this.version = new System().getComVersion();
     }
 
@@ -178,12 +178,12 @@ class OrpcThis {
         let extentArrays = [];
         //now read whether extend array exists or not
         if (!orpcextentarrayptr.isNull()) {
-            let pointers = orpcextentarrayptr.getReferent().getMember(2).getReferent().getArrayInstance(); //JIPointer[]
+            let pointers = orpcextentarrayptr.getReferent().getMember(2).getReferent().getArrayInstance(); //Pointer[]
             for (let i = 0; i < pointers.length; i++) {
                 if (pointers[i].isNull())
                     continue;
 
-                let orpcextent2 = pointers[i].getReferent(); //JIStruct
+                let orpcextent2 = pointers[i].getReferent(); //Struct
                 let byteArray = orpcextent2.getMember(2).getArrayInstance(); //Byte[]
 
                 extentArrays.push(new OrpcExtentArray(orpcextent2.getMember(0).toString(), byteArray.length, byteArray));
@@ -196,7 +196,7 @@ class OrpcThis {
         //decode can only be executed incase of a request made from the server side in case of a callback. so the thread making this
         //callback will store the cid from the decode operation in the threadlocal variable. In case an encode is performed using the
         //same thread then we know that this is a nested call. Hence will replace the cid with the thread local cid. For the calls being in
-        //case of encode this value will not be used if the encode thread is of the client and not of JIComOxidRuntimeHelper.
+        //case of encode this value will not be used if the encode thread is of the client and not of ComOxidRuntimeHelper.
         cidForCallback = retval.cid;
         return retval;
     }

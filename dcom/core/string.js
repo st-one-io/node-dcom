@@ -38,7 +38,7 @@ class ComString {
             } else if (type == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
                 this.member = new ComValue(new Pointer(new ComValue(null, types.STRING), false), types.POINTER);
             } else {
-                throw new Error("JI_UTIL_FLAG_ERROR" + new ErrorCodes().JI_UTIL_FLAG_ERROR);
+                throw new Error("UTIL_FLAG_ERROR" + new ErrorCodes().UTIL_FLAG_ERROR);
             }
             this.type = type;
 
@@ -58,7 +58,7 @@ class ComString {
                 this.variant = new Variant.Variant(thisComValue);
                 this.variantByRef = new Variant.Variant(thisComValue, true);
             } else {
-                throw new Error(new ErrorCodes().JI_UTIL_FLAG_ERROR);
+                throw new Error(new ErrorCodes().UTIL_FLAG_ERROR);
             }
 
             this.member.getValue().setFlags(type | Flags.FLAG_REPRESENTATION_VALID_STRING);
@@ -93,10 +93,7 @@ class ComString {
 
 	/** Type representing this object.
 	 *
-	 * @return JIFlags string flags
-	 * @see JIFlags#FLAG_REPRESENTATION_STRING_BSTR
-	 * @see JIFlags#FLAG_REPRESENTATION_STRING_LPCTSTR
-	 * @see JIFlags#FLAG_REPRESENTATION_STRING_LPWSTR
+	 * @return {Number}
 	 */
     getType() {
         return this.type;

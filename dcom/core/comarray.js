@@ -451,7 +451,7 @@ class ComArray {
 		return array;
 	}
 	
-	/**	Reverses Array elements for IJIDispatch.
+	/**	Reverses Array elements for Dispatch.
 	 * 
 	 * @return
 	 */
@@ -523,20 +523,6 @@ class ComArray {
 		return this.numElementsInAllDimensions;
 	}
 	
-	/**<p>Used only from the JIVariant.getDecodedValueAsArray. It is required when the real class of the array is determined after the SafeArray Struct has been 
-	 * processed. SA in COM can contain these along with normal types as well :- 
-	 * FADF_BSTR 0x0100 An array of BSTRs. <br>
-	 * FADF_UNKNOWN 0x0200 An array of IUnknown*. <br>  
- 	 * FADF_DISPATCH 0x0400 An array of IDispatch*.  <br>
-	 * FADF_VARIANT 0x0800 An array of VARIANTs. <br>
-	 * 
-	 * I have noticed that the "type" of the array doesn't always convey the right thing, so this "feature" flag of the SA shas to be looked into.
-	 * As can be seen above except only BSTR require a template others do not. But the logic for the JIString(BSTR) already works fine. So I will use this
-	 * flag only to set the JIVariant.class , whereever the "type" does not specify it but the "feature" does.    
-	 * </p>
-	 * @exclude
-	 * @param {number} c
-	 */
 	updateClazz(c)
 	{
 		this.clazz = c;

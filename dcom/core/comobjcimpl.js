@@ -235,7 +235,7 @@ class ComObjectImpl extends events.EventEmitter
 
   toString()
   {
-	  return "IJIComObject[" + this.internal_getInterfacePointer() + " , session: "
+	  return "ComObject[" + this.internal_getInterfacePointer() + " , session: "
       + this.getAssociatedSession().getSessionIdentifier() + ", isLocal: "
       + this.isLocalReference() + "]";
   }
