@@ -100,8 +100,8 @@ NetworkDataRepresentation.prototype.writeOctetArray = function(b, i, l) {
   this.buf.writeOctetArray(b, i, l);
 };
 
-NetworkDataRepresentation.prototype.readOctetArray = function(b, i, l) {
-  this.buf.readOctetArray(b, i, l);
-};
+NetworkDataRepresentation.prototype.readOctetArray = function (b, i, l){
+  return this.buf.readOctetArray(b, i, l);
+}
 
 module.exports = NetworkDataRepresentation;

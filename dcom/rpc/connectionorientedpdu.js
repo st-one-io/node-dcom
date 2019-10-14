@@ -260,10 +260,9 @@ class ConnectionOrientedPdu {
     ndr.writeUnsignedSmall(this.flags);
     ndr.writeFormatBool(false);
 
-    ndr.writeUnsignedShort(0); // frag length, to be later overriden
-    ndr.writeUnsignedShort(0); // auth length, to be later overriden
-    ndr.writeUnsignedLong(this.useCallIdCounter ?
-        callIdCounter++ : this.callId);
+    ndr.writeUnsignedShort(0); //frag length, to be later overriden
+    ndr.writeUnsignedShort(0); //auth length, to be later overriden
+    ndr.writeUnsignedLong(this.useCallIdCounter ? callIdCounter++ : this.callId);
   }
 
   /**

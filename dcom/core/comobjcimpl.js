@@ -300,13 +300,11 @@ class ComObjectImpl extends events.EventEmitter {
     this.isDual = isDual;
   }
 
-  /**
-   * @return {String}
-   */
-  toString() {
-    return 'IJIComObject[' + this.internal_getInterfacePointer() +
-      ' , session: ' + this.getAssociatedSession().getSessionIdentifier() +
-      ', isLocal: '+ this.isLocalReference() + ']';
+  toString()
+  {
+	  return "ComObject[" + this.internal_getInterfacePointer() + " , session: "
+      + this.getAssociatedSession().getSessionIdentifier() + ", isLocal: "
+      + this.isLocalReference() + "]";
   }
 
   /**

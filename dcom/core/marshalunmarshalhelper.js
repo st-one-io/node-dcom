@@ -28,13 +28,14 @@ const ComValue = require('./comvalue');
  */
 function readOctetArrayLE(ndr, length) {
     let bytes = [...Buffer.alloc(8)];
-    ndr.readOctetArray(bytes, 0, 8);
-    for (let i = 0; i < 4; i++) {
+    bytes = ndr.readOctetArray(bytes, 0, 8);
+    for (let i = 0; i < 4; i++)
+    {
         let t = bytes[i];
         bytes[i] = bytes[7 - i];
         bytes[7 - i] = t;
     }
-    return Buffer.from(bytes);
+    return bytes;
 }
 
 /**
@@ -289,8 +290,8 @@ function alignMemberWhileEncoding(ndr, c, obj) {
     if (align !== undefined) {
         let i = Math.round(index % align);
         i = (i == 0) ? 0 : align - i;
-
-        ndr.writeOctetArray([...Buffer.alloc(i)], 0, i);
+        
+        ndr.writeOctetArray(Buffer.alloc(i), 0, i);
     }
 }
 

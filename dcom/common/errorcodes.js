@@ -188,11 +188,11 @@ class ErrorCodes {
     // Incorrect Value of FLAG sent for this API. This FLAG is not valid here.
     this.UTIL_FLAG_ERROR = 0x00001008;
 
-    // Internal Library Error. This method should not have been called. Please check the parameters which you have passed to JICallBuilder.
+    // Internal Library Error. This method should not have been called. Please check the parameters which you have passed to CallBuilder.
     // They have been sent incorrectly.
     this.UTIL_INCORRECT_CALL = 0x00001009;
 
-    // Outparams cannot have more than 1 parameter here. It should be a JIVariant class parameter.
+    // Outparams cannot have more than 1 parameter here. It should be a Variant class parameter.
     this.DISP_INCORRECT_OUTPARAM = 0x0000100A;
 
     // Parameters inparams and dispId\paramNames arrays should have same length.
@@ -204,10 +204,10 @@ class ErrorCodes {
     // progId\clsid,address,session cannot be empty or null.
     this.COMSTUB_ILLEGAL_ARGUMENTS = 0x0000100D;
 
-    // Could not retrieve JIClsid from JIProgId via Windows Remote Registry Service
+    // Could not retrieve Clsid from ProgId via Windows Remote Registry Service
     this.COMSTUB_RR_ERROR = 0x0000100E;
 
-    // Internal Library Error, the serializer\deserializer was not found for {0}. Please check the parameters passed to JICallBuilder.
+    // Internal Library Error, the serializer\deserializer was not found for {0}. Please check the parameters passed to CallBuilder.
     this.UTIL_SERDESER_NOT_FOUND = 0x0000100F;
 
     // Authentication information was not supplied.
@@ -225,7 +225,7 @@ class ErrorCodes {
     // Arrays of Primitive Data Types are not accepted
     this.ARRAY_PRIMITIVE_NOTACCEPT = 0x00001014;
 
-    // Can only accept JIStruct, JIUnion, JIPointer and JIString as parameters for template.
+    // Can only accept Struct, Union, Pointer and String as parameters for template.
     this.ARRAY_INCORRECT_TEMPLATE_PARAM = 0x00001015;
 
     // IPID cannot be null.
@@ -279,14 +279,14 @@ class ErrorCodes {
     // Variant is null.
     this.VARIANT_IS_NULL = 0x00001026;
 
-    // Library currently accepts only upto 2 dimension for the JIVariant
+    // Library currently accepts only upto 2 dimension for the Variant
     this.VARIANT_VARARRAYS_2DIMRES = 0x00001027;
 
     // The upperbounds is to be specified for all dimensions or not specified at all.
     this.ARRAY_UPPERBNDS_DIM_NOTMATCH = 0x00001028;
 
-    // Please use the JIArray to pass arrays.
-    this.VARIANT_ONLY_JIARRAY_EXCEPTED = 0x00001029;
+    // Please use the Array to pass arrays.
+    this.VARIANT_ONLY_ARRAY_EXCEPTED = 0x00001029;
 
     // Unsupported type for VARIANT.
     this.VARIANT_UNSUPPORTED_TYPE = 0x00001030;
@@ -309,7 +309,7 @@ class ErrorCodes {
     // Illegal values sent as parameters, please check "data".
     this.WINREG_EXCEPTION5 = 0x00001036;
 
-    // JILocalMethodDescriptor is being added to a JILocalInterfaceDefinition supporting dispInterface, but it itself does not have a
+    // LocalMethodDescriptor is being added to a LocalInterfaceDefinition supporting dispInterface, but it itself does not have a
     // dispId.
     this.METHODDESC_DISPID_MISSING = 0x00001037;
 
@@ -328,19 +328,19 @@ class ErrorCodes {
     // "Object.class" arrays are not accepted. Only properly typed arrays accepted.
     this.ARRAY_TYPE_INCORRECT = 0x00001042;
 
-    // This JILocalCoClass has already been exported with one interface pointer, please use a new instance of this class with JIInterfacePointer.getInterfacePointer(...) api.
+    // This LocalCoClass has already been exported with one interface pointer, please use a new instance of this class with InterfacePointer.getInterfacePointer(...) api.
     this.JAVACOCLASS_ALREADY_EXPORTED = 0x00001043;
 
-    // JIInterfacePointer is not a valid parameter, please use JIVariant(IJIComObject,...).
+    // InterfacePointer is not a valid parameter, please use Variant(IComObject,...).
     this.VARIANT_TYPE_INCORRECT = 0x00001044;
 
-    // Direct Marshalling, UnMarshalling of Strings are not allowed, please use JIString instead.
+    // Direct Marshalling, UnMarshalling of Strings are not allowed, please use String instead.
     this.UTIL_STRING_INVALID = 0x00001045;
 
-    // createInstance() cannot be called since the JIComServer(JISession, JIInterfacePointer, String) ctor was used to create this COM server instance, please use getInstance() instead.
+    // createInstance() cannot be called since the ComServer(Session, InterfacePointer, String) ctor was used to create this COM server instance, please use getInstance() instead.
     this.COMSTUB_WRONGCALLCREATEINSTANCE = 0x00001046;
 
-    // getInstance() cannot be called since the JIComServer(JISession, JIInterfacePointer, String) ctor was NOT used to create this COM server instance, please use createInstance() instead.
+    // getInstance() cannot be called since the ComServer(Session, InterfacePointer, String) ctor was NOT used to create this COM server instance, please use createInstance() instead.
     this.COMSTUB_WRONGCALLGETINSTANCE = 0x00001047;
 
     // A session is already attached with this COM object.
@@ -349,7 +349,7 @@ class ErrorCodes {
     // This API cannot be invoked on local references.
     this.COMOBJ_LOCAL_REF = 0x00001049;
 
-    // A session is not attached with this object , use JIObjectFactory.buildObject(JISession, IJIComObject) to attach a session with this object.
+    // A session is not attached with this object , use ObjectFactory.buildObject(Session, IComObject) to attach a session with this object.
     this.SESSION_NOT_ATTACHED = 0x00001050;
 
     // The associated session is being destroyed. Current call to COM server has been terminated.

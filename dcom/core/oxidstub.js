@@ -86,20 +86,24 @@ class OXIDStub extends Stub {
       pingObject.seqNum = (isSimplePing)? 0 : holder.seqNum++;
       pingObject.setId = (holder.setId)? holder.setId: null;
 
-      let info = oxid.info;
-      let timeout = oxid.server.session.timeout;
-      debug('sending ping');
-      await oxid.call(Endpoint.IDEMPOTENT, pingObject, info, timeout)
+        let info = oxid.info;
+        let timeout = oxid.server.session.timeout;
+        debug("sending ping");
+        //console.log("SENDING PING!");
+        await oxid.call(Endpoint.IDEMPOTENT, pingObject, info, timeout)
           .catch(function(reject) {
-            debug(new Error('Ping: ' + reject));
+            debug(new Error("Ping: " + reject));
+            //console.log("ERRO");
             clearInterval(oxid.timer);
           });
-      holder.setId = pingObject.setId;
-      clearInterval(oxid.timer);
-      oxid.timer = setTimeout(oxid.pingIPIDS, 120000, oxid);
-      holder.modified = false;
-      // oxid.server.session.mapOfSessionvsIPIDPingHolders.delete(key);
-      // oxid.server.session.mapOfSessionvsIPIDPingHolders.set(key, holder);
+        holder.setId = pingObject.setId;
+        //console.log("PING SUCCESSFULL");
+        clearInterval(oxid.timer);
+        oxid.timer = setTimeout(oxid.pingIPIDS, 120000, oxid)
+        holder.modified = false;
+        //oxid.server.session.mapOfSessionvsIPIDPingHolders.delete(key);
+        //oxid.server.session.mapOfSessionvsIPIDPingHolders.set(key, holder);
+      }
     }
   }
 }

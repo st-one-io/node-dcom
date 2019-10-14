@@ -163,8 +163,9 @@ class InterfacePointer {
      * @param {number} flag
      */
     encode(ndr, defferedPointers, flag) {
-        if ((flag & Flags.FLAG_REPRESENTATION_SET_JIINTERFACEPTR_NULL_FOR_VARIANT) == Flags.FLAG_REPRESENTATION_SET_JIINTERFACEPTR_NULL_FOR_VARIANT) {
-            // just encode a null.
+
+        if ((flag & Flags.FLAG_REPRESENTATION_SET_INTERFACEPTR_NULL_FOR_VARIANT) == Flags.FLAG_REPRESENTATION_SET_INTERFACEPTR_NULL_FOR_VARIANT) {
+            //just encode a null.
             MarshalUnMarshalHelper.serialize(ndr, new ComValue(0, types.INTEGER), defferedPointers, flag);
             return;
         }
@@ -175,7 +176,7 @@ class InterfacePointer {
      * @return {String}
      */
     toString() {
-        return `JIInterfacePointer[IID: ${this.getIID()} , ObjRef: ${this.getObjectReference(InterfacePointer.OBJREF_STANDARD)}]`;
+        return `InterfacePointer[IID: ${this.getIID()} , ObjRef: ${this.getObjectReference(InterfacePointer.OBJREF_STANDARD)}]`;
     }
 
     /**
