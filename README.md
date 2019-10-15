@@ -10,7 +10,7 @@ node-com is a partial DCOM-compatible lib for Node.js environment. Most of the i
   - [Creating a Server](#creating-a-server)
   - [Creating a COM Object](#com-object)
   - [Destroying a Session](#destroying-a-session)
-- [Contributin](#contributin)
+- [Contributing](#contributing)
 
 ## Install
 
