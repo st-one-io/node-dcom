@@ -433,9 +433,9 @@ class ComArray {
 
 		return array;
 	}
-	
-	/**	Reverses Array elements for Dispatch.
-	 * 
+
+	/**
+	 *
 	 * @return
 	 */
 	reverseArrayForDispatch() {
@@ -511,7 +511,11 @@ class ComArray {
 	{
 		return this.numElementsInAllDimensions;
 	}
-	
+
+	/**
+	 * 
+	 * @param {Object} c 
+	 */
 	updateClazz(c)
 	{
 		this.clazz = c;

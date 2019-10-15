@@ -65,7 +65,7 @@ class DefaultConnection {
       if (index >= pdu_length) {
         throw new Error('No such element.');
       }
-      
+
       // we cannot rely fully on Object.assign() so do it step by step
       let fragment = new RequestCoPdu();
       fragment.setContextId(pdu.getContextId());
@@ -78,10 +78,10 @@ class DefaultConnection {
       let allocation = fragment.getStub().length - index;
       fragment.setAllocationHint(allocation);
       if (stubSize < allocation) allocation = stubSize;
-      
-      let fragmentStub;
+
+      let fragmentStub = new Array();
       let aux = pdu.getStub().slice(index, index + allocation);
-      fragmentStub = aux;
+      fragmentStub = fragmentStub.concat(aux);
       fragment.setStub(fragmentStub);
 
       let flags = pdu.getFlags() & ~(pdu.PFC_FIRST_FRAG | pdu.PFC_LAST_FRAG);
@@ -104,11 +104,11 @@ class DefaultConnection {
   async receive(transport) {
     let fragment = await this.receiveFragment(transport);
     // flag indicating if this is a single packet
-    var first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
-    var last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
-    var flag =  first && last;
-    
-    if (!this.bytesRemainingInReceiveBuffer && flag){
+    let first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
+    let last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
+    let flag =  first && last;      
+
+    if (!this.bytesRemainingInReceiveBuffer && flag) {
       return fragment;
     } else {
       let first_fragment = fragment;
@@ -120,13 +120,13 @@ class DefaultConnection {
         if (newStub != null && newStub.length > 0) {
           if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG)) {
             first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
-            stub = stub = Buffer.concat([newStub, stub]);
-          } else{
+            stub = newStub.concat(stub);
+          } else {
             // if its the the first frag, it will be in the middle or in the end
             if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)) {
               last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
             }
-            stub = Buffer.concat([stub, newStub]);
+            stub = stub.concat(newStub);
           }
         }
       } while (!last);
@@ -146,14 +146,15 @@ class DefaultConnection {
     }
   }
 
- }
-
-  transmitFragment(fragment, transport, info)
-  {
-    this.transmitBuffer = new NdrBuffer(new Array(this.transmitLength), 0);
-
+  /**
+   * Send the fragments to the socket.
+   * @param {*} fragment
+   * @param {ComTransport} transport
+   * @param {Object} info
+   */
+  transmitFragment(fragment, transport, info) {
+    this.transmitBuffer.reset();
     fragment.encode(this.ndr, this.transmitBuffer);
-    
     this.processOutgoing(info);
     transport.send(this.transmitBuffer, info);
   }
@@ -176,9 +177,9 @@ class DefaultConnection {
           while (this.receiveBuffer.length <= new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET) {
             let tmpBuffer = new NdrBuffer([10], 0);
             await transport.receive(tmpBuffer);
-            
-            var aux = tmpBuffer.buf.slice(0, tmpBuffer.length);
-            var aux_i = 0;
+
+            let aux = tmpBuffer.buf.slice(0, tmpBuffer.length);
+            let aux_i = 0;
             while (aux.length > 0)
               this.receiveBuffer.buf.splice(aux_i++, 1, aux.shift());
             this.receiveBuffer.length = this.receiveBuffer.length + tmpBuffer.length;
@@ -191,7 +192,7 @@ class DefaultConnection {
 
     if (read) {
       this.receiveBuffer.reset();
-      this.receiveBuffer.buf =await (transport.receive(this.receiveBuffer));
+      this.receiveBuffer.buf =[...await (transport.receive(this.receiveBuffer))];
       this.receiveBuffer.length = this.receiveBuffer.buf.length
     }
 
@@ -203,24 +204,27 @@ class DefaultConnection {
     if (this.receiveBuffer.length > 0) {
       this.receiveBuffer.setIndex(new ConnectionOrientedPdu().FRAG_LENGTH_OFFSET);
       let frag = new Array(2);
-      frag = this.receiveBuffer.readOctetArray(frag, 0, frag.length);
+      this.receiveBuffer.readOctetArray(frag, 0, frag.length);
       //fragmentLength = this.receiveBuffer.dec_ndr_short();
       fragmentLength = ((frag[0] & 0xFF) | ((frag[1] & 0xFF) << 8));
 
-      newBuffer = [];
-      if (fragmentLength > this.receiveBuffer.length){
-        var remainingBytes = fragmentLength - this.receiveBuffer.length;
-        while (fragmentLength > counter){
-          let temp = this.receiveBuffer.buf.slice(0, lengthOfArrayTobeRead);
-          newBuffer.push(...temp);
-                    
+      newBuffer = new Array(fragmentLength);
+
+      if (fragmentLength > this.receiveBuffer.length) {
+        let remainingBytes = fragmentLength - this.receiveBuffer.length;
+        while (fragmentLength > counter) {
+          let aux = this.receiveBuffer.buf.slice(0, lengthOfArrayTobeRead);
+          let aux_i = counter;
+          while (aux.length > 0)
+            newBuffer.splice(aux_i++, 1, aux.shift());
+
           counter = counter + lengthOfArrayTobeRead;
           if (fragmentLength == counter) {
             break;
           }
 
           this.receiveBuffer.reset();
-          this.receiveBuffer.buf = await transport.receive(this.receiveBuffer);
+          this.receiveBuffer.buf = [...await transport.receive(this.receiveBuffer)];
           this.receiveBuffer.length = this.receiveBuffer.buf.length;
           if (fragmentLength - counter >= this.receiveBuffer.length) {
             lengthOfArrayTobeRead = this.receiveBuffer.length;
@@ -229,15 +233,16 @@ class DefaultConnection {
             trimSize = this.receiveBuffer.length - lengthOfArrayTobeRead;
           }
         }
-        
       } else {
-        newBuffer = this.receiveBuffer.buf.slice(0, fragmentLength);
+        let aux = this.receiveBuffer.buf.slice(0, fragmentLength);
+        let aux_i = 0;
 
+        while (aux.length > 0)
+          newBuffer.splice(aux_i++, 1, aux.shift());
         trimSize = this.receiveBuffer.length - fragmentLength;
       }
 
-      if (trimSize > 0){
-        let aux;
+      if (trimSize > 0) {
         aux = this.receiveBuffer.buf.slice(this.receiveBuffer.length - trimSize, ((this.receiveBuffer.length - trimSize) + trimSize));
         this.receiveBuffer.buf = aux;
         //while (aux.length > 0)
