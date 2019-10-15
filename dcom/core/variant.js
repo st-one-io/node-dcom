@@ -1,33 +1,35 @@
 let ErrorCodes;
 let System;
-let HashMap;
 let Flags;
 let ComString;
 let ComArray;
 let ComObject;
 let ComObjectImpl;
-let types;
-let ComValue;
 let MarshalUnMarshalHelper;
 let Pointer;
 let Struct;
-let inited;
+let HashMap;
+let types;
+let ComValue;
 let InterfacePointer;
+let variantTypes;
+let supportedTypes;
+let supportedTypes_classes;
+let inited = false;
 
 const EMPTY = {};
 const NULL = {};
 const SCODE = {};
 
 /**
- * Variant types are types used by COM
- * to represente different types of data.
+ * Variant data type class
  */
 class Variant {
   /**
    *
-   * @param {ComValue} value
-   * @param {Boolean} isByref
-   * @param {Number}  FLAG
+   * @param {ComValue} [value]
+   * @param {boolean} [isByref]
+   * @param {Boolean} [FLAG]
    */
   constructor(value, isByref, FLAG)
   {
@@ -40,7 +42,7 @@ class Variant {
     this.SCODE = SCODE;
     this.member = null;
 
-    this.serialVersionUUID = '5101290038004040628L;';
+    this.serialVersionUUID = "5101290038004040628L;"
     /* this.VT_NULL 			   = 0x00000001;
   	this.VT_EMPTY 			 = 0x00000000;
   	this.VT_I4 				   = 0x00000003;
@@ -88,14 +90,14 @@ class Variant {
   	this.VT_BYREF_VT_INT 	 = this.VT_BYREF|this.VT_INT;//0x00004016;
   	this.VT_BYREF_VT_UINT  = this.VT_BYREF|this.VT_UINT;//0x00004017;*/
 
-  	/* this.FADF_AUTO       = 0x0001;  // array is allocated on the stack
-  	this.FADF_STATIC     = 0x0002;  // array is staticly allocated
-  	this.FADF_EMBEDDED   = 0x0004;  // array is embedded in a structure
-  	this.FADF_FIXEDSIZE  = 0x0010;  // may not be resized or reallocated
-  	this.FADF_RECORD     = 0x0020;  // an array of records
-  	this.FADF_HAVEIID    = 0x0040;  // with FADF_DISPATCH, FADF_UNKNOWN array has an IID for interfaces
-  	this.FADF_HAVEVARTYPE = 0x0080;  // array has a VT type
-  	this.FADF_BSTR        = 0x0100;  // an array of BSTRs
+  	/* this.FADF_AUTO       = 0x0001;  // array is allocated on the stack 
+  	this.FADF_STATIC     = 0x0002;  // array is staticly allocated 
+  	this.FADF_EMBEDDED   = 0x0004;  // array is embedded in a structure 
+  	this.FADF_FIXEDSIZE  = 0x0010;  // may not be resized or reallocated 
+  	this.FADF_RECORD     = 0x0020;  // an array of records 
+  	this.FADF_HAVEIID    = 0x0040;  // with FADF_DISPATCH, FADF_UNKNOWN array has an IID for interfaces 
+  	this.FADF_HAVEVARTYPE = 0x0080;  // array has a VT type 
+  	this.FADF_BSTR        = 0x0100;  // an array of BSTRs 
   	this.FADF_UNKNOWN     = 0x0200;  // an array of IUnknown
   	this.FADF_DISPATCH    = 0x0400;  // an array of IDispatch
   	this.FADF_VARIANT     = 0x0800;  // an array of VARIANTs 
@@ -118,8 +120,6 @@ class Variant {
     this.VT_UNKNOWN_ARRAY = this.VT_ARRAY | this.VT_UNKNOWN;
     this.VT_VARIANT_ARRAY = this.VT_ARRAY | this.VT_VARIANT;*/
 
-    this.supportedTypes = new HashMap();
-    this.supportedTypes_classes = new HashMap();
     this.outTypeMap = new HashMap();
 
     // populate those hashes
@@ -128,71 +128,6 @@ class Variant {
     this.outTypeMap.set(String, "");
     // TO-DO: find a way to do this.outTypeMap.set(Currency, new Currency("0.0"));
     this.outTypeMap.set(Date, new Date());
-
-    // TO-DO: evaluate the necessity of unsigned byte, short, and integer (all Number here)
-    // TO-DO: same for long, which would require an external module since no suport in JS
-    this.supportedTypes.set(Object, Variant.VT_VARIANT);
-    this.supportedTypes.set(types.VARIANT, Variant.VT_VARIANT);
-    this.supportedTypes.set(types.BOOLEAN, Variant.VT_BOOL);
-    this.supportedTypes.set(types.COMSTRING, Variant.VT_BSTR);
-    this.supportedTypes.set(types.EMPTY, Variant.VT_EMPTY);
-    this.supportedTypes.set(types.SCODE, Variant.VT_ERROR);
-    this.supportedTypes.set(types.NULL, Variant.VT_NULL);
-    this.supportedTypes.set(types.ARRAY, Variant.VT_ARRAY);
-    this.supportedTypes.set(types.DATE, Variant.VT_DATE);
-    this.supportedTypes.set(types.INTEGER, Variant.VT_I4);
-    this.supportedTypes.set(types.FLOAT, Variant.VT_R4);
-    this.supportedTypes.set(types.DOUBLE, Variant.VT_R8);
-    this.supportedTypes.set(types.SHORT, Variant.VT_I2);
-    this.supportedTypes.set(types.BYTE, Variant.VT_I1);
-    this.supportedTypes.set(types.CHARACTER, Variant.VT_I1);
-    this.supportedTypes.set(types.COMARRAY, Variant.VT_ARRAY);
-    this.supportedTypes.set(types.LONG, Variant.VT_I8);
-    this.supportedTypes.set(types.CURRENCY, Variant.VT_CY);
-    this.supportedTypes.set(types.UNSIGNEDSHORT, Variant.VT_UI1);
-    this.supportedTypes.set(types.UNSIGNEDINTEGER, Variant.VT_UI2);
-    this.supportedTypes.set(types.UNSIGNEDLONG, Variant.VT_UI4);
-    // TO-DO: find a way to dothis.supportedTypes(Currency, new Number(this.VT_CY));
-
-    // TO-DO: evaluate what should be done with the missing types
-    // and if it will impact on the lib when interacting with a COM server
-    this.supportedTypes_classes.set(new Number(Variant.VT_DATE), new ComValue(null, types.DATE));
-    // TO-DO: find a way to do this.supportedTypes_classes.set(new Number(this.VT_CY), Currency); properly
-    this.supportedTypes_classes.set(new Number(Variant.VT_CY), new ComValue(null, types.CURRENCY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_VARIANT), new ComValue(null, types.VARIANT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I4), new ComValue(null, types.LONG));
-    this.supportedTypes_classes.set(new Number(Variant.VT_INT), new ComValue(null, types.INTEGER));
-    this.supportedTypes_classes.set(new Number(Variant.VT_R4), new ComValue(null, types.FLOAT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_BOOL), new ComValue(null, types.BOOLEAN));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I2), new ComValue(null, types.SHORT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I1), new ComValue(null, types.BYTE));
-    this.supportedTypes_classes.set(new Number(Variant.VT_BSTR), new ComValue(null, types.COMSTRING));
-    this.supportedTypes_classes.set(new Number(Variant.VT_ERROR), SCODE);
-    this.supportedTypes_classes.set(new Number(Variant.VT_EMPTY), EMPTY);
-    this.supportedTypes_classes.set(new Number(Variant.VT_NULL), NULL);
-    this.supportedTypes_classes.set(new Number(Variant.VT_ARRAY), new ComValue(null, types.ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UNKNOWN), new ComValue(null, types.COMOBJECT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_DISPATCH), new ComValue(null, types.COMOBJECT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UI1), new ComValue(null, types.UNSIGNEDBYTE));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UI2), new ComValue(null, types.UNSIGNEDSHORT));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UI4), new ComValue(null, types.UNSIGNEDINTEGER));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I8), new ComValue(null, types.INTEGER));
-    this.supportedTypes_classes.set(new Number(Variant.VT_R8), new ComValue(null, types.DOUBLE));
-    this.supportedTypes_classes.set(new Number(Variant.VT_BOOL_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_BSTR_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_DECIMAL_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_ERROR_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I1_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I2_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_I4_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_R4_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_R8_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_U1_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_U2_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_U4_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UINT_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_UNKNOWN_ARRAY), new ComValue(types.VT_ARRAY));
-    this.supportedTypes_classes.set(new Number(Variant.VT_VARIANT_ARRAY), new ComValue(types.VT_ARRAY));
 
     // init Arrays
     this.arryInits = new Array();
@@ -247,6 +182,9 @@ class Variant {
     Pointer = require('./pointer');
     Struct = require('./struct');
     InterfacePointer = require('./interfacepointer');
+    variantTypes = require('./varianttypes').variantTypes;
+    supportedTypes = require('./varianttypes').supportedTypes;
+    supportedTypes_classes = require('./varianttypes').supportedTypes_classes;
     inited = true;
   }
 
@@ -254,7 +192,7 @@ class Variant {
   {
     var variant = null;
     if (!isArray) {
-      variant = this.makeVariant(outTypeMap.get(c), true);
+      variant = this.makeVariant(this.outTypeMap.get(c), true);
 
       if (c instanceof ComObject) {
         return this.OUT_UNKNOWN();
@@ -297,7 +235,7 @@ class Variant {
       }
     }
 
-    let c  = typeof o;
+    var c = typeof o;
     if (c instanceof Array) {
       throw new Error("Illegal Argument.");
     }
@@ -317,51 +255,37 @@ class Variant {
     return null;
   }
 
-  /**
-   *
-   * @param {Number} type
-   * @return {Number}
-   */
-  getSupportedClass(type) {
-    return this.supportedTypes_classes.get(type);
+  getSupportedClass(type)
+  {
+    return supportedTypes_classes.get(type);
   }
 
-  /**
-   *
-   * @param {Object} c
-   * @param {Number} FLAG
-   * @return {Number}
-   */
-  getSupportedType(c, FLAG) {
-    let retVal = this.supportedTypes.get(c.getType());
+  getSupportedType(c, FLAG)
+  {
+    var retVal = supportedTypes.get(c.getType());
 
     if (retVal == null && c == types.COMOBJECT) {
-      retVal = this.VT_UNKNOWN;
+      retVal = variantTypes.VT_UNKNOWN;
     }
 
-    if (retVal == this.VT_I4 && (FLAG & Flags.FLAG_REPRESENTATION_VT_INT) ==
+    if (retVal == variantTypes.VT_I4 && (FLAG & Flags.FLAG_REPRESENTATION_VT_INT) ==
       Flags.FLAG_REPRESENTATION_VT_INT) {
-      retVal = this.VT_INT;
-    } else if (retVal == this.VT_UI4 &&
+      retVal = variantTypes.VT_INT;
+    } else if (retVal == variantTypes.VT_UI4 &&
       (FLAG & Flags.FLAG_REPRESENTATION_VT_UINT) == Flags.FLAG_REPRESENTATION_VT_UINT) {
-      retVal = this.VT_UINT;
+      retVal = variantTypes.VT_UINT;
     }
 
     return retVal;
   }
 
-  /**
-   *
-   * @param {Object} o
-   * @param {Number} defaultType
-   * @return {Number}
-   */
-  getSupportedTypeObj(o, defaultType) {
-    let c = o.constructor;
-    let retVal = this.supportedTypes.get(c);
+  getSupportedTypeObj(o, defaultType)
+  {
+    var c = o.constructor;
+    var retVal = supportedTypes.get(c);
 
     if (retVal == null && o instanceof ComObject) {
-      retval = new Number(this.VT_UNKNOWN);
+      retval = new Number(variantTypes.VT_UNKNOWN);
     }
 
     return retval;
@@ -398,11 +322,9 @@ class Variant {
     return new Variant(new NULL());
   }
 
-  /**
-   * @return {Variant}
-   */
-  OPTIONAL_PARAM() {
-    return new Variant(Variant.SCODE, new ErrorCodes().DISP_E_PARAMNOTFOUND);
+  OPTIONAL_PARAM()
+  {
+    return new Variant(variantTypes.SCODE, new ErrorCodes().DISP_E_PARAMNOTFOUND);
   }
 
   BSTRARRAY()
@@ -425,8 +347,7 @@ class Variant {
     isByref = (isByref == undefined) ? false : isByref;
 
     if (obj != null && obj.getType() == types.ARRAY) {
-      throw new Error('Ilegal Argument: ' +
-       new ErrorCodes().VARIANT_ONLY_JIARRAY_EXCEPTED);
+      throw new Error("Ilegal Argument: " + new ErrorCodes().VARIANT_ONLY_ARRAY_EXCEPTED);
     }
 
     if (obj != null && obj.getType() == types.INTERFACEPOINTER) {
@@ -543,17 +464,13 @@ class Variant {
 
 
   // TO-DO: this will take some time, postpone it until it is needed
-  /**
-   * @param {Array} array
-   * @param {Boolean} isByref
-   * @param {Number} FLAG
-   */
-  initArrays(array, isByref, FLAG) {
-    let variant2 = null;
-    let array2 = null;
-    let c = NULL;
-    let newArrayObj = null;
-    let is2Dim = false;
+  initArrays(array, isByref, FLAG)
+  {
+    var variant2 = null;
+    var array2 = null;
+    var c = NULL;
+    var newArrayObj = null;
+    var is2Dim = false;
 
     if (array == null) {
       this.init(null, false);
@@ -594,32 +511,28 @@ class Variant {
 				is2Dim = true;
         break;
       default:
-          throw new Error(new ErrorCodes().JI_VARIANT_VARARRAYS_2DIMRES);
+          throw new Error(new ErrorCodes().VARIANT_VARARRAYS_2DIMRES);
     }
-    array2 = new ComArray(new ComValue(newArrayObj, c),
-      true); // should always be conformant since this is part of a safe array.
+    array2 = new ComArray(new ComValue(newArrayObj, c),true); // should always be conformant since this is part of a safe array.
     let safeArray = new Struct();
     try {
-      safeArray.addMember(new ComValue(array.getValue().getDimensions(),
-       types.SHORT));// dim
+      safeArray.addMember(new ComValue(array.getValue().getDimensions(), types.SHORT));// dim
       let elementSize = -1;
-      let flags = Variant.FADF_HAVEVARTYPE;
+      let flags = variantTypes.FADF_HAVEVARTYPE;
       if (c == types.VARIANT) {
-        flags = (flags | Variant.FADF_VARIANT);
+        flags = (flags | variantTypes.FADF_VARIANT);
         elementSize = 16; // (Variant is pointer whose size is 16)
-      } else if (this.arryInits.includes(c)) {
+      }
+      else if (this.arryInits.includes(c)) {
         if (c == types.COMSTRING) {
-          flags = (flags | Variant.FADF_BSTR);
+          flags = (flags | variantTypes.FADF_BSTR);
         } else if (c == types.COMOBJECT) {
-          flags = (flags | Variant.FADF_UNKNOWN);
+          flags = (flags | variantTypes.FADF_UNKNOWN);
           FLAG |= Flags.FLAG_REPRESENTATION_USE_IUNKNOWN_IID;
         } else
           elementSize = 4; // Since all these are pointers inherently
       } else {
-        elementSize = MarshalUnMarshalHelper.getLengthInBytes(
-          new ComValue(null, c), null, c == types.BOOLEAN ?
-            Flags.FLAG_REPRESENTATION_VARIANT_BOOL :
-            Flags.FLAG_NULL); // All other types, basic types
+        elementSize = MarshalUnMarshalHelper.getLengthInBytes(new ComValue(null, c), null, c == types.BOOLEAN ? Flags.FLAG_REPRESENTATION_VARIANT_BOOL : Flags.FLAG_NULL); // All other types, basic types
       }
 
       let safeArrayBound = null;
@@ -632,34 +545,28 @@ class Variant {
         safeArrayBound.addMember(new ComValue(0, types.INTEGER)); // starts at 0
         arrayOfSafeArrayBounds[i] = new ComValue(safeArrayBound, types.STRUCT);
       }
-      let arrayOfSafeArrayBounds2 = new ComArray(
-        new ComValue(arrayOfSafeArrayBounds, types.STRUCT), true);
+
+      let arrayOfSafeArrayBounds2 = new ComArray(new ComValue(arrayOfSafeArrayBounds, types.STRUCT),true);
+
       safeArray.addMember(new ComValue(flags, types.SHORT));// flags
       if (elementSize > 0) {
         safeArray.addMember(new ComValue(elementSize, types.INTEGER));
       } else {
-        elementSize = MarshalUnMarshalHelper.getLengthInBytes(obj[0],
-           null, FLAG);
+        elementSize = MarshalUnMarshalHelper.getLengthInBytes(obj[0], null, FLAG);
         safeArray.addMember(new ComValue(elementSize, types.INTEGER));// size
       }
-      console.log("debug");
+
       safeArray.addMember(new ComValue(0, types.SHORT));// locks
-      safeArray.addMember(new ComValue(new Variant().getSupportedType(
-        new ComValue(null, c), FLAG),
-         types.SHORT));// variant array, safearrayunion
+      safeArray.addMember(new ComValue(new Variant().getSupportedType(new ComValue(null, c), FLAG), types.SHORT));// variant array, safearrayunion
       // peculiarity here, windows seems to be sending the signed type in VarType32...
       if (c == types.BOOLEAN) {
-        safeArray.addMember(new Variant().getSupportedType(
-          new ComValue(null, types.SHORT), FLAG));// safearrayunion
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, types.SHORT),FLAG));// safearrayunion
       } else if (c == types.LONG) {
-        safeArray.addMember(new Variant().getSupportedType(
-          new ComValue(null, types.LONG), FLAG));// safearrayunion
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, types.LONG),FLAG));// safearrayunion
       } else {
-        safeArray.addMember(new Variant().getSupportedType(
-          new ComValue(null, c), FLAG));// safearrayunion
+        safeArray.addMember(new Variant().getSupportedType(new ComValue(null, c),FLAG));// safearrayunion
       }
-      safeArray.addMember(new ComValue(array2.getNumElementsInAllDimensions(),
-       types.INTEGER));// size in safearrayunion
+      safeArray.addMember(new ComValue(array2.getNumElementsInAllDimensions(), types.INTEGER));// size in safearrayunion
       let ptr2RealArray = new Pointer(new ComValue(array2, types.COMARRAY));
       safeArray.addMember(new ComValue(ptr2RealArray, types.POINTER));
       safeArray.addMember(new ComValue(arrayOfSafeArrayBounds2, types.COMARRAY));
@@ -712,10 +619,9 @@ class Variant {
     return (this.member.getReferent()).getObjectAsString();
   }
 
-  /**
-   * @return {Date}
-   */
-  getObjectAsDate() {
+  // TO-DO: asString2
+
+  getObjectAsDate(){
     this.checkValidity();
     return (this.member.getReferent()).getObjectAsDate();
   }
@@ -853,12 +759,12 @@ class VariantBody
 
     var typo = new Variant().getSupportedType(this.obj, dataType);
     if (typo != null) {
-      this.types = Number.parseInt(typo) | (args.isByRef ? Variant.VT_BYREF:0);
+      this.types = Number.parseInt(typo) | (args.isByRef ? VT_BYREF:0);
     } else {
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
 
-    if (dataType == Variant.VT_NULL) {
+    if (dataType == variantTypes.VT_NULL) {
       this.isNull = true;
       this.obj = new Number(0);
     }
@@ -869,12 +775,12 @@ class VariantBody
     if (args.value instanceof NULL) {
       this.VariantBodyObj(1, {referent: new Number(0), isByref: false, dataType: -1});
       this.isNull = true;
-      this.type = Varian.VT_NULL;
+      this.type = variantTypes.VT_NULL;
     }
 
     this.VariantBodyObj(1, {referent: new Number(args.errorCode), isByref: args.isByRef, dataType: -1});
     this.isScode = true;
-    this.type = Variant.VT_ERROR;
+    this.type = variantTypes.VT_ERROR;
   }
 
   VariantBodyArray(args)
@@ -894,7 +800,7 @@ class VariantBody
 
     var types = Number.parseInt(new Variant().getSupportedType(args.nestedClass, this.FLAG));
     if (types != null) {
-      this.type = types | (args.isByRef ? Variant.VT_BYREF:0);
+      this.type = types | (args.isByRef ? variantTypes.VT_BYREF:0);
     } else {
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
@@ -1018,8 +924,7 @@ class VariantBody
 
     if ((FLAG & FLags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) ==
       Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) {
-      varType = this.isByRef ? 0x4000 |
-        Variant.VT_DISPATCH : Variant.VT_DISPATCH;
+      varType = isByRef ? 0x4000 | variantTypes.VT_DISPATCH : variantTypes.VT_DISPATCH;
     }
 
     ndr.writeUnsignedShort(varType);
@@ -1034,10 +939,10 @@ class VariantBody
     if (obj != null) {
       ndr.writeUnsignedLong(varType);
     } else {
-      if (!this.isByRef) {
-        ndr.writeUnsignedLong(Variant.VT_ARRAY);
+      if (!isByRef) {
+        ndr.writeUnsignedLong(variantTypes.VT_ARRAY);
       } else {
-        ndr.writeUnsignedLong(Variant.VT_BYREF_VT_ARRAY);
+        ndr.writeUnsignedLong(variantTypes.VT_BYREF_VT_ARRAY);
       }
     }
 
@@ -1047,10 +952,11 @@ class VariantBody
         flag = -4;
       } else {
         switch (this.type) {
-          case Variant.VT_BYREF_VT_VARIANT:
+          case variantTypes.VT_BYREF_VT_VARIANT:
             flag = 0x10;
             break;
-          case VT_BYREF_VT_DATE:
+          case variantTypes.VT_BYREF_VT_DATE:
+          case variantTypes.VT_BYREF_VT_CY:
             flag = 8;
             break;
           default:
@@ -1130,27 +1036,32 @@ class VariantBody
 
 		let variant = null;
 
-		let varDefferedPointers = new Array();
-		if ((variantType & Variant.VT_ARRAY) == 0x2000) {
-			let isByRef = (variantType & Variant.VT_BYREF) == 0 ? false : true;
+		var varDefferedPointers = [];
+		if((variantType & variantTypes.VT_ARRAY) == 0x2000)
+		{
+			var isByRef = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
 			// the struct may be null if the array has nothing
-      let safeArray = this.getDecodedValueAsArray(ndr,
-        varDefferedPointers, variantType & ~Variant.VT_ARRAY,
-        isByRef, additionalData, FLAG);
+			let safeArray = this.getDecodedValueAsArray(ndr,varDefferedPointers,variantType & ~variantTypes.VT_ARRAY,isByRef,additionalData,FLAG);
 			let type2 = variantType;
-			if (isByRef) {
-				type2 = type2 & ~Variant.VT_BYREF; // so that actual type can be determined
+			if (isByRef)
+			{
+				type2 = type2 & ~variantTypes.VT_BYREF; // so that actual type can be determined
 			}
 
 			type2 = type2 & 0x0FFF ;
 			let flagofFlags = FLAG;
-			if (type2 == Variant.VT_INT) {
+			if (type2 == variantTypes.VT_INT)
+			{
 				flagofFlags |= Flags.FLAG_REPRESENTATION_VT_INT;
-			} else
-			if (type2 == Variant.VT_UINT) {
+			}
+			else
+			if (type2 == variantTypes.VT_UINT)
+			{
 				flagofFlags |= Flags.FLAG_REPRESENTATION_VT_UINT;
-			} else
-			if (type2 == Variant.VT_BOOL) {
+			}
+			else
+			if (type2 == variantTypes.VT_BOOL)
+			{
 				FLAG = flagofFlags |= Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
 			}
 
@@ -1159,23 +1070,30 @@ class VariantBody
         variant = new VariantBody(3, {safeArray: safeArray, nestedClass: new Variant().getSupportedClass(new Number(type2 
           & ~new Variant().VT_ARRAY)),is2Dimensional: (safeArray.getValue().getMember(8).getValue().getArrayInstance()).length > 1 ? true : false ,
           isByref: isByRef, FLAG: flagofFlags});
-			} else {
-        variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~Variant.VT_ARRAY)),
-          is2Dimensional: false, isByref: isByRef, FLAG: flagofFlags});
+			}
+			else
+			{
+        variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~VT_ARRAY)),
+          is2Dimensional: false,isByref: isByRef, FLAG: flagofFlags});
 			}
 
 			variant.FLAG = flagofFlags;
 
-		} else {
-      let isByRef = (variantType & Variant.VT_BYREF) == 0 ? false : true;
-      let ref = this.getDecodedValue(ndr, varDefferedPointers, variantType, isByRef, additionalData, FLAG);
+		}
+		else
+		{
+      var isByRef = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
+      let ref = this.getDecodedValue(ndr,varDefferedPointers,variantType,isByRef,additionalData,FLAG);
       variant = new VariantBody(1, {referent: ref,
         isByRef: isByRef, dataType: variantType});
-			let type2 = variantType & 0x0FFF;
-			if (type2 == Variant.VT_INT) {
+			let type2 = variantType & 0x0FFF ;
+			if (type2 == variantTypes.VT_INT)
+			{
 				variant.FLAG = Flags.FLAG_REPRESENTATION_VT_INT;
-			} else
-			if (type2 == Variant.VT_UINT) {
+			}
+			else
+			if (type2 == variantTypes.VT_UINT)
+			{
 				variant.FLAG = Flags.FLAG_REPRESENTATION_VT_UINT;
 			}
 		}
@@ -1186,7 +1104,7 @@ class VariantBody
 		{
 
 			let newList = new Array();
-			let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(varDefferedPointers[x], types.POINTER), newList, FLAG, additionalData);
+			let replacement = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(varDefferedPointers[x], types.POINTER),newList,FLAG,additionalData);
 			varDefferedPointers[x].replaceSelfWithNewPointer(replacement); // this should replace the value in the original place.
       x++;
       let aux = newList;
@@ -1196,12 +1114,14 @@ class VariantBody
       let begin = varDefferedPointers.slice(0, x);
       let end = varDefferedPointers.slice(x, varDefferedPointers.length);
       let middle = newList;
-      varDefferedPointers = begin.concat(middle.concat(end));
-      /* while(i++ < maxLength)
-			  varDefferedPointers.splice(aux_index++, 0, aux.shift());*/
+      // varDefferedPointers = begin.concat(middle.concat(end));
+      middle.push(...end);
+      begin.push(...middle);
+      varDefferedPointers = begin;
 		}
 
-		if (variant.isArray && variant.safeArrayStruct != null) {
+		if (variant.isArray && variant.safeArrayStruct != null)
+		{
 			// SafeArray have the alignment rule , that all Size <=4 are aligned by 4 and size 8 is aligned by 8.
 			// Variant is aligned by 4, Interface pointers are aligned by 4 as well.
 			// but this should not exceed the length
@@ -1249,52 +1169,50 @@ class VariantBody
 		return variant;
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   * @param {Array} defferedPointers
-   * @param {Number} type
-   * @param {Boolean} isByRef
-   * @param {Array} additionalData
-   * @param {Number} FLAG
-   * @return {Object}
-   */
-  getDecodedValue(ndr, defferedPointers, type, isByRef, additionalData, FLAG) {
-		let obj = null;
-		let c = this.getVarClass(type);
-		if (c != null) {
-			if (isByRef) {
+  getDecodedValue(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+	{
+
+    let obj = null;
+    let c = this.getVarClass(type);
+		if (c != null)
+		{
+			if (isByRef)
+			{
 				ndr.readUnsignedLong(); // Read the Pointer
 			}
 
-			if (c == new VariantBody().SCODE) {
-				obj = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(null, types.INTEGER), null, FLAG, additionalData);
+			if (c == new VariantBody().SCODE)
+			{
+				obj = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(null, types.INTEGER),null,FLAG,additionalData);
         /* let scode = new VariantBody().SCODE;
         scode.errorCode = obj;
         obj = scode;*/
-				type = Variant.VT_ERROR;
-			} else
-			if (c  == new VariantBody().NULL) {
+				type = variantTypes.VT_ERROR;
+			}else
+			if (c == new VariantBody().NULL)
+			{
 				// have read 20 bytes
-				// JIMarshalUnMarshalHelper.deSerialize(ndr,Integer.class,null,JIFlags.FLAG_NULL);//read the last 4 bytes, since there could be parameters before this.
-				obj = NULL;
-				type = Variant.VT_NULL;
-			} else
+				obj = variantTypes.NULL;
+				type = variantTypes.VT_NULL;
+			}else
 			if (c == new VariantBody().EMPTY) // empty is 20 bytes
 			{
-				obj = new ComValue(new VariantBody().EMPTY, types.EMPTY);
-				type = Variant.VT_EMPTY;
-			} else
-			if (c.getType() == types.COMSTRING) {
+				obj = new ComValue(new VariantBody().EMPTY,types.EMPTY);
+				type = variantTypes.VT_EMPTY;
+			}else
+			if (c.getType() == types.COMSTRING)
+			{
 				obj = new ComString(Flags.FLAG_REPRESENTATION_STRING_BSTR);
-				obj = (obj).decode(ndr, null, FLAG, additionalData);
-			} else
+				obj = (obj).decode(ndr,null,FLAG,additionalData);
+			}
+			else
 				if (c.getType() == types.BOOLEAN) {
-					obj = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(false, types.BOOLEAN), defferedPointers, FLAG | Flags.FLAG_REPRESENTATION_VARIANT_BOOL, additionalData);
+					obj = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(false, types.BOOLEAN),defferedPointers,FLAG | Flags.FLAG_REPRESENTATION_VARIANT_BOOL,additionalData);
 				} else {
 					obj = MarshalUnMarshalHelper.deSerialize(ndr, c,defferedPointers,FLAG,additionalData);
 				}
-		}
+    }
+
 		return obj;
   }
   
@@ -1302,8 +1220,9 @@ class VariantBody
 	{
 		let c = null;
 		// now first to check if this is a pointer or not.
-		type = type & 0x0FFF; // 0x4XXX & 0x0FFF = real type
-		switch (type) {
+    type = type & 0x0FFF ; // 0x4XXX & 0x0FFF = real type
+		switch(type)
+		{
 			case 0: // VT_EMPTY , Not specified.
 				c = EMPTY;
 				break;
@@ -1315,7 +1234,8 @@ class VariantBody
 				break;
 			default:
 				c = new Variant().getSupportedClass(new Number(type));
-				if (c == null) {
+				if (c == null)
+				{
 					// TODO log this , what has come that i don't support.
 				}
 			    break;
@@ -1323,22 +1243,14 @@ class VariantBody
 
 		return c;
   }
-
-  /**
-   * 
-   * @param {NetworkDataRepresentation} ndr
-   * @param {Array} defferedPointers
-   * @param {Number} type
-   * @param {Boolean} isByRef
-   * @param {Array} additionalData
-   * @param {Number} FLAG
-   * @return {ComArray}
-   */
-  getDecodedValueAsArray(ndr, defferedPointers, type, isByRef, additionalData, FLAG) {
+  
+  getDecodedValueAsArray(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+	{
 		// int newFLAG = FLAG;
-		if (isByRef) {
+		if (isByRef)
+		{
 			ndr.readUnsignedLong();// read the pointer
-			type = type & ~Variant.VT_BYREF; // so that actual type can be determined
+			type = type & ~variantTypes.VT_BYREF; // so that actual type can be determined
 		}
 
 		if (ndr.readUnsignedLong() == 0)// read pointer referent id
@@ -1363,9 +1275,9 @@ class VariantBody
 			safeArray.addMember(new ComValue(null, types.INTEGER));// safearrayunion
 			safeArray.addMember(new ComValue(null, types.INTEGER));// size in safearrayunion
 
-			let c = new Variant().supportedTypes_classes.get(new Number(type));
-			if (c == null) {
-				// not available , lets try with JIVariant.
+			let c = supportedTypes_classes.get(new Number(type));
+			if (c == null)
+			{
 				// This is a bug, I should have the type.
 				c = new ComValue(null, types.VARIANT);
 			}
@@ -1375,12 +1287,15 @@ class VariantBody
 				FLAG |= Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
       }
 			let values = null;
-			if (c.getType() == types.COMSTRING) {
-				values = new ComArray(new ComValue(new ComString(Flags.FLAG_REPRESENTATION_STRING_BSTR), types.COMSTRING), null, 1, true);
+			if (c.getType() == types.COMSTRING)
+			{
+				values = new ComArray(new ComValue(new ComString(Flags.FLAG_REPRESENTATION_STRING_BSTR), types.COMSTRING),null,1,true);
 				safeArray.addMember(new ComValue(new Pointer(new ComValue(values, types.COMARRAY)), types.POINTER));// single dimension array, will convert it into the
 				// [] or [][] after inspecting dimension read.
-			} else {
-				values = new ComArray(c, null, 1, true);
+			}
+			else
+			{
+				values = new ComArray(c,null,1,true);
 				safeArray.addMember(new ComValue(new Pointer(new ComValue(values, types.COMARRAY)), types.POINTER));// single dimension array, will convert it into the
 																						// [] or [][] after inspecting dimension read.
 			}
@@ -1390,10 +1305,15 @@ class VariantBody
 			safeArray = MarshalUnMarshalHelper.deSerialize(ndr,new ComValue(safeArray, types.STRUCT),defferedPointers,FLAG,additionalData);
 
 			let features = safeArray.getValue().getMember(1);
-			if ((features & Variant.FADF_VARIANT) == Variant.FADF_VARIANT) {
+			// this condition is being kept in the front since the feature flags can be a combination of FADF_VARIANT and the
+			// other flags , in which case the Variant takes priority (since they will all be wrapped as variants).
+			if ((features & variantTypes.FADF_VARIANT) == variantTypes.FADF_VARIANT)
+			{
 				values.updateClazz(new ComValue(null, types.VARIANT));
-			} else if (((features & Variant.FADF_DISPATCH) == Variant.FADF_DISPATCH) ||
-					((features & Variant.FADF_UNKNOWN) == Variant.FADF_UNKNOWN)) {
+			}
+			else if (((features & variantTypes.FADF_DISPATCH) == variantTypes.FADF_DISPATCH) ||
+					((features & variantTypes.FADF_UNKNOWN) == variantTypes.FADF_UNKNOWN))
+			{
 				values.updateClazz(new ComValue(nul, types.COMOBJECT));
 			}
 		} catch (e) {
@@ -1402,84 +1322,6 @@ class VariantBody
 		return safeArray;
 	}
 }
-
-Variant.VT_NULL 			   = 0x00000001;
-Variant.VT_EMPTY 			 = 0x00000000;
-Variant.VT_I4 				   = 0x00000003;
-Variant.VT_UI1				   = 0x00000011;
-Variant.VT_I2 				   = 0x00000002;
-Variant.VT_R4 				   = 0x00000004;
-Variant.VT_R8 				   = 0x00000005;
-Variant.VT_VARIANT			 = 0x0000000c;
-Variant.VT_BOOL 			   = 0x0000000b;
-Variant.VT_ERROR 			 = 0x0000000a;
-Variant.VT_CY 				   = 0x00000006;
-Variant.VT_DATE 			   = 0x00000007;
-Variant.VT_BSTR 			   = 0x00000008;
-Variant.VT_UNKNOWN 		 = 0x0000000d;
-Variant.VT_DECIMAL 		 = 0x0000000e;
-Variant.VT_DISPATCH 		 = 0x00000009;
-Variant.VT_ARRAY			   = 0x00002000;
-Variant.VT_BYREF  			 = 0x00004000;
-Variant.VT_BYREF_VT_UI1 = Variant.VT_BYREF|Variant.VT_UI1;// 0x00004011;
-Variant.VT_BYREF_VT_I2  = Variant.VT_BYREF|Variant.VT_I2;// 0x00004002;
-Variant.VT_BYREF_VT_I4  = Variant.VT_BYREF|Variant.VT_I4;// 0x00004003;
-Variant.VT_BYREF_VT_R4  = Variant.VT_BYREF|Variant.VT_R4;// 0x00004004;
-Variant.VT_BYREF_VT_R8  = Variant.VT_BYREF|Variant.VT_R8;// 0x00004005;
-Variant.VT_BYREF_VT_BOOL 	  = Variant.VT_BYREF|Variant.VT_BOOL;// 0x0000400b;
-Variant.VT_BYREF_VT_ERROR 	  = Variant.VT_BYREF|Variant.VT_ERROR;// 0x0000400a;
-Variant.VT_BYREF_VT_CY 	 	  = Variant.VT_BYREF|Variant.VT_CY;// 0x00004006;
-Variant.VT_BYREF_VT_DATE 	  = Variant.VT_BYREF|Variant.VT_DATE;// 0x00004007;
-Variant.VT_BYREF_VT_BSTR 	  = Variant.VT_BYREF|Variant.VT_BSTR;// 0x00004008;
-Variant.VT_BYREF_VT_UNKNOWN  = Variant.VT_BYREF|Variant.VT_UNKNOWN;// 0x0000400d;
-Variant.VT_BYREF_VT_DISPATCH = Variant.VT_BYREF|Variant.VT_DISPATCH;// 0x00004009;
-Variant.VT_BYREF_VT_ARRAY 	  = Variant.VT_BYREF|Variant.VT_ARRAY;// 0x00006000;
-Variant.VT_BYREF_VT_VARIANT  = Variant.VT_BYREF|Variant.VT_VARIANT;// 0x0000400c;
-
-Variant.VT_I1 				 = 0x00000010;
-Variant.VT_UI2 			 = 0x00000012;
-Variant.VT_UI4 			 = 0x00000013;
-Variant.VT_I8				 = 0x00000014;
-Variant.VT_INT 			 = 0x00000016;
-Variant.VT_UINT 			 = 0x00000017;
-Variant.VT_BYREF_VT_DECIMAL  = Variant.VT_BYREF|Variant.VT_DECIMAL;// 0x0000400e;
-Variant.VT_BYREF_VT_I1  	 	  = Variant.VT_BYREF|Variant.VT_I1;// 0x00004010;
-Variant.VT_BYREF_VT_UI2 	 = Variant.VT_BYREF|Variant.VT_UI2;// 0x00004012;
-Variant.VT_BYREF_VT_UI4 	 = Variant.VT_BYREF|Variant.VT_UI4;// 0x00004013;
-Variant.VT_BYREF_VT_I8		 = Variant.VT_BYREF|Variant.VT_I8;// 0x00004014;
-Variant.VT_BYREF_VT_INT 	 = Variant.VT_BYREF|Variant.VT_INT;// 0x00004016;
-Variant.VT_BYREF_VT_UINT  = Variant.VT_BYREF|Variant.VT_UINT;// 0x00004017;
-
-Variant.FADF_AUTO       = 0x0001;  /* array is allocated on the stack */
-Variant.FADF_STATIC     = 0x0002;  /* array is staticly allocated */
-Variant.FADF_EMBEDDED   = 0x0004;  /* array is embedded in a structure */
-Variant.FADF_FIXEDSIZE  = 0x0010;  /* may not be resized or reallocated */
-Variant.FADF_RECORD     = 0x0020;  /* an array of records */
-Variant.FADF_HAVEIID    = 0x0040;  /* with FADF_DISPATCH, FADF_UNKNOWN */
-                                        /* array has an IID for interfaces */
-Variant.FADF_HAVEVARTYPE = 0x0080;  /* array has a VT type */
-Variant.FADF_BSTR        = 0x0100;  /* an array of BSTRs */
-Variant.FADF_UNKNOWN     = 0x0200;  /* an array of IUnknown* */
-Variant.FADF_DISPATCH    = 0x0400;  /* an array of IDispatch* */
-Variant.FADF_VARIANT     = 0x0800;  /* an array of VARIANTs */
-Variant.FADF_RESERVED    = 0xF008; /* reserved bits */
-
-// array types
-Variant.VT_BOOL_ARRAY = Variant.VT_ARRAY | Variant.VT_BOOL;
-Variant.VT_BSTR_ARRAY = Variant.VT_ARRAY | Variant.VT_BSTR;
-Variant.VT_DECIMAL_ARRAY = Variant.VT_ARRAY | Variant.VT_DECIMAL;
-Variant.VT_ERROR_ARRAY = Variant.VT_ARRAY | Variant.VT_ERROR;
-Variant.VT_I1_ARRAY = Variant.VT_ARRAY | Variant.VT_I1;
-Variant.VT_I2_ARRAY = Variant.VT_ARRAY | Variant.VT_I2;
-Variant.VT_I4_ARRAY = Variant.VT_ARRAY | Variant.VT_I4;
-Variant.VT_R4_ARRAY = Variant.VT_ARRAY | Variant.VT_R4;
-Variant.VT_R8_ARRAY = Variant.VT_ARRAY | Variant.VT_R8;
-Variant.VT_UI1_ARRAY = Variant.VT_ARRAY | Variant.VT_UI1;
-Variant.VT_UI2_ARRAY = Variant.VT_ARRAY | Variant.VT_UI2;
-Variant.VT_UI4_ARRAY = Variant.VT_ARRAY | Variant.VT_UI4;
-Variant.VT_UINT_ARRAY = Variant.VT_ARRAY | Variant.VT_UINT;
-Variant.VT_UNKNOWN_ARRAY = Variant.VT_ARRAY | Variant.VT_UNKNOWN;
-Variant.VT_VARIANT_ARRAY = Variant.VT_ARRAY | Variant.VT_VARIANT;
 
 module.exports = {
   Variant,

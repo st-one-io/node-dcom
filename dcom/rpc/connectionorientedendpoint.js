@@ -74,7 +74,6 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     ndrobj.encode(ndr, buffer);
     let stub = new Array(buffer.getLength());
     let aux = buffer.buf.slice(0, stub.length);
-    let aux_i = 0;
     //while (aux.length > 0)
       //stub.splice(aux_i++, 1, aux.shift());
 
@@ -88,13 +87,14 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     }
     
     await this.send(request, info);
-
+    
     if (request.getFlag(new ConnectionOrientedPdu().PFC_MAYBE)) return;
-    let rply = await this.receive()
-        .catch(function(error) {
-          debug(error);
-        });
-    if (rply instanceof ResponseCoPdu) {
+    var rply = await this.receive()
+    .catch(function(error){
+      console.log(error);
+    });
+    //console.log(rply);
+    if (rply instanceof ResponseCoPdu){
       ndr.setFormat(rply.getFormat());
       buffer = new NdrBuffer(rply.getStub(), 0);
       await ndrobj.decode(ndr, buffer);

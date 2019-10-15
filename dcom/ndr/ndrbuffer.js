@@ -10,7 +10,7 @@ function NdrBuffer(buf, start){
     obj: undefined
   };
   // array of bytes
-  this.buf = buf;
+  this.buf = (buf instanceof Buffer)? buf : Buffer.from(buf);
   // integers
   this.start = start;
   this.index = start;
@@ -44,7 +44,8 @@ NdrBuffer.prototype.reset = function (){
   this.index = this.start;
   this.length = 0;
   this.deferred = this;
-};
+  
+}
 
 NdrBuffer.prototype.getIndex = function (){
   return this.index;
@@ -80,26 +81,26 @@ NdrBuffer.prototype.writeOctetArray = function (b, i, l){
   let first = this.buf.slice(0, this.index);
   let end = this.buf.slice(this.index, this.buf.length);
   let middle = b.slice(i, l);
-
-  this.buf = first.concat(middle.concat(end));
+  
+  this.buf = Buffer.concat([first, middle, end]);;
 
   this.advance(l);
 }
 
-NdrBuffer.prototype.readOctetArray = function(b, i, l) {
-  let temp = this.buf.slice(this.index, (this.index + l));
+NdrBuffer.prototype.readOctetArray = function (b, i, l){
+  /*let temp = [...this.buf.slice(this.index, (this.index + l))];
   let temp_index= i;
   while (temp.length > 0){
     b.splice(temp_index++, 1, temp.shift());
     i++;
-  }
-  /* let first = b.slice(0, i);
-  let end = b.slice(i, b.length);
+  }*/
   let middle = this.buf.slice(this.index, (this.index + l));
+  let begin = Buffer.from(b.slice(0, i));
+  let end = Buffer.from(b.slice((i + middle.length), b.length));
 
-  b = first.concat(middle.concat(end));*/
   this.advance(l);
-};
+  return Buffer.concat([begin, middle, end]);
+}
 
 NdrBuffer.prototype.getLength = function (){
   return this.deferred.length;
@@ -131,7 +132,8 @@ NdrBuffer.prototype.enc_ndr_small = function (s){
 
 NdrBuffer.prototype.dec_ndr_small = function (){
   let val = this.buf[this.index] & 0xFF;
-  let val2 = Buffer.from(this.buf).readUInt8(this.index);
+  //let val2 = Buffer.from(this.buf).readUInt8(this.index);
+  //console.log(val, val2);
   this.advance(1);
   return val;
 }
@@ -144,7 +146,7 @@ NdrBuffer.prototype.enc_ndr_short = function (s){
 
 NdrBuffer.prototype.dec_ndr_short = function (){
   this.align(2);
-  let val = Encdec.dec_uint16le(Buffer.from(this.buf),this.index);
+  let val = Encdec.dec_uint16le(this.buf,this.index);
   this.advance(2);
   return val;
 }
@@ -157,7 +159,7 @@ NdrBuffer.prototype.enc_ndr_long = function (l){
 
 NdrBuffer.prototype.dec_ndr_long = function (){
   this.align(4);
-  let val = Encdec.dec_uint32le(Buffer.from(this.buf), this.index);
+  let val = Encdec.dec_uint32le(this.buf, this.index);
   this.advance(4);
   return val;
 }

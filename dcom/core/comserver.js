@@ -370,11 +370,11 @@ class ComServer extends Stub {
   }
 
   /**
-  * @return {ComObject}
-  */
+   * @return {ComObject} represents the ComServer, To be user only with <code>ComServer(Session, InterfacePointer, String)</code> constructor
+   */
   getInstance() {
     if (!this.interfacePtrCtor) {
-      debug(String(new Error(new System().getLocalizedMessage(new ErrorCodes()._COMSTUB_WRONGCALLGETINSTANCE))));
+      debug(String(new Error(new System().getLocalizedMessage(new ErrorCodes().COMSTUB_WRONGCALLGETINSTANCE))));
     }
 
     let comObject;
@@ -396,9 +396,6 @@ class ComServer extends Stub {
     return ((this.serverActivation == null)? this.interfacePtrCtor : this.serverActivation.getMInterfacePointer());
   }
 
-  /**
-   * @return {String}
-   */
   getSyntax() {
     return this.syntax;
   }
@@ -417,7 +414,7 @@ class ComServer extends Stub {
     let comObject = null;
 
     if (this.serverInstantiated) {
-      throw new Error(new ErrorCodes().OBJECT_ALREADY_INSTANTIATED);
+      throw new Error(String(new ErrorCodes().OBJECT_ALREADY_INSTANTIATED));
     }
 
     comObject = await FrameworkHelper.instantiateComObject(this.session,
@@ -460,8 +457,8 @@ class ComServer extends Stub {
     
     await retVal.addRef();
 
-    // this part is only relevant when IDispatch suport is implemented
-    if (iid.toLowerCase() == '00020400-0000-0000-c000-000000000046') {
+    // this part is only relevant when Dispatch suport is implemented
+    if (iid.toLowerCase() == "00020400-0000-0000-c000-000000000046") {
       let success = true;
 
       let dispatch = new RemUnknown(retval.getIpid(), "00020400-0000-0000-c000-000000000046");
