@@ -7,8 +7,8 @@ const UUID = require("../core/uuid.js");
 class RequestCoPdu extends ConnectionOrientedPdu {
   constructor(){
     super();
-    this.REQUEST_TYPE = 0x00;
-    this.stub = Buffer.from([]);
+
+    this.stub = [];
     this.allocationHint = 0;
     this.contextId = 0;
     this.opnum = 0;
@@ -166,7 +166,7 @@ class RequestCoPdu extends ConnectionOrientedPdu {
 
     if (length > 0){
       stub = [length];
-      stub = ndr.readOctetArray(stub, 0, length);
+      ndr.readOctetArray(stub, 0, length);
     }
     this.setStub(stub);
   }

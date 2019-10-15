@@ -29,10 +29,7 @@ class OrpcThat {
     }
 
     /**
-     * Returns an array of flags present (OrpcFlags).
-     * For now only 2 flags are returned to the user 0 
-     * and 1. Reserved flags are not returned.
-     * @returns {number[]}
+     * @return {number[]}
      */
     getSupportedFlags() {
 
@@ -81,7 +78,6 @@ class OrpcThat {
         let orpcthat = new OrpcThat();
         orpcthat.setFlags(ndr.readUnsignedLong());
 
-        //to throw RuntimeException from here.
         if (orpcthat.flags != OrpcFlags.ORPCF_NULL && orpcthat.flags != OrpcFlags.ORPCF_LOCAL &&
             orpcthat.flags != OrpcFlags.ORPCF_RESERVED1 && orpcthat.flags != OrpcFlags.ORPCF_RESERVED2
             && orpcthat.flags != OrpcFlags.ORPCF_RESERVED3 && orpcthat.flags != OrpcFlags.ORPCF_RESERVED4) {
@@ -141,7 +137,7 @@ class OrpcThat {
         //now read whether extend array exists or not
         //int ptr = ndr.readUnsignedLong();
         if (!orpcextentarrayptr.getValue().isNull()) {
-            let pointers = orpcextentarrayptr.getValue().getReferent().getMember(2).getValue().getReferent().getArrayInstance(); //Pointer[]
+            let pointers = orpcextentarrayptr.getValue().getReferent().getMember(2).getValue().getReferent().getArrayInstance();
             for (let i = 0; i < pointers.length; i++)
             {
                 if (!(pointers[i] instanceof Pointer))
@@ -149,8 +145,8 @@ class OrpcThat {
                 if (pointers[i].isNull())
                     continue;
 
-                let orpcextent2 = pointers[i].getReferent(); //Struct
-                let byteArray = orpcextent2.getMember(2).getArrayInstance(); //Byte[]
+                let orpcextent2 = pointers[i].getReferent();
+                let byteArray = orpcextent2.getMember(2).getArrayInstance();
 
                 extentArrays.push(new OrpcExtentArray((orpcextent2.getMember(0)).toString(), byteArray.length, byteArray));
             }

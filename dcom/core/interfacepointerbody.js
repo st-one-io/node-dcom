@@ -71,7 +71,7 @@ class InterfacePointerBody {
 
         //check for MEOW
         let b = []
-        b = ndr.readOctetArray(b, 0, 4);
+        ndr.readOctetArray(b, 0, 4);
         for (let i = 0; i < 4; i++) {
             if (b[i] != InterfacePointer.OBJREF_SIGNATURE[i]) {
                 return null;
@@ -119,7 +119,7 @@ class InterfacePointerBody {
 
         //check for MEOW
         let b = new Array(4);
-        b = ndr.readOctetArray(b, 0, 4);
+        ndr.readOctetArray(b, 0, 4);
 
         let i = 0;
         while (i != 4) {

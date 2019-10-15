@@ -1,29 +1,40 @@
 // @ts-check
-var UUID = require('../rpc/core/uuid.js');
+const UUID = require('../rpc/core/uuid.js');
 
 /**
- * ClassID object
+ * Represents a Class ID object. Class IDS are unique identifier used on Windows
+ * environements to identify each application.
  */
 class Clsid {
   /**
-   * Creates a ClassID object from a
-   * given uuid.
+   *
    * @param {String} uuid
    */
   constructor(uuid) {
-    if (!this.checkSyntax(uuid)) throw new Error("Invalid Clsid Syntax");
+    if (!this.checkSyntax(uuid)) throw new Error('Invalid Clsid Syntax');
     this.nestedUUID = new UUID(uuid);
     this.autoRegister = false;
   }
 
+  /**
+   *
+   * @param {Boolean} autoRegister
+   */
   setAutoRegistration(autoRegister) {
     this.autoRegister = autoRegister;
   }
 
+  /**
+   * @return {Boolean}
+   */
   isAutoRegistrationSet() {
     return this.autoRegister;
   }
 
+  /**
+   * @param {String} uuid
+   * @return {Clsid}
+   */
   valueOf(uuid) {
     if (uuid == null) {
       return null;
@@ -31,6 +42,9 @@ class Clsid {
     return new Clsid(uuid);
   }
 
+  /**
+   * @return {String}
+   */
   getClsid() {
     return this.nestedUUID.toString();
   }

@@ -32,58 +32,74 @@ function generateUUID() {
 let cidForCallback;
 
 class OrpcThis {
+  /**
+   *
+   * @param {*} casualityIdentifier
+   */
+  constructor(casualityIdentifier) {
+    this.cid = casualityIdentifier ?
+     casualityIdentifier.toString() : generateUUID();
+    this.flags = 0;
+    this.arry = null;
+    this.version = new System().getComVersion();
+  }
 
-    constructor(casualityIdentifier) {
-        this.cid = casualityIdentifier ? casualityIdentifier.toString() : generateUUID();
-        this.flags = 0
-        this.arry = null; //OrpcExtentArray[]
-        this.version = new System().getComVersion();
-    }
+  /**
+   *
+   * @param {Number} flags
+   */
+  setORPCFlags(flags) {
+    this.flags = flags;
+  }
 
-    setORPCFlags(flags) {
-        this.flags = flags;
-    }
+  /**
+   * @return {Number}
+   */
+  getORPCFlags() {
+    return this.flags;
+  }
 
-    getORPCFlags() {
-        return this.flags;
-    }
+  /**
+   *
+   * @param {OrpcExtentArray[]} arry
+   */
+  setExtentArray(arry) {
+    this.arry = arry;
+  }
 
-    /**
-     * 
-     * @param {OrpcExtentArray[]} arry
-     */
-    setExtentArray(arry) {
-        this.arry = arry;
-    }
+  /**
+   * @return {OrpcExtentArray[]}
+   */
+  getExtentArray() {
+    return this.arry;
+  }
 
-    /**
-     * @returns {OrpcExtentArray[]}
-     */
-    getExtentArray() {
-        return this.arry;
-    }
+  /**
+   * @return {String}
+   */
+  getCasualityIdentifier() {
+    return this.cid;
+  }
 
-    /**
-     * @returns {String}
-     */
-    getCasualityIdentifier() {
-        return this.cid;
-    }
+  /**
+   *
+   * @param {NetworkDataRepresentation} ndr
+   */
+  encode(ndr) {
+    ndr.writeUnsignedShort(this.version.getMajorVersion()); // COM Major version
+    ndr.writeUnsignedShort(this.version.getMinorVersion()); // COM minor version
+    ndr.writeUnsignedLong(this.flags); // No Flags
+    ndr.writeUnsignedLong(0); // Reserved ...always 0.
 
-    /**
-     * 
-     * @param {NetworkDataRepresentation} ndr
-     */
-    encode(ndr) {
-        ndr.writeUnsignedShort(this.version.getMajorVersion()); //COM Major version
-        ndr.writeUnsignedShort(this.version.getMinorVersion()); //COM minor version
-        ndr.writeUnsignedLong(this.flags); // No Flags
-        ndr.writeUnsignedLong(0); // Reserved ...always 0.
+    let cid2 = cidForCallback || this.cid;
+    let uuid = new UUID(cid2);
+    uuid.encode(ndr, ndr.getBuffer());
 
-        //the order here is important since the cid is always filled from the ctor hence will never be null.
-        //let cid2 = cidForCallback.get() == null ? cid : (String)cidForCallback.get();
-        let cid2 = cidForCallback || this.cid;
-        let uuid = new UUID(cid2);
+    if (this.arry && this.arry.length != 0) {
+      ndr.writeUnsignedLong(this.arry.length);
+      ndr.writeUnsignedLong(0);
+      for (const arryy of this.arry) {
+        uuid = new UUID(arryy.getGUID());
         uuid.encode(ndr, ndr.getBuffer());
 
         let i = 0;
@@ -150,55 +166,21 @@ class OrpcThis {
         */
 
 
-        orpcextentarray.addMember(new ComValue(null, types.INTEGER));
-        orpcextentarray.addMember(new ComValue(null, types.INTEGER));
-        //this is since the pointer is [unique]
-        let comOrpcExtent = new ComValue(orpcextent, types.STRUCT);
-        let comOrpcExtentPointer = new ComValue(new Pointer(comOrpcExtent), types.POINTER);
-        let comOrpcExtentPointerArray = new ComValue(new ComArray(comOrpcExtentPointer, null, 1, true), types.COMARRAY);
-        let comOrpcExtentPointerArrayPointer = new ComValue(new Pointer(comOrpcExtentPointerArray), types.POINTER);
-        orpcextentarray.addMember(comOrpcExtentPointerArrayPointer);
+    let extentArrays = [];
+    // now read whether extend array exists or not
+    if (!orpcextentarrayptr.isNull()) {
+      let pointers =
+        orpcextentarrayptr.getReferent().getMember(2).getReferent().getArrayInstance();
+      for (let i = 0; i < pointers.length; i++) {
+        if (pointers[i].isNull())
+          continue;
 
+        let orpcextent2 = pointers[i].getReferent();
+        let byteArray = orpcextent2.getMember(2).getArrayInstance();
 
-        let comOrpcextentarray = new ComValue(orpcextentarray, types.STRUCT);
-        let comOrpcextentarrayPointer = new ComValue(new Pointer(comOrpcextentarray), types.POINTER);
-        /**@type {Pointer[]} */
-        let listOfDefferedPointers = [];
-        let orpcextentarrayptr = MarshalUnMarshalHelper.deSerialize(ndr, comOrpcextentarrayPointer, listOfDefferedPointers, Flags.FLAG_NULL, map);
-        let x = 0;
-
-        while (x < listOfDefferedPointers.length) {
-            let newList = [];
-            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, Flags.FLAG_NULL, map);
-            listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); //this should replace the value in the original place.
-            x++;
-            listOfDefferedPointers.splice(x, 0, ...newList);
-        }
-
-        let extentArrays = [];
-        //now read whether extend array exists or not
-        if (!orpcextentarrayptr.isNull()) {
-            let pointers = orpcextentarrayptr.getReferent().getMember(2).getReferent().getArrayInstance(); //Pointer[]
-            for (let i = 0; i < pointers.length; i++) {
-                if (pointers[i].isNull())
-                    continue;
-
-                let orpcextent2 = pointers[i].getReferent(); //Struct
-                let byteArray = orpcextent2.getMember(2).getArrayInstance(); //Byte[]
-
-                extentArrays.push(new OrpcExtentArray(orpcextent2.getMember(0).toString(), byteArray.length, byteArray));
-            }
-
-        }
-
-        retval.arry = extentArrays;
-
-        //decode can only be executed incase of a request made from the server side in case of a callback. so the thread making this
-        //callback will store the cid from the decode operation in the threadlocal variable. In case an encode is performed using the
-        //same thread then we know that this is a nested call. Hence will replace the cid with the thread local cid. For the calls being in
-        //case of encode this value will not be used if the encode thread is of the client and not of ComOxidRuntimeHelper.
-        cidForCallback = retval.cid;
-        return retval;
+        extentArrays.push(new OrpcExtentArray(
+            orpcextent2.getMember(0).toString(), byteArray.length, byteArray));
+      }
     }
 
 }

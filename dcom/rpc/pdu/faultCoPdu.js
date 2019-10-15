@@ -94,7 +94,7 @@ class FaultCoPdu extends ConnectionOrientedPdu {
 
     if (length > 0){
       stub = [length];
-      stub = ndr.readOctetArray(stub, 0, length);
+      ndr.readOctetArray(stub, 0, length);
     }
     this.setStub(stub);
   }

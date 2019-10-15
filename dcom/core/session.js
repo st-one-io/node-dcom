@@ -234,10 +234,13 @@ class Session
     }
   }
 
-  setTargetServer(targetServer)
-  {
-    if (targetServer == "127.0.0.1") {
-      this.targetServer = String(Ip.address());
+  /**
+   *
+   * @param {String} targetServer
+   */
+  setTargetServer(targetServer) {
+    if (targetServer == '127.0.0.1') {
+      this.targetServer = String(ip.address());
     } else {
       this.targetServer = targetServer;
 

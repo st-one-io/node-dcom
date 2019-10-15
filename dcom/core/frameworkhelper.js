@@ -70,7 +70,7 @@ function instantiateComObject2(session, ptr) {
     if (!new InterfacePointer().isOxidEqual(stubPtr, ptr)) {
         //NEW SESSION IDENTIFIED ! for ptr
 
-        //first check if a session for this OXID does not already exist and thus its stub
+        // first check if a session for this OXID does not already exist and thus its stub
         let newsession = Session.resolveSessionForOxid(new Oxid(ptr.getOXID()));
         if (!newsession) {
             //new COM server pointer
@@ -95,6 +95,7 @@ function instantiateComObject2(session, ptr) {
 }
 
 /**
+ *
  * @param {Session} session
  * @param {ComObject} comObject
  */
@@ -104,9 +105,10 @@ function addComObjectToSession(session, comObject) {
 
 
 /**
+ *
  * @exclude
  * @param {Session} session
- * @param {LocalCoClass}
+ * @param {Object} component
  * @return {ComObject}
  */
 function instantiateLocalComObject(session, javaComponent) {
@@ -117,7 +119,7 @@ function instantiateLocalComObject(session, javaComponent) {
  * @exclude
  * @param {ComObject} comObject
  * @param {string} identifier
- * @throws Exception
+ * @throws JIException
  */
 function detachEventHandler(comObject, identifier) {
     let connectionInfo = comObject.internal_getConnectionInfo(identifier);
@@ -127,8 +129,8 @@ function detachEventHandler(comObject, identifier) {
 
     let connectionPointer = connectionInfo[0];
 
-    //first use the cookie to detach.
-    let object = new CallBuilder(true);
+    // first use the cookie to detach.
+    let object = new JICallBuilder(true);
     object.setOpnum(3);
     object.addInParamAsInt(connectionInfo[1], Flags.FLAG_NULL);
     connectionPointer.call(object);
@@ -141,15 +143,16 @@ function detachEventHandler(comObject, identifier) {
  * @param {ComObject} comObject
  * @param {string} sourceUUID
  * @param {ComObject} eventListener
- * @returns {string}
- * @throws Exception
+ * @return {string}
+ * @throws JIException
  */
 function attachEventHandler(comObject, sourceUUID, eventListener) {
     if (!eventListener || !comObject || !sourceUUID || sourceUUID === "") {
         throw new Error("CALLBACK_INVALID_PARAMS" + new ErrorCodes().CALLBACK_INVALID_PARAMS);
     }
 
-    let connectionPointContainer = comObject.queryInterface("B196B284-BAB4-101A-B69C-00AA00341D07");
+    // IID of IConnectionPointContainer :- B196B284-BAB4-101A-B69C-00AA00341D07
+    let connectionPointContainer = comObject.queryInterface('B196B284-BAB4-101A-B69C-00AA00341D07');
     let object = new CallBuilder(true);
     object.setOpnum(1);
     object.addInParamAsUUID(sourceUUID, Flags.FLAG_NULL);

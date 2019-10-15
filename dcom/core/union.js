@@ -56,11 +56,14 @@ class Union {
      */
     addMember(discriminant, member) {
         if (discriminant == null) {
-            throw new IllegalArgumentException(System.getLocalizedMessage(new ErrorCodes().UNION_NULL_DISCRMINANT));
+            throw new Error(
+                new System().getLocalizedMessage(
+                    new ErrorCodes().UNION_NULL_DISCRMINANT));
         }
 
         if (!discriminant.getClass().equals(discriminantClass)) {
-            throw new Error(new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
+            throw new Error(String(
+                new ErrorCodes().UNION_DISCRMINANT_MISMATCH));
         }
 
         if (member == null) {
