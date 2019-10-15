@@ -1,14 +1,15 @@
 # node-dcom
 
-node-com is a partial DCOM-compatible lib for Node.js environment. Most of the implementation do not follow the official specification so not all the protocol features are supported. This was implemented as a part of our OPC-DA node for Node-RED so features were implemented as they were needed for what we wanted to achieve with that node.
+node-com is a partial DCOM-compatible lib for Node.js environment. Most of the implementation do not follow the official specification so not all the protocol features are supported. This was implemented as a part of our OPC-DA node for Node-RED so features were implemented as they were needed for what we wanted to achieve with that node. Most of the code base is a NodeJS implementation of the J-Interop Java library.
 
 ## Table of Contents
 
 - [Install](#install)
 - [Usage]()
-  - [Creating a Session](#creatingasession)
-  - [Creating a Server](#creatingaserver)
-  - [Creating a COM Object](#comobject)
+  - [Creating a Session](#creating-a-session)
+  - [Creating a Server](#creating-a-server)
+  - [Creating a COM Object](#com-object)
+  - [Destroying a Session](#destroying-a-session)
 - [Contributin](#contributin)
 
 ## Install
@@ -57,6 +58,16 @@ WIth both the session and server instance created you can finally create a COM O
 ```javascript
 server.queryInterface(ClassID);
 ```
+
+## Destroying a Session
+
+To release all the objects created in a given session call the function ```destroySession()```.
+
+```javascript
+session.destroySession(session);
+```
+
+
 
 ## Contributing
 
