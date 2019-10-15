@@ -1,16 +1,10 @@
-// @ts-check
-const ProtocolVersion = require('../core/protocolVersion.js');
-const ConnectionOrientedPdu = require('../connectionorientedpdu.js');
+var ProtocolVersion = require("../core/protocolVersion.js");
+var ConnectionOrientedPdu = require("../connectionorientedpdu.js");
 
-/**
- * This class represents a BindNoAck data packet
- */
-class BindNoAcknowledgePdu extends ConnectionOrientedPdu {
-  /**
-   * This is a simple constructor with no input parameters
-   */
-  constructor() {
+class BindNoAcknowledgePdu extends ConnectionOrientedPdu{
+  constructor(){
     super();
+    this.BIND_NO_ACKNOWLEDGE_TYPE = 0x0d;
     this.REASON_NOT_SPECIFIED = 0;
     this.TEMPORARY_CONGESTION = 1;
     this.LOCAL_LIMIT_EXCEEDED = 2;
@@ -20,67 +14,44 @@ class BindNoAcknowledgePdu extends ConnectionOrientedPdu {
     this.USER_DATA_NOT_READABLE = 6;
     this.NO_PSAP_AVAILABLE = 7;
 
-    this.type = 0x0d;
     this.versionList;
     this.rejectReason = this.REASON_NOT_SPECIFIED;
   }
 
-  /**
-   * @return {Number}
-   */
-  getType() {
-    return this.type;
+  getType(){
+    return this.BIND_NO_ACKNOWLEDGE_TYPE;
   }
 
-  /**
-   * @return {Number}
-   */
-  getRejectReason() {
+  getRejectReason(){
     return this.rejectReason;
   }
 
-  /**
-   *
-   * @param {Number} rejectReason
-   */
-  setRejectReason(rejectReason) {
+  setRejectReason(rejectReason){
     this.rejectReason = rejectReason;
   }
 
-  /**
-   * @return {Array}
-   */
-  getVersionList() {
+  getVersionList(){
     return this.versionList;
   }
 
-  /**
-   *
-   * @param {Array} versionList
-   */
-  setVersionList(versionList) {
+  setVersionList(versionList){
     this.versionList = versionList;
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  readBody(ndr) {
-    let reason = ndr.readUnsignedSmall();
-    this.setRejectReason(reason);
-    let versionList = null;
-    if (reason == this.PROTOCOL_VERSION_NOT_SUPPORTED) {
-      let count = ndr.readUndignedSmall();
+  readBody(ndr){
+    var reason = ndr.readUnsignedSmall();
+    rejectReason(reason);
+    var versionList = null;
+    if (reason == PROTOCOL_VERSION_NOT_SUPPORTED){
+      var count = ndr.readUndignedSmall();
       versionList = [count];
-      for (let i = 0; i < count; i++) {
+      for (var i = 0; i < count; i++){
         versionList[i] = new ProtocolVersion();
         versionList[i].read(ndr);
       }
     }
-    this.setVersionList(versionList);
+    versionList(versionList);
   }
 }
 
-BindNoAcknowledgePdu.BIND_NO_ACKNOWLEDGE_TYPE = 0x0d;
 module.exports = BindNoAcknowledgePdu;

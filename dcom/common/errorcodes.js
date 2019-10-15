@@ -1,13 +1,5 @@
-// TO-DO: transform this in a file of constants
-/**
- * Error Codes
- */
-class ErrorCodes {
-  // TO-DO
-  /**
-   * ...
-   */
-  constructor() {
+class ErrorCodes{
+  constructor(){
     this.ERROR_INVALID_FUNCTION = 0x00000001;
 
     this.ERROR_FILE_NOT_FOUND = 0x00000002;

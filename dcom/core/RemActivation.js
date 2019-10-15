@@ -28,7 +28,6 @@ class RemActivation extends NdrObject {
     /**
      *
      * @param {Clsid} clsid
-     * @param {Array} interfaces
      */
     constructor(clsid, interfaces) {
         super();
@@ -36,11 +35,11 @@ class RemActivation extends NdrObject {
         this.TPC_C_IMP_LEVEL_IMPERSONATE = 3;
         this.impersonationLevel = this.TPC_C_IMP_LEVEL_IMPERSONATE;
         this.mode = 0;
-
+        
         this.monikerName = null;
         this.clsid = new UUID(clsid);
         // interfaces = ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
-        this.interfaces = interfaces ? interfaces : ['00000000-0000-0000-c000-000000000046', '00020400-0000-0000-c000-000000000046'];
+        this.interfaces = interfaces ? interfaces : ["00000000-0000-0000-c000-000000000046", "00020400-0000-0000-c000-000000000046"];
         this.activationsuccessful = false;
         this.oprthat = null;
         this.oxid = null;
@@ -58,7 +57,7 @@ class RemActivation extends NdrObject {
         this.dispOid = null;
 
         for (let i = 0; i < this.interfaces.length; i++) {
-            this.interfaces[i] = new UUID(this.interfaces[i]);
+            this.interfaces[i] = new UUID(this.interfaces[i]);          
         }
     }
 
@@ -79,7 +78,7 @@ class RemActivation extends NdrObject {
     }
 
     /**
-     *
+     * 
      * @param {String} name
      */
     setfileMonikerAtServer(name) {
@@ -96,13 +95,13 @@ class RemActivation extends NdrObject {
     }
 
     /**
-     *
-     * @param {NetworkDatarepresentation} ndr
+     * 
+     * @param {NetworkDatarepresentation} ndr 
      */
     write(ndr) {
         let oprcthis = new orpcThis();
         oprcthis.encode(ndr);
-
+        
         let uuid = new UUID();
         uuid.parse(this.clsid.toString());
         try {
@@ -120,12 +119,13 @@ class RemActivation extends NdrObject {
         ndr.writeUnsignedLong(0);
         ndr.writeUnsignedLong(this.impersonationLevel);
         ndr.writeUnsignedLong(this.mode);
-
+        
         ndr.writeUnsignedLong(this.interfaces.length);
-        ndr.writeUnsignedLong(Number.parseInt(
-            Buffer.from(objectHash({})).toString('hex').substr(0, 9)));
+        ndr.writeUnsignedLong(Number.parseInt(Buffer.from(objectHash({})).toString('hex').substr(0, 9)));
         ndr.writeUnsignedLong(this.interfaces.length);
 
+        //uuid.parse('00000000-0000-0000-c000-000000000046');
+        
         for (let i = 0; i < this.interfaces.length; i++) {
             try {
                 this.interfaces[i].encode(ndr, ndr.buf);
@@ -140,7 +140,7 @@ class RemActivation extends NdrObject {
         let address = (new Session().getLocalHostAsIpString()).split('.');
         for (let i = 0; i < address.length; i++) {
             address[i] = Number.parseInt(address[i]);
-
+            
         }
 
         ndr.writeUnsignedShort(address[0]);
@@ -151,8 +151,8 @@ class RemActivation extends NdrObject {
     }
 
     /**
-     *
-     * @param {NetworkDataRepresentation} ndr
+     * 
+     * @param {NetworkDataRepresentation} ndr 
      */
     read(ndr) {
         this.oprthat = new orpcThat().decode(ndr);
@@ -186,28 +186,22 @@ class RemActivation extends NdrObject {
             throw this.hresult;
         }
 
-        let array = new ComArray(new ComValue(
-            new InterfacePointer(), types.INTERFACEPOINTER), null, 1, true);
+        let array = new ComArray(new ComValue(new InterfacePointer(), types.INTERFACEPOINTER), null, 1, true);
         let listOfDefferedPointers = new Array();
 
-        array = MarshalUnMarshalHelper.deSerialize(ndr,
-            new ComValue(array, types.COMARRAY),
-            listOfDefferedPointers, Flags.FLAG_NULL, new HashMap());
+        array = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(array,types.COMARRAY), listOfDefferedPointers, Flags.FLAG_NULL, new HashMap());
 
         let x = 0;
         while (x < listOfDefferedPointers.length) {
             let newList = new Array();
-            let replacement = MarshalUnMarshalHelper.deSerialize(
-                ndr, new ComValue(listOfDefferedPointers[x], types.POINTER),
-                newList, Flags.FLAG_NULL, null);
+            let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER)
+                ,newList, Flags.FLAG_NULL, null);
 
             listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement);
             x++;
-
+            
             let aux_i = x;
-            while (aux_i < newList.length) {
-                listOfDefferedPointers.splice(aux_i++, 1, newList.shift());
-            }
+            while (aux_i < newList.length) listOfDefferedPointers.splice(aux_i++, 1, newList.shift());
         }
 
         let arrayObjs = array.getValue().getArrayInstance();
@@ -218,14 +212,11 @@ class RemActivation extends NdrObject {
             let ptr = arrayObjs[1];
             this.dispIpid = ptr.getIPID();
             this.dispOid = ptr.getOID();
-            this.dispRefs = ptr.getObjectReference(
-                new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
+            this.dispRefs = ptr.getObjectReference(new InterfacePointer().OBJREF_STANDARD).getPublicRefs();
         }
 
-        array = new ComArray(new ComValue(Number(), types.INTEGER),
-            null, 1, true);
-        MarshalUnMarshalHelper.deSerialize(ndr,
-            new ComValue(array, types.COMARRAY), null, Flags.FLAG_NULL);
+        array = new ComArray(new ComValue(Number(), types.INTEGER), null, 1, true);
+        MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(array, types.COMARRAY), null, Flags.FLAG_NULL);
 
         this.activationsuccessful = true;
     }
@@ -233,92 +224,104 @@ class RemActivation extends NdrObject {
     /**
      * @return {Boolean}
      */
-    isActivationSuccessful() {
+    isActivationSuccessful()
+    {
         return this.activationsuccessful;
     }
 
     /**
      * @return {orpcThat}
      */
-    getORPCThat() {
+    getORPCThat()
+    {
         return this.oprthat;
     }
 
     /**
      * @return {Oxid}
      */
-    getOxid() {
+    getOxid(){
         return this.oxid;
     }
 
     /**
      * @return {DualStringArray}
      */
-    getDualStringArrayForOxid() {
+    getDualStringArrayForOxid()
+    {
         return this.dualStringArrayForOxid;
     }
 
     /**
      * @return {Number}
      */
-    getAuthenticationHint() {
+    getAuthenticationHint()
+    {
         return this.authenticationHint;
     }
 
     /**
      * @return {ComVersion}
      */
-    getComVersion() {
+    getComVersion()
+    {
         return this.comVersion;
     }
 
     /**
      * @return {Number}
      */
-    getHresult() {
+    getHresult()
+    {
         return this.hresult;
     }
 
     /**
      * @return {InterfacePointer}
      */
-    getMInterfacePointer() {
+    getMInterfacePointer()
+    {
         return this.mInterfacePointer;
     }
 
     /**
      * @return {String}
      */
-    getIPID() {
+    getIPID()
+    {
         return this.ipid;
     }
 
     /**
-     * @return {boolean}
+     * @return {Boolean}
      */
-    isDual() {
+    isDual()
+    {
         return this.isDual;
     }
 
     /**
      * @return {String}
      */
-    getDispIpid() {
+    getDispIpid()
+    {
         return this.dispIpid;
     }
 
     /**
      * @return {Number}
      */
-    getDispRefs() {
+    getDispRefs()
+    {
         return this.dispRefs;
     }
 
     /**
-     *
-     * @param {String} dispIpid
+     * 
+     * @param {String} dispIpid 
      */
-    setDispIpid(dispIpid) {
+    setDispIpid(dispIpid)
+    {
         this.dispIpid = dispIpid;
     }
 }

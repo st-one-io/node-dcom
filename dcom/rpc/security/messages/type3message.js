@@ -23,8 +23,7 @@ class Type3Message extends NtlmMessage {
    * @param {Number} flags
    * @param {Boolean} nonAnonymous
    */
-  constructor(tc, type2, targetName, password, domain, user,
-      workstation, flags, nonAnonymous) {
+  constructor(tc, type2, targetName, password, domain, user, workstation, flags, nonAnonymous) {
     super();
     /** @type {Array} */
     this.lmResponse;
@@ -44,18 +43,17 @@ class Type3Message extends NtlmMessage {
     this.mic = null;
     /** @type {Boolean} */
     this.micRequired;
-
+    
     if (arguments.length == 1) {
       if (tc instanceof Object) {
         this.setFlags(this.getDefaultFlags(tc));
         this.setDomain(tc.getConfig().getDefaultDomain());
         this.setUser(tc.getConfig().getDefaultUser());
-        this.setWorkstation(
-            tc.getNameServiceClient().getLocalHost().getHostName);
+        this.setWorkstation(tc.getNameServiceClient().getLocalHost().getHostName);
       } else {
         this.parse(tc);
       }
-    } else if (arguments.length == 8 || arguments.length == 9) {
+    } else if (arguments.length == 8 || arguments.length == 9) {      
       this.setFlags(flags | this.getDefaultFlags(tc, type2));
       this.setWorkstation(workstation);
       this.setDomain(domain);
@@ -72,21 +70,19 @@ class Type3Message extends NtlmMessage {
       switch (tc.getConfig().getLanManCompatibility()) {
         case 0:
         case 1:
-          if (!this.getFlag(
-              NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY)) {
+          if (!this.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY)) {
             this.setLMResponse(this.getLMResponse(tc, type2, password));
             this.setNTResponse(this.getNTResponse(tc, type2, password));
           } else {
             let clientChallenge = Buffer.from(new Array(24));
             Crypto.randomBytes(clientChallenge.length, clientChallenge);
-
+            
             // fill the buffer, from 8 to 24, with zeroes
             for (let index = 8; index < clientChallenge.length; index++) {
-              clientChallenge[index] = 0x00;
+              clientChallenge[index] = 0x00;                
             }
             let responseKeyNT = new NtlmUtils().nTOWFv1(password);
-            let ntlm2Response = new NtlmUtils().getNTLM2Response(responseKeyNT,
-                type2.getChallenge(), clientChallenge);
+            let ntlm2Response = new NtlmUtils().getNTLM2Response(responseKeyNT, type2.getChallenge(), clientChallenge);
             this.setLMResponse(clientChallenge);
             this.setNTResponse(ntlm2Response);
 
@@ -94,20 +90,16 @@ class Type3Message extends NtlmMessage {
 
             let aux = type2.getChallenge().slice(0, 8);
             let aux_i = 0;
-            while (aux.length > 0) {
-              sessionNounce.splice(aux_i++, 1, aux.shift());
-            }
+            while (aux.length > 0) sessionNounce.splice(aux_i++, 1, aux.shift());
 
             aux = clientChallenge.slice(0, 8);
             aux_i = 8;
-            while (aux.length > 0) {
-              sessionNounce.splice(aux_i++, 1, aux.shift());
-            }
+            while (aux.length > 0) sessionNounce.splice(aux_i++, 1, aux.shift());
 
             let md4 = Crypto.createHmac('md4', '');
             md4.update(Buffer.from(responseKeyNT));
             let userSessionKey = md4.digest();
-
+              
             let hmac = Crypto.createHmac('md5', userSessionKey);
             hmac.update(Buffer.from(sessionNounce));
             let ntlm2Sessionkey = hmac.digest();
@@ -116,8 +108,7 @@ class Type3Message extends NtlmMessage {
               this.masterKey = [...Crypto.randomBytes(16)];
 
               let exchangedKey = Buffer.from(new Array(16));
-              let arcfour = Crypto.createCipher('rc4',
-                  Buffer.from(this.masterKey));
+              let arcfour = Crypto.createCipher('rc4', Buffer.from(this.masterKey));
               this.setEncryptedSessionKeyl(exchangedKey);
             } else {
               this.masterKey = [...ntlm2Sessionkey];
@@ -133,28 +124,27 @@ class Type3Message extends NtlmMessage {
         case 4:
         case 5:
           let ntlmClienteChallengeInfo = type2.getTargetInformation();
-          break;
+          break;          
         default:
           break;
       }
     } else {
-      // some names are changed because we lack polymorphism.
-      // This should be properly implementaed in the future
+      // some names are changed because we lack polymorphism. This should be properly implementaed in the future
       this.setFlags(tc);
       this.setLMResponse(type2);
       this.setNTresponse(targetName);
       this.setDomain(password);
       this.setUser(domain);
-      this.setWorkstation(user);
+      this.setWorkstation(user);      
     }
   }
 
   /**
-   *
-   * @param {Array} type1
-   * @param {Array} type2
+   * 
+   * @param {Array} type1 
+   * @param {Array} type2 
    */
-  setupMIC(type1, type2) {
+  setupMIC (type1, type2){
     let sk = this.masterKey;
     if (sk == null) {
       return;
@@ -168,7 +158,7 @@ class Type3Message extends NtlmMessage {
     this.setMic([...mac.digest()]);
   }
 
-  getDefaultFlags(tc, type2) {}
+  getDefaultFlags(tc, type2){}
 
   /**
    * @return {Array}
@@ -178,25 +168,24 @@ class Type3Message extends NtlmMessage {
   }
 
   /**
-   *
+   * 
    * @param {Array} lmResponse
    */
-  setLMResponse(lmResponse) {
+  setLMResponse(lmResponse)
+  {
     this.lmResponse = lmResponse;
   }
 
-  /**
-   * @return {Array}
-   */
-  getNTResponse() {
+  getNTResponse(){
     return this.ntResponse;
   }
-
+  
   /**
-   *
-   * @param {Array} ntResponse
+   * 
+   * @param {Array} ntResponse 
    */
-  setNTresponse(ntResponse) {
+  setNTresponse(ntResponse)
+  {
     this.ntResponse = ntResponse;
   }
 
@@ -208,25 +197,28 @@ class Type3Message extends NtlmMessage {
   }
 
   /**
-   *
+   * 
    * @param {String} domain
    */
-  setDomain(domain) {
+  setDomain(domain)
+  {
     this.domain = domain;
   }
 
   /**
    * @return {String}
    */
-  getUser() {
+  getUser()
+  {
     return this.user;
   }
 
   /**
-   *
+   * 
    * @param {String} user
    */
-  setUser(user) {
+  setUser(user)
+  {
     this.user = user;
   }
 
@@ -241,7 +233,8 @@ class Type3Message extends NtlmMessage {
    *
    * @param {String} workstation
    */
-  setWorkstation(workstation) {
+  setWorkstation(workstation)
+  {
     this.workstation = workstation;
   }
 
@@ -255,7 +248,8 @@ class Type3Message extends NtlmMessage {
   /**
    * @return {Array}
    */
-  getEncryptedSessionKey() {
+  getEncryptedSessionKey()
+  {
     return this.sessionKey;
   }
 
@@ -263,14 +257,16 @@ class Type3Message extends NtlmMessage {
    *
    * @param {Array} sessionKey
    */
-  setEncryptedSessionKey(sessionKey) {
+  setEncryptedSessionKey(sessionKey)
+  {
     this.sessionKey = sessionKey;
   }
 
   /**
    * @return {Array}
    */
-  getMic() {
+  getMic()
+  {
     return this.mic;
   }
 
@@ -278,14 +274,16 @@ class Type3Message extends NtlmMessage {
    *
    * @param {Array} mic
    */
-  setMic(mic) {
+  setMic(mic)
+  {
     this.mic = mic;
   }
 
   /**
    * @return {Boolean}
    */
-  isMICRequired() {
+  isMICRequired()
+  {
     return this.micRequired;
   }
 
@@ -294,18 +292,18 @@ class Type3Message extends NtlmMessage {
    */
   toByteArray() {
     let size = 64;
-
+    
     const unicode = this.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE);
     const oemCp = unicode ? null : this.getOEMEncoding();
 
     const domainName = this.getDomain();
     let domainBytes = null;
     if (domainName != null && domainName.length != 0) {
-      domainBytes = unicode ? [...LegacyEncoding.encode(domainName,
-          'utf16-le')] : [...LegacyEncoding.encode(domainName, oemCp)];
+      domainBytes = unicode ? [...LegacyEncoding.encode(domainName, 'utf16-le')] 
+          : [...LegacyEncoding.encode(domainName, oemCp)];
       size += domainBytes.length;
     }
-
+    
     const userName = this.getUser();
     let userBytes = null;
     if (userName != null && userName.length != 0) {
@@ -313,46 +311,45 @@ class Type3Message extends NtlmMessage {
           [...LegacyEncoding.encode(userName.toUpperCase(), oemCp)];
       size += userBytes.length;
     }
-
+    
     const workstationName = this.getWorkstation();
     let workstationBytes = null;
     if (workstationName != null && workstationName.length != 0) {
-      workstationBytes = unicode ? [...LegacyEncoding.encode(workstationName,
-          'utf16-le')] :
+      workstationBytes = unicode ? [...LegacyEncoding.encode(workstationName, 'utf16-le')] :
           [...LegacyEncoding.encode(workstationName.toUpperCase(), oemCp)];
       if (workstationBytes.length > 22) {
         workstationBytes = workstationBytes.slice(0, 22);
       }
       size += workstationBytes.length;
     }
-
+    
     const micBytes = this.getMic();
     if (micBytes != null) {
       size += 8 + 16;
     } else if (this.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_VERSION)) {
       size += 8;
     }
-
+    
     const lmResponseBytes = this.getLMResponse();
     size += (lmResponseBytes != null) ? lmResponseBytes.length : 0;
-
+    
     const ntResponseBytes = this.getNTResponse();
     size += (ntResponseBytes != null) ? ntResponseBytes.length : 0;
-
+   
     const sessionKeyBytes = this.getEncryptedSessionKey();
     size += (sessionKeyBytes != null) ? sessionKeyBytes.length : 0;
-
+    
     let type3 = new Array(size);
     let pos = 0;
-
+    
     let aux = this.SIGNATURE.slice(0, 8);
     let aux_i = pos;
     while (aux.length > 0) type3.splice(aux_i++, 1, aux.shift());
     pos += 8;
-
+    
     this.writeULong(type3, pos, this.TYPE3);
     pos += 4;
-
+    
     const lmOff = this.writeSecurityBuffer(type3, 12, lmResponseBytes, 64);
     pos += 8;
     const ntOff = this.writeSecurityBuffer(type3, 20, ntResponseBytes, 130);
@@ -384,10 +381,9 @@ class Type3Message extends NtlmMessage {
       while (aux.length > 0) type3.splice(aux_i++, 1, aux.shift());
       pos += 16;
     }
-
+    
     pos += this.writeSecurityBufferContent(type3, pos, lmOff, lmResponseBytes);
-    pos += this.writeSecurityBufferContent(type3, pos, ntOff,
-        (ntResponseBytes == null ? [] : [...ntResponseBytes]));
+    pos += this.writeSecurityBufferContent(type3, pos, ntOff, (ntResponseBytes == null ? [] : [...ntResponseBytes]));
     pos += this.writeSecurityBufferContent(type3, pos, domOff, domainBytes);
     pos += this.writeSecurityBufferContent(type3, pos, userOff, userBytes);
     pos += this.writeSecurityBufferContent(type3, pos, wsOff, workstationBytes);
@@ -395,25 +391,24 @@ class Type3Message extends NtlmMessage {
     return type3;
   }
 
-  // toString() {}
+  toString(){}
 
-  // getLMv2Response(tc, type2, domain, user, password,
-  //    clientChallenge, clientChallengeInfo, ts) {}
+  getLMv2Response(tc, type2, domain, user, password, clientChallenge, clientChallengeInfo, ts){}
 
   /**
-   *
-   * @param {Array} material
+   * 
+   * @param {Array} material 
    */
-  parse(material) {
+  parse(material){
     let pos = 0;
     for (let index = 0; index < 8; index++) {
       if (material[index] != this.SIGNATURE[index]) {
-        throw new Error('Not and NTLMSSP message.');
+        throw new Error("Not and NTLMSSP message.");
       }
       pos += 8;
 
       if (this.readULong(material, pos) != this.TYPE3) {
-        throw new Error('Not a Type 3 message.');
+        throw new Error("Not a Type 3 message.");
       }
       pos += 4;
 
@@ -442,11 +437,9 @@ class Type3Message extends NtlmMessage {
       let end = false;
       let flags;
       let charset;
-      if (lmResponseOffset < pos + 12 || ntResponseOffset <  pos + 12 ||
-          domainOffset < pos + 12 || userOffset < pos + 12 ||
-          workstationOffset < pos + 12) {
-        flags = NtlmFlags.NTLMSSP_NEGOTIATE_NTLM |
-          NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
+      if (lmResponseOffset < pos + 12 || ntResponseOffset <  pos + 12 || 
+          domainOffset < pos + 12 || userOffset < pos + 12 || workstationOffset < pos + 12) {
+        flags = NtlmFlags.NTLMSSP_NEGOTIATE_NTLM | NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
         this.setFlags(flags);
         charset = this.getOEMEncoding();
         end = true;
@@ -464,18 +457,16 @@ class Type3Message extends NtlmMessage {
 
       domainBytes = Buffer.from(domainBytes);
       this.setDomain(LegacyEncoding.encode(domainBytes, charset).toString());
-
+      
       userBytes = Buffer.from(userBytes);
       this.setUser(LegacyEncoding.encode(userBytes, charset).toString());
 
       workstationBytes = Buffer.from(workstationBytes);
-      this.setWorkstation(LegacyEncoding.encode(workstationBytes,
-          charset).toString());
+      this.setWorkstation(LegacyEncoding.encode(workstationBytes, charset).toString());
 
       let micLen = pos + 24;
-      if (end || lmResponseOffset < micLen || ntResponseOffset < micLen ||
-        domainOffset < micLen || userOffset < micLen ||
-        workstationOffset < micLen ) {
+      if (end || lmResponseOffset < micLen || ntResponseOffset < micLen || domainOffset < micLen 
+        || userOffset < micLen || workstationOffset < micLen ) {
         return;
       }
 

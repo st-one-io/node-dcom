@@ -13,21 +13,14 @@ let types;
 
 const events = require('events');
 
-/**
- * This class represents a COM Object
- */
-class ComObjectImpl extends events.EventEmitter {
-  /**
-   *
-   * @param {Session} session
-   * @param {*} ptr
-   * @param {Boolean} isLocal
-   */
-  constructor(session, ptr, isLocal) {
+class ComObjectImpl extends events.EventEmitter
+{
+  constructor(session, ptr, isLocal)
+  {
     super();
-    this.IID = '00000000-0000-0000-c000-000000000046';
+    this.IID = "00000000-0000-0000-c000-000000000046";
     this._init();
-    this.serialVersionUID = '-1661750453596032089L';
+    this.serialVersionUID =  "-1661750453596032089L";
 
     this.isDual = false;
     this.dualInfo = false;
@@ -40,19 +33,14 @@ class ComObjectImpl extends events.EventEmitter {
     this.customObject = null;
   }
 
-  /**
-   *
-   * @param {ComObjectImpl} comObject
-   */
-  replaceMember(comObject) {
+  replaceMember(comObject)
+  {
     this.session = comObject.getAssociatedSession();
     this.ptr = comObject.internal_getInterfacePointer();
   }
 
-  /**
-   * Checks the local flag
-   */
-  checkLocal() {
+  checkLocal()
+  {
     if (this.session == null) {
       throw new Error(new ErrorCodes().SESSION_NOT_ATTACHED);
     }
@@ -62,19 +50,14 @@ class ComObjectImpl extends events.EventEmitter {
     }
   }
 
-  /**
-   * Queries an interface on the given iid
-   * @param {String} iid
-   */
-  async queryInterface(iid) {
+  async queryInterface(iid)
+  {
     this.checkLocal();
     return await this.session.getStub().getInterface(iid, this.ptr.getIPID());
   }
 
-  /**
-   * Adds a reference for the current object.
-   */
-  async addRef() {
+  async addRef()
+  {
     this.checkLocal();
     let obj = new CallBuilder(true);
     obj.setParentIpid(this.ptr.getIPID());
@@ -83,60 +66,52 @@ class ComObjectImpl extends events.EventEmitter {
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
     let array = new ComArray(new ComValue([new ComValue(new UUID(this.ptr.getIPID()), types.UUID)], types.UUID), true);
+    //var array = new ComArray(new ComValue(tempArray,types.COMARRAY), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
+    // TODO: build caching mechanism to exhausts 5 refs before asking for more
     obj.addInParamAsInt(5, Flags.FLAG_NULL);
     obj.addInParamAsInt(0, Flags.FLAG_NULL);
 
     obj.addOutParamAsType(types.SHORT, Flags.FLAG_NULL);
     obj.addOutParamAsType(types.INTEGER, Flags.FLAG_NULL);
 
+    //this.session.debug_addIpids(this.ptr.getIPID(), 5);
     await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, 5);
-
+    
     if (obj.getResultAt(1).getValue() != 0) {
-      throw new Error('Exception:' + String(obj.getResultAsIntAt(1)));
+      throw new Error("Exception:" + String(obj.getResultAsIntAt(1)));
     }
   }
 
-  /**
-   * Release all references for this object.
-   */
-  async release() {
+  async release()
+  {
     this.checkLocal();
-    let obj = new CallBuilder(true);
+    var obj = new CallBuilder(true);
     obj.setParentIpid(this.ptr.getIPID());
     obj.setOpnum(2);
 
     obj.addInParamAsShort(1, Flags.FLAG_NULL);
 
-    let array = new ComArray(new ComValue([new ComValue(new UUID(this.ptr.getIPID()), types.UUID)], types.UUID), true);
+    var array = new ComArray(new ComValue([new ComValue(new UUID(this.ptr.getIPID()), types.UUID)], types.UUID), true);
     obj.addInParamAsArray(array, Flags.FLAG_NULL);
 
-    obj.addInParamAsInt(5, Flags.FLAG_NULL);
-    obj.addInParamAsInt(0, Flags.FLAG_NULL);
+    obj.addInParamAsInt(5,Flags.FLAG_NULL);
+    obj.addInParamAsInt(0,Flags.FLAG_NULL);
 
     await this.session.addRef_ReleaseRef(this.ptr.getIPID(), obj, -5);
   }
 
-  /**
-   * @return {InterfacePointer}
-   */
   internal_getInterfacePointer(){
     return (this.ptr == null) ? this.session.getStub().getServerInterfacePointer() : this.ptr;
   }
 
-  /**
-   * @return {String}
-   */
-  getIpid() {
+  getIpid()
+  {
     return this.ptr.getIPID();
   }
 
-  /**
-   *
-   * @param {Object} obj
-   * @return {Boolean}
-   */
-  equals(obj) {
+  equals(obj)
+  {
     if (!(obj instanceof ComObjectImpl)) {
       return false;
     }
@@ -144,35 +119,27 @@ class ComObjectImpl extends events.EventEmitter {
     return (this.ptr.getIPID().equalsIgnoreCase(obj.getIpid()));
   }
 
-  /**
-   * @return {String}
-   */
-  hashCode() {
+  hashCode()
+  {
     return this.ptr.getIPID().hashCode();
   }
 
-  /**
-   * @return {Session}
-   */
-  getAssociatedSession() {
+  getAssociatedSession()
+  {
     return this.session;
   }
 
-  /**
-   * @return {String}
-   */
-  getInterfaceIdentifier() {
+  getInterfaceIdentifier()
+  {
     return this.ptr.getIID();
   }
 
-  /**
-   * @return {Boolean}
-   */
-  isDispatchSupported() {
+  isDispatchSupported()
+  {
     this.checkLocal();
     if (!this.dualInfo) {
       try {
-        var comObject = this.queryInterface('00020400-0000-0000-c000-000000000046');
+        var comObject = this.queryInterface("00020400-0000-0000-c000-000000000046");
         comObject.release();
         this.setIsDual(true);
       } catch (e) {
@@ -183,72 +150,50 @@ class ComObjectImpl extends events.EventEmitter {
     return this.isDual;
   }
 
-  /**
-   *
-   * @param {HashMap} connectionPoint
-   * @param {String} cookie
-   * @return {Number}
-   */
-  internal_setConnectionInfo(connectionPoint, cookie) {
+  internal_setConnectionInfo(connectionPoint, cookie)
+  {
     this.checkLocal();
     if (this.connectionPointInfo == null) {
       this.connectionPointInfo = new HashMap();
     }
 
-    let uniqueId = UUID.randomUUID().toString();
+    var uniqueId = UUID.randomUUID().toString();
     this.connectionPointInfo.put(uniqueId, [connectionPoint, cookie]);
     return uniqueId;
   }
 
-  /**
-   * @param {Number} identifier
-   * @return {Number}
-   */
-  internal_getConnectionInfo(identifier) {
+  internal_getConnectionInfo(identifier)
+  {
     this.checkLocal();
     return this.connectionPointInfo.get(identifier);
   }
 
-  /**
-   * @param {Number} identifier
-   * @return {Number}
-   */
-  internal_removeConnectionInfo(identifier) {
+  internal_removeConnectionInfo(identifier)
+  {
     this.checkLocal();
     return this.connectionPointInfo.delete(identifier);
   }
 
-  /**
-   * @return {Number}
-   */
-  getUnreferencedHandler() {
+  getUnreferencedHandler()
+  {
     this.checkLocal();
     return this.session.getUnreferencedHandler(this.getIpid());
   }
 
-  /**
-   * Register the unreferenced handler.
-   * @param {Object} unreferenced
-   */
-  registerUnreferencedHandler(unreferenced) {
+  registerUnreferencedHandler()
+  {
     this.checkLocal();
     this.session.registerUnreferencedHandler(this.getIpid(), unreferenced);
   }
 
-  /**
-   * Unregister the unreferenced handler.
-   */
-  unregisterUnreferencedHandler() {
+  unregisterUnreferencedHandler()
+  {
     this.checkLocal();
     this.session.unregisterUnreferencedHandler(this.getIpid());
   }
 
-  /**
-   *
-   * @param {Object} obj
-   * @param {Number} socketTimetout
-   */
-  async call(obj, socketTimetout) {
+  async call(obj, socketTimetout)
+  {
     this.checkLocal();
     obj.attachSession(this.session);
     obj.setParentIpid(this.ptr.getIPID());
@@ -260,42 +205,30 @@ class ComObjectImpl extends events.EventEmitter {
     }
   }
 
-  /**
-   * @return {Number}
-   */
-  getInstanceLevelSocketTimetout() {
+  getInstanceLevelSocketTimetout()
+  {
     this.checkLocal();
     return this.timeout;
   }
 
-  /**
-   *
-   * @param {Number} timeout
-   */
-  setInstanceLevelSocketTimeout(timeout) {
+  setInstanceLevelSocketTimeout(timeout)
+  {
     this.checkLocal();
     this.timeout = timeout;
   }
 
-  /**
-   * @param {Number} deferred
-   */
-  internal_setDeferred(deferred) {
+  internal_setDeferred(deferred)
+  {
     this.ptr.setDeferred(deferred);
   }
 
-  /**
-   * @return {Boolean}
-   */
-  isLocalReference() {
+  isLocalReference()
+  {
     return this.isLocal;
   }
 
-  /**
-   *
-   * @param {Boolean} isDual
-   */
-  setIsDual(isDual) {
+  setIsDual(isDual)
+  {
     this.dualInfo = true;
     this.isDual = isDual;
   }
@@ -307,25 +240,18 @@ class ComObjectImpl extends events.EventEmitter {
       + this.isLocalReference() + "]";
   }
 
-  /**
-   * @return {Object}
-   */
-  getCustomObject() {
+  getCustomObject()
+  {
     return this.customObject;
   }
 
-  /**
-   *
-   * @param {Object} customObject
-   */
-  setCustomObject(customObject) {
+  setCustomObject(customObject)
+  {
     this.customObject = customObject;
   }
 
-  /**
-   * @return {Number}
-   */
-  getLengthOfInterfacePointer() {
+  getLengthOfInterfacePointer()
+  {
     return this.ptr.getLength();
   }
 

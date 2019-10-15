@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 // @ts-check
 const ErrorCodes = require('../common/errorcodes');
 const ComEndpoint = require('../transport/comendpoint');
@@ -17,17 +16,16 @@ const debug = util.debuglog('dcom');
  */
 class RemUnknownServer extends Stub {
     /**
-     *
-     * @param {Session} session
-     * @param {String} remUnknownIpid
-     * @param {String} address
-     * @param {Object} info
+     * 
+     * @param {Session} session 
+     * @param {String} remUnknownIpid 
+     * @param {String} address 
      */
-    constructor(session, remUnknownIpid, address, info) {
+    constructor(session, remUnknownIpid, address, info){
         super();
         this.session = session;
         super.setTransportFactory(new ComTransportFactory().getSingleTon());
-
+        
         if (session.isNTLMv2Enabled()) {
 
         } else {
@@ -38,7 +36,7 @@ class RemUnknownServer extends Stub {
 
         }
 
-        this.syntax = '00000143-0000-0000-c000-000000000046:0.0';
+        this.syntax = "00000143-0000-0000-c000-000000000046:0.0";
         super.setAddress(address);
         this.remunknownIPID = remUnknownIpid;
         this.mutex = new Object();
@@ -46,7 +44,7 @@ class RemUnknownServer extends Stub {
         this.info = info;
         this.session.setStub2(this);
     }
-
+    
     /**
      * @return {String}
      */
@@ -55,7 +53,7 @@ class RemUnknownServer extends Stub {
     }
 
     /**
-     *
+     * 
      * @param {CallBuilder} obj
      * @param {String} targetIID
      * @param {String} socketTimeout
@@ -73,7 +71,7 @@ class RemUnknownServer extends Stub {
             }
         }
 
-
+        
         await this.attach(this.info, this.session.getGlobalSocketTimeout());
 
         if (!(this.getEndpoint().getSyntax().getUUID().toString().toUpperCase() == targetIID.toUpperCase())) {
@@ -88,15 +86,14 @@ class RemUnknownServer extends Stub {
         if (obj.hresult != 0) {
             if (obj.outParams.length == 0) {
                 throw new Error(String(obj.hresult));
-            } else {
+            } else
                 debug(String(new Error(String(obj.hresult))));
-            }
         }
         return obj.getResults();
     }
 
     /**
-     *
+     * 
      * @param {CallBuilder} obj
      */
     async addRef_ReleaseRef(obj) {
@@ -106,10 +103,9 @@ class RemUnknownServer extends Stub {
 
         obj.setParentIpid(this.remunknownIPID);
         obj.attachSession(this.session);
-
-        await this.callUnknown(obj, new RemUnknown().IID_Unknown,
-            this.session.getGlobalSocketTimeout())
-        .catch(function(error) {
+        
+        await this.callUnknown(obj, new RemUnknown().IID_Unknown, this.session.getGlobalSocketTimeout())
+        .catch(function(error){
             debug(error);
         });
     }
@@ -119,13 +115,13 @@ class RemUnknownServer extends Stub {
      */
     async closeStub() {
         await super.detach()
-        .catch(function(error) {
+        .catch(function(error){
             debug(error);
         });
     }
 
     /**
-     *
+     * 
      * @param {Number} timeout
      */
     setSocketTimeOut(timeout) {

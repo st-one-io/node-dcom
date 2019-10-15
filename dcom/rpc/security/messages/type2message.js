@@ -1,4 +1,3 @@
-// @ts-check
 const HashMap = require('hashmap');
 const NtlmMessage = require('./ntlmmessage.js');
 const Type1Message = require('./type1message.js');
@@ -9,17 +8,12 @@ const LegacyEncoding = require('legacy-encoding');
 /**
  * NTLM Type 2 Message Class
  */
-class Type2Message extends NtlmMessage {
-  /**
-   *
-   * @param {Object} tc
-   * @param {Type1Message} type1
-   * @param {Array} challenge
-   * @param {String} target
-   */
-  constructor(tc, type1, challenge, target) {
+class Type2Message extends NtlmMessage
+{
+  constructor(tc, type1, challenge, target)
+  {
     super();
-    if (arguments.length == 1) {
+    if (arguments.length == 1) {      
       if (tc instanceof Array) {
         this.parse(tc);
       }
@@ -31,10 +25,9 @@ class Type2Message extends NtlmMessage {
         this.setTarget(target);
       }
 
-      if(target == null) {
-        this.setTarget((type1 != null && target == null && 
-          type1.getFlag(this.NTLMSSP_REQUEST_TARGET)?
-          tc.getConfig().getDefaultDomain() : target));
+      if(target == null)
+      {
+        this.setTarget((type1 != null && target == null && type1.getFlag(this.NTLMSSP_REQUEST_TARGET)? tc.getConfig().getDefaultDomain() : target));
       } else {
         this.setTargetInformation(this.getDefaultTargetInfo(tc));
       }
@@ -43,14 +36,10 @@ class Type2Message extends NtlmMessage {
     this.TARGET_INFO_CACHE = new HashMap();
   }
 
-  /**
-   *
-   * @param {Object} tc
-   * @return {Array}
-   */
-  getDefaultTargetInfo(tc) {
-    let domain = tc.getConfig().getDefaultDomain();
-    let ti = this.TARGET_INFO_CACHE.get(domain);
+  getDefaultTargetInfo(tc)
+  {
+    var domain = tc.getConfig().getDefaultDomain();
+    var ti = this.TARGET_INFO_CACHE.get(domain);
     if (ti != null) {
       return ti;
     }
@@ -60,12 +49,8 @@ class Type2Message extends NtlmMessage {
     return ti;
   }
 
-  /**
-   * 
-   * @param {*} tc 
-   * @param {*} domainStr 
-   */
-  makeTargetInfo(tc, domainStr) {
+  makeTargetInfo(tc, domainStr)
+  {
     // TODO: FINISH THIS
     var domain = new Array();
     if (domainStr != null) {
@@ -77,27 +62,19 @@ class Type2Message extends NtlmMessage {
     }
   }
 
-  /**
-   *
-   * @param {Number} unicode
-   * @param {Type1Message} type1
-   * @return {Number}
-   */
-  getDefaultFlags(unicode, type1) {
+  getDefaultFlags(unicode, type1)
+  {
     if (type1 == null) {
-      return NtlmFlags.NTLMSSP_NEGOTIATE_NTLM |
-        NtlmFlags.NTLMSSP_NEGOTIATE_VERSION |
-        (unicode ? NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE :
-        NtlmFlags.NTLMSSP_NEGOTIATE_OEM );
+      return NtlmFlags.NTLMSSP_NEGOTIATE_NTLM | NtlmFlags.NTLMSSP_NEGOTIATE_VERSION
+        | (unicode ? NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE : NtlmFlags.NTLMSSP_NEGOTIATE_OEM );
     } else {
-      let flags = NtlmFlags.NTLMSSP_NEGOTIATE_NTLM |
-        NtlmFlags.NTLMSSP_NEGOTIATE_VERSION;
-      let type1Flags = type1.getFlags();
+      var flags = NtlmFlags.NTLMSSP_NEGOTIATE_NTLM | NtlmFlags.NTLMSSP_NEGOTIATE_VERSION;
+      var type1Flags = type1.getFlags();
 
       flags |= ((type1Flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE) != 0) ?
         NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE : NtlmFlags.NTLMSSP_NEGOTIATE_OEM;
       if ((type1Flags && NtlmFlags.NTLMSSP_REQUEST_TARGET) != 0) {
-        let domain = tc.getConfig().getDefaultDomain();
+        var domain = tc.getConfig().getDefaultDomain();
         if (domain != null) {
           flags |= NtlmFlags.NTLMSSP_REQUEST_TARGET | NtlmFlags.NTLMSSP_TARGET_TYPE_DOMAIN;
         }
@@ -106,79 +83,56 @@ class Type2Message extends NtlmMessage {
     }
   }
 
-  /**
-   * @return {Array}
-   */
-  getChallenge() {
+  getChallenge()
+  {
     return this.challenge;
   }
 
-  /**
-   *
-   * @param {Array} challenge
-   */
-  setChallenge(challenge) {
+  setChallenge(challenge)
+  {
     this.challenge = challenge;
   }
 
-  /**
-   * @return {String}
-   */
-  getTarget() {
+  getTarget()
+  {
     return this.target;
   }
 
-  /**
-   *
-   * @param {String} target
-   */
-  setTarget(target) {
+  setTarget(target)
+  {
     this.target = target;
   }
 
-  /**
-   * @return {Object}
-   */
-  getTargetInformation() {
+  getTargetInformation()
+  {
     return this.targetInformation;
   }
 
-  /**
-   *
-   * @param {Object} targetInformation
-   */
-  setTargetInformation(targetInformation) {
+  setTargetInformation(targetInformation)
+  {
     this.targetInformation = targetInformation;
   }
 
-  /**
-   * @return {String}
-   */
-  getContext() {
+  getContext()
+  {
     return this.context;
   }
 
-  /**
-   *
-   * @param {String} context
-   */
-  setContext(context) {
+  setContext(context)
+  {
     this.context = context;
   }
 
-  /**
-   * Converts all info to an array
-   * @return {Array}
-   */
-  toByteArray() {
-    let size = 48;
-    let flags = this.getFlags();
-    let targetName = this.getTarget();
-    let targetInformationBytes = this.getTargetInformation();
-    let targetBytes = [];
+  toByteArray()
+  {
+    var size = 48;
+    var flags = this.getFlags();
+    var targetName = this.getTarget();
+    var targetInformationBytes = this.getTargetInformation();
+    var targetBytes = new Array();
 
     if (this.getFlag(NtlmFlags.NTLMSSP_REQUEST_TARGET)) {
-      if (targetName != null && targetName.length != 0 ) {
+      if (targetName != null && targetName.length != 0 ){
         targetBytes = ( flags & NtlmFlags.NTLMSSP_NEGOTIATE_UNICODE ) != 0 ?
           targetName.getBytes(NtlmFlags.UNI_ENCODING) :
           targetName.toUpperCase().getBytes(this.getOEMEncoding());
@@ -188,8 +142,8 @@ class Type2Message extends NtlmMessage {
       }
     }
 
-    if (targetInformationBytes != null) {
-      size += targetInformationBytes.length;
+    if (targetInformation != null) {
+      size += targetInformation.length;
       flags |= NtlmFlags.NTLMSSP_NEGOTIATE_TARGET_INFO;
     }
 
@@ -197,11 +151,11 @@ class Type2Message extends NtlmMessage {
       size += 8;
     }
 
-    let type2 = new Array(size);
-    let pos = 0;
+    var type2 = new Array(size);
+    var pos = 0;
 
-    let aux = this.SIGNATURE.slice(0, this.SIGNATURE.length);
-    let aux_i = pos;
+    var aux = this.SIGNATURE.slice(0, this.SIGNATURE.length);
+    var aux_i = pos;
     while (aux.length > 0) {
       type2.splice(aux_i++, 1, aux.shift());
     }
@@ -210,16 +164,16 @@ class Type2Message extends NtlmMessage {
     this.writeULong(type2, pos, this.TYPE2)
     pos += 4;
 
-    let targetNameOff = this.writeSecurityBuffer(type2, pos, targetBytes);
+    var targetNameOff = this.writeSecurityBuffer(type2, pos, targetBytes);
     pos += 8;
 
     this.writeULong(type2, pos, flags);
     pos += 4;
 
-    let challengeBytes = this.getChallenge();
+    var challengeBytes = this.getChallenge();
     if (challengeBytes != null) {
       aux = challengeBytes.slice(0, 8);
-    } else {
+    }else {
       aux = new Array(8);
     }
     aux_i = pos;
@@ -229,10 +183,10 @@ class Type2Message extends NtlmMessage {
     pos += 8;
 
 
-    let contextBytes = this.getContext();
+    var contextBytes = this.getContext();
     if (contextBytes != null) {
       aux = contextBytes.slice(0, 8);
-    } else {
+    }else {
       aux = new Array(8);
     }
     aux_i = pos;
@@ -241,8 +195,7 @@ class Type2Message extends NtlmMessage {
     }
     pos += 8;
 
-    let targetInfoOff =
-      this.writeSecurityBuffer(type2, pos, targetInformationBytes);
+    var targetInfoOff = this.writeSecurityBuffer(type2, pos, targetInformationBytes);
     pos += 8;
 
     if (this.getFlag(NtlmFlags.NTLMSSP_NEGOTIATE_VERSION)) {
@@ -261,21 +214,18 @@ class Type2Message extends NtlmMessage {
   }
 
   /**
-   * @return {String}
+   * @return {null}
    */
-  toString() {
-    let targetString = this.getTarget();
-    let challengeBytes = this.getChallenge();
-    let contextBytes = this.getContext();
-    let targetInformationBytes = this.getTargetInformation();
+  toString(){
+    var targetString = this.getTarget();
+    var challengeBytes = this.getChallenge();
+    var contextBytes = this.getContext();
+    var targetInformationBytes = this.getTargetInformation();
 
-    return 'Type2Message[target=' + targetString + ',challenge=' +
-      (challengeBytes == null ? 'null' : '<' + challengeBytes.length +
-      ' bytes>') + ',context=' + ( contextBytes == null ? 'null' : '<' +
-      contextBytes.length + ' bytes>' ) + ',targetInformation=' +
-      (targetInformationBytes == null ? 'null' : '<' +
-      targetInformationBytes.length + ' bytes>') + ',flags=0x' +
-      Hexdump.toHexString(this.getFlags(), 8) + ']';
+    return "Type2Message[target=" + targetString + ",challenge=" + ( challengeBytes == null ? "null" : "<" + challengeBytes.length + " bytes>" )
+      + ",context=" + ( contextBytes == null ? "null" : "<" + contextBytes.length + " bytes>" ) + ",targetInformation="
+      + ( targetInformationBytes == null ? "null" : "<" + targetInformationBytes.length + " bytes>" ) + ",flags=0x"
+      + Hexdump.toHexString(getFlags(), 8) + "]";
   }
 
   /**
@@ -292,7 +242,7 @@ class Type2Message extends NtlmMessage {
     pos += 8;
 
     if (this.readULong(input, pos) != this.TYPE2) {
-      throw new Error('Not a Type 2 message.');
+      throw new Erro('Not a Type 2 message.');
     }
     pos += 4;
 
@@ -310,7 +260,8 @@ class Type2Message extends NtlmMessage {
     pos += 12;
 
     if (!this.allZeros8(input, pos)) {
-      let challengeBytes = [8];   
+      let challengeBytes = new Array(8);
+      
       let aux = input.slice(pos, pos+ challengeBytes.length);
       let aux_i = 0;
       while (aux.length > 0) {
@@ -325,9 +276,9 @@ class Type2Message extends NtlmMessage {
     }
 
     if (!this.allZeros8(input, pos)) {
-      let contextBytes = new Array(8);
-      let aux = input.slice(pos, pos + contextBytes.length);
-      let aux_i = 0;
+      var contextBytes = new Array(8);
+      var aux = input.slice(pos, pos + contextBytes.length);
+      var aux_i = 0;
       while (aux.length > 0) {
         contextBytes.splice(aux_i++, 1, aux.shift());
       }
@@ -339,19 +290,14 @@ class Type2Message extends NtlmMessage {
       return;
     }
 
-    let targetInfo = this.readSecurityBuffer(input, pos);
+    var targetInfo = this.readSecurityBuffer(input, pos);
     if (targetInfo.length != 0) {
       this.setTargetInformation(targetInfo);
     }
   }
 
-  /**
-   *
-   * @param {Array} input
-   * @param {Number} pos
-   * @return {Boolean}
-   */
-  allZeros8(input, pos) {
+  allZeros8(input, pos)
+  {
     for (let i = pos; i < pos + 8; i++) {
       if (input[i] != 0) {
         return false;

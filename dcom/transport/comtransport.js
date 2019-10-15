@@ -7,21 +7,20 @@ const events = require('events');
 const util = require('util');
 const debug = util.debuglog('dcom');
 
-/**
- * Defines a Transport and it's basic functions
- */
-class ComTransport extends events.EventEmitter {
+class ComTransport extends events.EventEmitter
+{
   /**
-   *
+   * 
    * @param {String} address
    * @param {Number} timeout
    */
-  constructor(address, timeout) {
+  constructor(address, timeout)
+  {
     super();
-    this.PROTOCOL = 'ncacn_ip_tcp';
+    this.PROTOCOL = "ncacn_ip_tcp";
     this.LOCALHOST = os.hostname();
     this.DEFAULT_READ_READY_HANDOFF_TIMEOUT_SECS = 30;
-    this.HANDOFF = {};
+    this.HANDOFF = new Object();
     this.host;
     this.port;
     this.attached;
@@ -36,68 +35,69 @@ class ComTransport extends events.EventEmitter {
 
   /**
    * Will parse the addres given
-   * @param {String} address
+   * @param {String} address 
    */
-  parse(address) {
+  parse(address){
     if (address == null) {
-      throw new Error ('Null address.');
+      throw new Error ("Null address.");
     }
 
-    if (!address.startsWith('ncacn_ip_tcp')) {
-      throw new Error('Not and ncacn_ip_tcp address')
+    if (!address.startsWith("ncacn_ip_tcp")) {
+      throw new Error("Not and ncacn_ip_tcp address")
     }
 
     address = address.substring(13);
-    let index = address.indexOf('[');
+    var index = address.indexOf('[');
     if (index == -1) {
-      throw new Error('No port specifier present.');
+      throw new Error("No port specifier present.");
     }
 
-    let server = address.substring(0, index);
+    var server = address.substring(0, index);
     address = address.substring(index + 1);
     index = address.indexOf(']');
     if (index == -1) {
-      throw new Error('Port specifier not terminated');
+      throw new Erro("Port specifier not terminated");
     }
     address = address.substring(0, index);
-    if ('' == server) {
+    if ("" == server) {
       server = this.LOCALHOST;
     }
 
     try {
       this.port = Number.parseInt(address);
-    } catch (e) {
-      throw new Error('Invalid port specifier.');
+    } catch(e) {
+      throw new Error("Invalid port specifier.");
     }
     this.host = server;
   }
 
   /**
-   * @return {String}
+   * @returns {String}
    */
-  getProtocol() {
+  getProtocol()
+  {
     return this.PROTOCOL;
   }
 
   /**
-   *
-   * @param {PresentationSyntax} syntax
-   * @return {Promise}
+   * 
+   * @param {PresentationSyntax} syntax 
    */
-  attach() {
-    let self = this;
-    return new Promise(function(resolve, reject) {
+  attach()
+  {
+    var self = this;
+    return new Promise(function(resolve, reject){
       if (self.attached) {
-        throw new Error('Transport already attached');
+        throw new Error("Transport already attached");
       }
-      let channel = new net.Socket();
+      var channel = new net.Socket();
       channel.setKeepAlive(true);
-
+      
       /* When we recieve some data we check if receive() was already called by
         checkin if recProm is null. If it is, we resolve it, if not we add the
         received data to the receiveBuffer and wait for it be called
       */
-      channel.on('data', function(data) {
+      channel.on('data', function(data){
         if (self.recvPromise == null) {
           self.receivedBuffer = Buffer.concat([self.receivedBuffer,data]);
         } else {
@@ -106,17 +106,17 @@ class ComTransport extends events.EventEmitter {
         }
       });
 
-      channel.on('error', function(data) {
+      channel.on('error', function(data){
         self.emit('disconnected');
       });
 
-      channel.on('close', function() {
+      channel.on('close', function(){
         if (self.recvPromise != null) {
           self.recvPromise.reject();
         }
       });
 
-      channel.connect(Number.parseInt(self.port), self.host, () => {
+      channel.connect(Number.parseInt(self.port),  self.host, () => {
         self.attached = true;
         channel.setKeepAlive(true);
         self.channelWrapper = channel;
@@ -125,15 +125,13 @@ class ComTransport extends events.EventEmitter {
     });
   }
 
-  /**
-   * @return {Promise}
-   */
-  async close() {
+  async close()
+  {
     try {
       if (this.channelWrapper != null) {
-        const self = this;
+        let self = this;
         return new Promise(function(resolve, reject) {
-          const teste = self.channelWrapper.end(resolve(self.channelWrapper = null));
+          let teste = self.channelWrapper.end(resolve(self.channelWrapper = null));
         });
       }
     } finally {
@@ -142,14 +140,10 @@ class ComTransport extends events.EventEmitter {
     }
   }
 
-  /**
-   *
-   * @param {Array} buffer
-   * @param {Object} info
-   */
-  send(buffer, info) {
+  send(buffer, info)
+  {
     if (!this.attached) {
-      throw new Error('Transport not attached.');
+      throw new Error("Transport not attached.");
     }
 
     let buf = buffer.getBuffer();
@@ -163,20 +157,16 @@ class ComTransport extends events.EventEmitter {
     }
   }
 
-  /**
-   *
-   * @param {Array} buffer
-   * @return {Promise}
-   */
-  receive(buffer) {
+  receive(buffer)
+  {
     if (!this.attached) {
-      throw new Error('Transport not attached.');
+      throw new Error("Transport not attached.");
     }
    
     let self = this;
     this.timeout;
-    return new Promise(function(resolve, reject) {
-      const timer = setTimeout(function() {
+    return new Promise(function(resolve, reject){
+      let timer = setTimeout(function() {
         clearTimeout(timer);
         reject(new Error('connection timeout'));
       }, self.timeout);
@@ -187,18 +177,16 @@ class ComTransport extends events.EventEmitter {
         self.receivedBuffer = Buffer.from('');
         resolve(ret);
       } else {
-        if (self.recvPromise == null) {
-          self.recvPromise = {resolve: resolve, reject: reject, timer: timer};
+        if (self.recvPromise == null){
+          self.recvPromise = {resolve: resolve, reject: reject, timer: timer};  
         }
       }
     });
   }
 
-  /**
-   * @return {String}
-   */
-  toString() {
-    return 'Transport to ' + this.host + ':' + this.port;
+  toString()
+  {
+    return "Transport to " + this.host + ":" + this.port;
   }
 }
 

@@ -1,17 +1,9 @@
-const UUID = require('../rpc/core/uuid.js');
-const NdrObject = require('../ndr/ndrobject.js');
+var UUID = require('../rpc/core/uuid.js');
+var NdrObject = require('../ndr/ndrobject.js');
 
-/**
- * Alternative method of activating a server interface.
- */
-class RemoteSCMActivator extends NdrObject {
-  /**
-   *
-   * @param {ComServer} targetServer
-   * @param {Clsid} clsid
-   */
-  constructor(targetServer, clsid) {
-    super();
+class RemoteSCMActivator extends NdrObject
+{
+  constructor(targetServer, clsid){
     this.targetClsid = clsid;
     this.targetServer = targetServer;
     this.oxid = null;
@@ -27,17 +19,13 @@ class RemoteSCMActivator extends NdrObject {
     this.isActivationSuccessful = false;
   }
 
-  /**
-   * @return {Boolean}
-   */
-  isActivationSuccessful() {
+  isActivationSuccessful()
+  {
     return this.isActivationSuccessful;
   }
 
-  /**
-   * @return {DualStringArrayForOxid}
-   */
-  getDualStringArrayForOxid() {
+  getDualStringArrayForOxid()
+  {
     return this.dualStringArrayForOxid;
   }
 }

@@ -1,4 +1,4 @@
-// @ts-check
+//@ts-check
 
 const OrpcExtentArray = require('./orpcextentarray.js');
 const OrpcFlags = require('./orpcflags');
@@ -8,25 +8,21 @@ const ComArray = require('./comarray');
 const Flags = require('./flags');
 const MarshalUnMarshalHelper = require('./marshalunmarshalhelper.js');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
+
 const types = require('./types');
 const ComValue = require('./comvalue');
 
-/**
- * OrpcThat contains information from the server
- * sent after we send a request with OrpcThis
- */
+
 class OrpcThat {
-    /**
-     * Initializes some variables. Takes no input parameters.
-     */
+
     constructor() {
-        this.flags = -1; // int
-        this.arry = null; // OrpcExtentArray
+        this.flags = -1; //int
+        this.arry = null; //OrpcExtentArray
     }
 
     /**
-     *
-     * @param {number} value
+     * 
+     * @param {number} value 
      */
     setFlags(value) {
         this.flags = value;
@@ -39,19 +35,20 @@ class OrpcThat {
      * @returns {number[]}
      */
     getSupportedFlags() {
-        if (this.flags == -1) {
+
+        if (this.flags == -1)
             return null;
-        }
 
         if ((this.flags & 1) == 1) {
             return [1];
-        } else {
+        }
+        else{
             return [0];
         }
     }
 
     /**
-     *
+     * 
      * @param {OrpcExtentArray[]} arry
      */
     setExtentArray(arry) {
@@ -59,14 +56,14 @@ class OrpcThat {
     }
 
     /**
-     * @return {OrpcExtentArray[]}
+     * @returns {OrpcExtentArray[]}
      */
     getExtentArray() {
         return this.arry;
     }
 
     /**
-     *
+     * 
      * @param {NetworkDataRepresentation} ndr
      */
     encode(ndr) {
@@ -74,11 +71,11 @@ class OrpcThat {
         ndr.writeUnsignedLong(0);
     }
 
-    // TODO this is static, should be out of the class
+    //TODO this is static, should be out of the class
     /**
-     *
+     * 
      * @param {NetworkDataRepresentation} ndr
-     * @return {OrpcThat}
+     * @returns {OrpcThat}
      */
     decode(ndr) {
         let orpcthat = new OrpcThat();
@@ -92,7 +89,7 @@ class OrpcThat {
         }
 
         let orpcextentarray = new Struct();
-        // create the orpcextent struct
+        //create the orpcextent struct
         /**
          * typedef struct tagORPC_EXTENT
          * {
@@ -106,7 +103,7 @@ class OrpcThat {
         orpcextent.addMember(new ComValue(null, types.UUID));
         orpcextent.addMember(new ComValue(null, types.INTEGER));
         orpcextent.addMember(new ComValue(new ComArray(new ComValue(null, types.BYTE), null, 1, true), types.COMARRAY));
-        // create the orpcextentarray struct
+        //create the orpcextentarray struct
         /**
          * typedef struct tagORPC_EXTENT_ARRAY
          * {
@@ -118,7 +115,7 @@ class OrpcThat {
 
         orpcextentarray.addMember(new ComValue(null, types.INTEGER));
         orpcextentarray.addMember(new ComValue(null, types.INTEGER));
-        // this is since the pointer is [unique]
+        //this is since the pointer is [unique]
         let comOrpcExtent = new ComValue(orpcextent, types.STRUCT);
         let comOrpcExtentPointer = new ComValue(new Pointer(comOrpcExtent), types.POINTER);
         let comOrpcExtentPointerArray = new ComValue(new ComArray(comOrpcExtentPointer, null, 1, true), types.COMARRAY);
@@ -135,14 +132,14 @@ class OrpcThat {
         while (x < listOfDefferedPointers.length) {
             let newList = [];
             let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, Flags.FLAG_NULL, map);
-            listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); // this should replace the value in the original place.
+            listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); //this should replace the value in the original place.
             x++;
             listOfDefferedPointers.splice(x, 0, ...newList);
         }
 
         let extentArrays = [];
-        // now read whether extend array exists or not
-        // int ptr = ndr.readUnsignedLong();
+        //now read whether extend array exists or not
+        //int ptr = ndr.readUnsignedLong();
         if (!orpcextentarrayptr.getValue().isNull()) {
             let pointers = orpcextentarrayptr.getValue().getReferent().getMember(2).getValue().getReferent().getArrayInstance(); //Pointer[]
             for (let i = 0; i < pointers.length; i++)
@@ -157,14 +154,16 @@ class OrpcThat {
 
                 extentArrays.push(new OrpcExtentArray((orpcextent2.getMember(0)).toString(), byteArray.length, byteArray));
             }
+
         }
+
         orpcthat.setExtentArray(extentArrays);
 
         return orpcthat;
     }
 }
 
-// emulate static methods
+//emulate static methods
 OrpcThat.encode = OrpcThat.prototype.encode;
 OrpcThat.decode = OrpcThat.prototype.decode;
 

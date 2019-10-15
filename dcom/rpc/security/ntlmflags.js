@@ -1,4 +1,4 @@
-const NtlmFlags = {
+var NtlmFlags = {
   /**
      * Indicates whether Unicode strings are supported or used.
      */

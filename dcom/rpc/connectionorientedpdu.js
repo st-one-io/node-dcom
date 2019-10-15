@@ -1,18 +1,10 @@
-// @ts-check
-const Format = require('../ndr/format.js');
-const NetworkDataRepresentation = require('../ndr/networkdatarepresentation.js');
+var Format = require("../ndr/format.js");
+var NetworkDataRepresentation = require("../ndr/networkdatarepresentation.js");
 
 var callIdCounter = 0;
 
-/**
- * This is the main class from where all the PDU
- * classes are derived from.
- */
 class ConnectionOrientedPdu {
-  /**
-   * Initializes a few constants. Takes no input parameters.
-   */
-  constructor() {
+  constructor(){
     this.CONNECTION_ORIENTED_MAJOR_VERSION = 5;
     this.MUST_RECEIVE_FRAGMENT_SIZE = 7160;
 
@@ -56,33 +48,20 @@ class ConnectionOrientedPdu {
     this.format;
   }
 
-  /**
-   * @return {Number}
-   */
-  getMajorVersion() {
+  getMajorVersion(){
     return this.CONNECTION_ORIENTED_MAJOR_VERSION;
   }
 
-  /**
-   * @return {Number}
-   */
-  getMinorVersion() {
+  getMinorVersion(){
     return this.minorVersion;
   }
 
-  /**
-   *
-   * @param {Number} minorVersion
-   */
-  setMinorVersion(minorVersion) {
+  setMinorVersion(minorVersion){
     this.minorVersion = minorVersion;
   }
 
-  /**
-   * @return {Format}
-   */
-  getFormat() {
-    const aux = new Format(0x10000000);
+  getFormat(){
+    var aux = new Format(0x10000000);
     if (this.format != null) {
       this.format = this.format;
     } else {
@@ -91,115 +70,63 @@ class ConnectionOrientedPdu {
     return this.format;
   }
 
-  /**
-   *
-   * @param {Format} format
-   */
-  setFormat(format) {
+  setFormat(format){
     this.format = format;
   }
 
-  /**
-   * @return {Number}
-   */
-  getFlags() {
+  getFlags(){
     return this.flags;
   }
 
-  /**
-   *
-   * @param {Number} flags
-   */
-  setFlags(flags) {
+  setFlags(flags){
     this.flags = flags;
   }
 
-  /**
-   *
-   * @param {Number} flag
-   * @return {Number}
-   */
-  getFlag(flag) {
+  getFlag(flag){
     return (this.getFlags() & flag) != 0;
   }
 
-  /**
-   *
-   * @param {Number} flag
-   * @param {Number} value
-   */
-  setFlag(flag, value) {
+  setFlag(flag, value){
     this.setFlags(value ? (this.getFlags() | flag) : this.getFlags() & ~flag);
   }
 
-  /**
-   * @return {Number}
-   */
-  getCallId() {
+  getCallId(){
     return this.callId;
   }
 
-  /**
-   *
-   * @param {Number} callId
-   */
-  setCallId(callId) {
+  setCallId(callId){
     this.useCallIdCounter = false;
     this.callId = callId;
   }
 
-  /**
-   * @return {Number}
-   */
-  getFragmentLength() {
+  getFragmentLength(){
     return this.fragLength;
   }
 
-  /**
-   *
-   * @param {Number} fragLength
-   */
-  setFragmentLength(fragLength) {
+  setFragmentLength(fragLength){
     this.fragLength = fragLength;
   }
 
-  /**
-   * @return {Number}
-   */
-  getAuthLength() {
+  getAuthLength(){
     return this.authLength;
   }
 
-  /**
-   *
-   * @param {Number} authLength
-   */
-  setAuthLength(authLength) {
+  setAuthLength(authLength){
     this.authLength = authLength;
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   * @param {Array} src
-   */
-  decode(ndr, src) {
+  decode(ndr, src){
     ndr.setBuffer(src);
     this.readPdu(ndr);
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   * @param {Array} dst
-   */
-  encode(ndr, dst) {
+  encode(ndr, dst){
     ndr.setBuffer(dst);
     ndr.setFormat(this.getFormat());
     this.writePdu(ndr);
 
-    let buffer = ndr.getBuffer();
-    let length = buffer.getLength();
+    var buffer = ndr.getBuffer();
+    var length = buffer.getLength();
     this.setFragmentLength(length);
 
     buffer.setIndex(this.FRAG_LENGTH_OFFSET);
@@ -208,40 +135,28 @@ class ConnectionOrientedPdu {
     buffer.setIndex(length);
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  readPdu(ndr) {
+  readPdu(ndr){
     this.readHeader(ndr);
     this.readBody(ndr);
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  writePdu(ndr) {
+  writePdu(ndr){
     this.writeHeader(ndr);
     this.writeBody(ndr);
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  readHeader(ndr) {
-    if (ndr.readUnsignedSmall() != this.CONNECTION_ORIENTED_MAJOR_VERSION) {
-      throw new Error('Version mismatch.');
+  readHeader(ndr){
+    if (ndr.readUnsignedSmall() != this.CONNECTION_ORIENTED_MAJOR_VERSION){
+      throw new Error("Version mismatch.");
     }
 
     this.setMinorVersion(ndr.readUnsignedSmall());
-    if (this.getType() != ndr.readUnsignedSmall()) {
-      throw new Error('Incorrect PDU type.');
+    if (this.getType() != ndr.readUnsignedSmall()){
+      throw new Error("Incorrect PDU type.");
     }
 
     this.setFlags(ndr.readUnsignedSmall());
-    let format = ndr.readFormat(false);
+    var format = ndr.readFormat(false);
     this.setFormat(format);
     ndr.setFormat(format);
     this.setFragmentLength(ndr.readUnsignedShort());
@@ -249,11 +164,7 @@ class ConnectionOrientedPdu {
     this.callId = Number.parseInt(ndr.readUnsignedLong());
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  writeHeader(ndr) {
+  writeHeader(ndr){
     ndr.writeUnsignedSmall(this.majorVersion);
     ndr.writeUnsignedSmall(this.minorVersion);
     ndr.writeUnsignedSmall(this.getType());
@@ -265,35 +176,18 @@ class ConnectionOrientedPdu {
     ndr.writeUnsignedLong(this.useCallIdCounter ? callIdCounter++ : this.callId);
   }
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
-  readBody(ndr) {
-    throw new Error(
-        'Should never be called, PDUs implementation must override');
+  readBody(ndr){
+    throw new Error("Should never be called, PDUs implementation must override");
   };
 
-  /**
-   *
-   * @param {NetworkDataRepresentation} ndr
-   */
   writeBody(ndr) {
-    throw new Error(
-        'Should never be called, PDUs implementation must override');
+    throw new Error("Should never be called, PDUs implementation must override");
   };
 
-  /**
-   * Should be implementend on each pdu class
-   */
-  getType() {
-    throw new Error(
-        'Should never be called, PDUs implementation must override');
+  getType(){
+    throw new Error("Should never be called, PDUs implementation must override");
   };
 
-  /**
-   * Reset the CallId counter
-   */
   resetCallIdCounter() {
     callIdCounter = 0;
   }

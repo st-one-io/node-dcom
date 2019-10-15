@@ -1,5 +1,4 @@
-// @ts-check
-const FaultCodes = {
+var FaultCodes = {
   RPC_VERSION_MISMATCH: 0x1c000008,
 
   UNSPECIFIED_REJECTION: 0x1c00009,
@@ -33,6 +32,6 @@ const FaultCodes = {
   INVALID_CHECKSUM: 0x1c00001f,
 
   INVALID_CRC: 0x1c000020
-};
+}
 
 module.exports = Object.freeze(FaultCodes);

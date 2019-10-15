@@ -1,4 +1,4 @@
-// @ts-check
+//@ts-check
 const Flags = require('./flags');
 const Encdec = require('../ndr/encdec');
 const ErrorCodes = require('../common/errorcodes');
@@ -21,12 +21,12 @@ const types = require('./types');
 const ComValue = require('./comvalue');
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
- * @param {number} length
- * @return {Buffer}
+ * @param {number} length 
  */
-function readOctetArrayLE(ndr, length) {
+function readOctetArrayLE(ndr, length)
+{
     let bytes = [...Buffer.alloc(8)];
     bytes = ndr.readOctetArray(bytes, 0, 8);
     for (let i = 0; i < 4; i++)
@@ -39,22 +39,24 @@ function readOctetArrayLE(ndr, length) {
 }
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
- * @param {Buffer} b
+ * @param {Buffer} b 
  */
-function writeOctetArrayLE(ndr, b) {
-    for (let i = 0; i < b.length; i++) {
+function writeOctetArrayLE(ndr, b)
+{
+    for (let i = 0; i < b.length; i++)
+    {
         ndr.writeUnsignedSmall(b[b.length - i - 1]);
     }
 }
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
  * @param {ComValue} val
  * @param {Pointer[]} defferedPointers
- * @param {number} flag
+ * @param {number} flag 
  */
 function serialize(ndr, val, defferedPointers, flag) {
     let c = val.getType();
@@ -66,10 +68,10 @@ function serialize(ndr, val, defferedPointers, flag) {
         if ((c != types.COMOBJECT || c != types.DISPATCH) && value instanceof ComObject) {
             c = types.COMOBJECT;
         }
-
+        
         alignMemberWhileEncoding(ndr, c, value);
-
-        switch (c) {
+        
+        switch (c){
             case types.COMSTRING:
             case types.POINTER:
             case types.STRUCT:
@@ -85,6 +87,9 @@ function serialize(ndr, val, defferedPointers, flag) {
                 Encdec.enc_doublele(convertMillisecondsToWindowsTime(value.getTime()), ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(8);
                 break;
+
+            //case types.CURRENCY:
+            //    break;
 
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
@@ -103,7 +108,7 @@ function serialize(ndr, val, defferedPointers, flag) {
             case types.INTEGER:
                 ndr.writeUnsignedLong(value);
                 break;
-
+                
             case types.FLOAT:
                 if (value === null || value === undefined) {
                     value = Number.NaN;
@@ -116,35 +121,35 @@ function serialize(ndr, val, defferedPointers, flag) {
 
             case types.STRING:
                 if ((flag & Flags.FLAG_REPRESENTATION_VALID_STRING) != Flags.FLAG_REPRESENTATION_VALID_STRING) {
-                    throw new Error('UTIL_STRING_INVALID' + new ErrorCodes().UTIL_STRING_INVALID);
+                    throw new Error("UTIL_STRING_INVALID" + new ErrorCodes().UTIL_STRING_INVALID);
                 }
 
-                let str = value && value.toString() || '';
+                let str = value && value.toString() || "";
 
-                // BSTR encoding
+                //BSTR encoding
                 if ((flag & Flags.FLAG_REPRESENTATION_STRING_BSTR) == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
-                    let strBytes = null; // byte[]
+                    let strBytes = null; //byte[]
                     try {
-                        strBytes = Buffer.from(str, 'utf16le');
+                        strBytes = Buffer.from(str, "utf16le");
                     } catch (e) {
-                        throw new Error('UTIL_STRING_DECODE_CHARSET' + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
+                        throw new Error("UTIL_STRING_DECODE_CHARSET" + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
                     }
-                    // NDR representation Max count , then offset, then, actual count
-                    // length of String (Maximum count)
+                    //NDR representation Max count , then offset, then, actual count
+                    //length of String (Maximum count)
                     ndr.writeUnsignedLong(strBytes.length / 2);
-                    // last index of String (length in bytes)
+                    //last index of String (length in bytes)
                     ndr.writeUnsignedLong(strBytes.length);
-                    // length of String Again !! (Actual count)
+                    //length of String Again !! (Actual count)
                     ndr.writeUnsignedLong(strBytes.length / 2);
-                    // write an array of unsigned shorts
+                    //write an array of unsigned shorts
                     let i = 0;
                     while (i < strBytes.length) {
-                        // ndr.writeUnsignedShort(str.charAt(i));
+                        //ndr.writeUnsignedShort(str.charAt(i));
                         ndr.writeUnsignedSmall(strBytes[i]);
                         i++;
                     }
 
-                    // Normal String
+                    //Normal String
                 } else if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
                     // the String is written as types.SHORT so length is strlen/2+1
                     let strlen = Math.round(str.length / 2);
@@ -154,36 +159,38 @@ function serialize(ndr, val, defferedPointers, flag) {
                     ndr.writeUnsignedLong(strlen + 1);
                     if (str.length != 0) {
                         ndr.writeCharacterArray(str.toCharArray(), 0, str.length);
-                        // odd length
+                        //odd length
                         if (str.length % 2 != 0) {
-                            // add a 0
+                            //add a 0
                             ndr.writeUnsignedSmall(0);
                         }
                     }
 
-                    // null termination
+                    //null termination
                     ndr.writeUnsignedShort(0);
-                } else if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPWSTR) == Flags.FLAG_REPRESENTATION_STRING_LPWSTR) {
-                    let strBytes = null; // byte[]
+                }
+                else if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPWSTR) == Flags.FLAG_REPRESENTATION_STRING_LPWSTR) {
+
+                    let strBytes = null; //byte[]
                     try {
-                        strBytes = Buffer.from(str, 'utf16le');
+                        strBytes = Buffer.from(str, "utf16le");
                     } catch (e) {
-                        throw new Error('UTIL_STRING_DECODE_CHARSET' + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
+                        throw new Error("UTIL_STRING_DECODE_CHARSET" + new ErrorCodes().UTIL_STRING_DECODE_CHARSET);
                     }
 
-                    // bytes + 1
+                    //bytes + 1
                     ndr.writeUnsignedLong(strBytes.length / 2 + 1);
                     ndr.writeUnsignedLong(0);
                     ndr.writeUnsignedLong(strBytes.length / 2 + 1);
-                    // write an array of unsigned shorts
+                    //write an array of unsigned shorts
                     let i = 0;
                     while (i < strBytes.length) {
-                        // ndr.writeUnsignedShort(str.charAt(i));
+                        //ndr.writeUnsignedShort(str.charAt(i));
                         ndr.writeUnsignedSmall(strBytes[i]);
                         i++;
                     }
 
-                    // null termination
+                    //null termination
                     ndr.writeUnsignedShort(0);
                 }
                 break;
@@ -226,17 +233,17 @@ function serialize(ndr, val, defferedPointers, flag) {
 
             case types.DISPATCH:
             case types.COMOBJECT:
-                let ptr = value.internal_getInterfacePointer(); // InterfacePointer
+                let ptr = value.internal_getInterfacePointer(); //InterfacePointer
                 serialize(ndr, new ComValue(ptr, types.INTERFACEPOINTER), defferedPointers, flag);
 
                 if (ptr.isCustomObjRef()) {
-                    // ask the session now for its marshaller unmarshaller and that should write the object down into the InterfacePointer.
-                    // Where we are right now is where our object needs to be written.
+                    //ask the session now for its marshaller unmarshaller and that should write the object down into the InterfacePointer.
+                    //Where we are right now is where our object needs to be written.
 
-                    // TODO we have just written a "reserved" member (before we write the body), it has been observed in WMIO that this reserved member
-                    // is the total length of the block, if this is so then the Custom Marshaller for WMIO should overwrite this with the full length.
+                    //TODO we have just written a "reserved" member (before we write the body), it has been observed in WMIO that this reserved member 
+                    //is the total length of the block, if this is so then the Custom Marshaller for WMIO should overwrite this with the full length.
 
-                    // First write the custom marshaller unmarshaller CLSID. Then the object definition.
+                    //First write the custom marshaller unmarshaller CLSID. Then the object definition.
                     let index = ndr.getBuffer().getIndex();
                     value.getCustomObject().encode(ndr, defferedPointers, flag);
                     let currentIndex = ndr.getBuffer().getIndex();
@@ -249,25 +256,26 @@ function serialize(ndr, val, defferedPointers, flag) {
                 break;
 
             default:
-                throw new Error('UTIL_SERDESER_NOT_FOUND' + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
 }
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
- * @param {number} c
- * @param {object} obj
+ * @param {number} c 
+ * @param {object} obj 
  */
-function alignMemberWhileEncoding(ndr, c, obj) {
+function alignMemberWhileEncoding(ndr, c, obj)
+{
     let index = ndr.getBuffer().getIndex();
     let align;
 
     switch (c) {
         case types.STRUCT:
         case types.UNION:
-            // Custom alignment
+            //Custom alignment
             align = obj.getAlignment();
             break;
         case types.INTEGER:
@@ -275,20 +283,20 @@ function alignMemberWhileEncoding(ndr, c, obj) {
         case types.VARIANT:
         case types.STRING:
         case types.POINTER:
-            align = 4;
+            align = 4
             break;
         case types.DOUBLE:
-            align = 8;
+            align = 8
             break;
         case types.SHORT:
-            align = 2;
+            align = 2
             break;
         default:
-            // don't to any alignment, let it undefined
+            //don't to any alignment, let it undefined
     }
 
     if (align !== undefined) {
-        let i = Math.round(index % align);
+        let i = Math.round(index % align)
         i = (i == 0) ? 0 : align - i;
         
         ndr.writeOctetArray(Buffer.alloc(i), 0, i);
@@ -296,19 +304,20 @@ function alignMemberWhileEncoding(ndr, c, obj) {
 }
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
- * @param {number} c
- * @param {object} obj
+ * @param {number} c 
+ * @param {object} obj 
  */
-function alignMemberWhileDecoding(ndr, c, obj) {
+function alignMemberWhileDecoding(ndr, c, obj)
+{
     let index = ndr.getBuffer().getIndex();
     let align;
 
     switch (c) {
         case types.STRUCT:
         case types.UNION:
-            // Custom alignment
+            //Custom alignment
             align = obj.getAlignment();
             break;
         case types.INTEGER:
@@ -316,16 +325,16 @@ function alignMemberWhileDecoding(ndr, c, obj) {
         case types.VARIANT:
         case types.STRING:
         case types.POINTER:
-            align = 4;
+            align = 4
             break;
         case types.DOUBLE:
-            align = 8;
+            align = 8
             break;
         case types.SHORT:
-            align = 2;
+            align = 2
             break;
         default:
-            // don't to any alignment, let it undefined
+            //don't to any alignment, let it undefined
     }
 
     if (align !== undefined) {
@@ -336,15 +345,15 @@ function alignMemberWhileDecoding(ndr, c, obj) {
 }
 
 /**
- *
+ * 
  * @param {NetworkDataRepresentation} ndr
- * @param {ComValue} val
- * @param {Pointer[]} defferedPointers
- * @param {number} flag
- * @param {Map} additionalData
- * @return {Object}
+ * @param {ComValue} val 
+ * @param {Pointer[]} defferedPointers 
+ * @param {number} flag 
+ * @param {Map} additionalData 
  */
-function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
+function deSerialize(ndr, val, defferedPointers, flag, additionalData)
+{
     let c = val.getType();
     let obj = val.getValue();
     if (obj instanceof ComArray) {
@@ -355,7 +364,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
 
         switch (c) {
             case types.COMSTRING:
-                return (!obj) ? new ComString('', Flags.FLAG_REPRESENTATION_STRING_LPWSTR).decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
+                return (!obj) ? new ComString("", Flags.FLAG_REPRESENTATION_STRING_LPWSTR).decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.POINTER:
                 return (!obj) ? new Pointer().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.STRUCT:
@@ -374,7 +383,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
                 ndr.getBuffer().advance(8);
                 return new ComValue(date, types.DATE);
 
-            // case types.CURRENCY:
+            //case types.CURRENCY:
             //    break;
 
             case types.BOOLEAN:
@@ -385,11 +394,11 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
                     return new ComValue(ndr.readBoolean(), types.BOOLEAN);
                 }
 
-            case types.UNSIGNEDSHORT: // TODO we may need different behavior for unsigned here
+            case types.UNSIGNEDSHORT: //TODO we may need different behavior for unsigned here
             case types.SHORT:
                 return new ComValue(ndr.readUnsignedShort(), types.SHORT);
 
-            case types.UNSIGNEDINTEGER: // TODO we may need different behavior for unsigned here
+            case types.UNSIGNEDINTEGER: //TODO we may need different behavior for unsigned here
             case types.INTEGER:
                 return new ComValue(ndr.readUnsignedLong(), types.INTEGER);
 
@@ -402,16 +411,16 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
 
             case types.STRING:
                 if ((flag & Flags.FLAG_REPRESENTATION_VALID_STRING) != Flags.FLAG_REPRESENTATION_VALID_STRING) {
-                    throw new Error('UTIL_STRING_INVALID' + new ErrorCodes().UTIL_STRING_INVALID);
+                    throw new Error("UTIL_STRING_INVALID" + new ErrorCodes().UTIL_STRING_INVALID);
                 }
 
                 let retString = null;
 
-                // BSTR Decoding
+                //BSTR Decoding
                 if ((flag & Flags.FLAG_REPRESENTATION_STRING_BSTR) == Flags.FLAG_REPRESENTATION_STRING_BSTR) {
-                    // Read for user
-                    ndr.readUnsignedLong();// eating max length
-                    ndr.readUnsignedLong();// eating length in bytes
+                    //Read for user
+                    ndr.readUnsignedLong();//eating max length
+                    ndr.readUnsignedLong();//eating length in bytes
                     let actuallength = ndr.readUnsignedLong() * 2;
                     let buffer = Buffer.alloc(actuallength);
                     let i = 0;
@@ -422,18 +431,18 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
 
                     retString = buffer.toString('utf16le');
 
-                    // Normal String
+                    //Normal String
                 } else if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
-                    let actuallength = ndr.readUnsignedLong(); // max length
+                    let actuallength = ndr.readUnsignedLong(); //max length
                     if (actuallength == 0) {
-                        return '';
+                        return "";
                     }
 
-                    ndr.readUnsignedLong();// eating offset
-                    ndr.readUnsignedLong();// eating actuallength again
-                    // now read array.
+                    ndr.readUnsignedLong();//eating offset
+                    ndr.readUnsignedLong();//eating actuallength again
+                    //now read array.
                     let ret = new Array(actuallength * 2 - 2);
-                    // read including the unsigned short (null chars)
+                    //read including the unsigned short (null chars)
                     ndr.readCharacterArray(ret, 0, actuallength * 2 - 2);
                     retString = Buffer.from(ret).toString('utf8');
                     if (ret[ret.length - 1] == '\0') {
@@ -442,15 +451,16 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
 
                     ndr.readUnsignedShort();
                 } else if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPWSTR) == Flags.FLAG_REPRESENTATION_STRING_LPWSTR) {
+
                     let maxlength = ndr.readUnsignedLong();
                     if (maxlength == 0) {
-                        return '';
+                        return "";
                     }
-                    ndr.readUnsignedLong();// eating offset
+                    ndr.readUnsignedLong();//eating offset
                     let actuallength = ndr.readUnsignedLong() * 2;
                     let buffer = Buffer.alloc(actuallength - 2);
                     let i = 0;
-                    // last 2 bytes , null termination will be eaten outside the loop
+                    //last 2 bytes , null termination will be eaten outside the loop
                     while (i < actuallength - 2) {
                         buffer[i] = ndr.readUnsignedSmall();
                         i++;
@@ -469,7 +479,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
                 uuid.decode(ndr, ndr.getBuffer());
                 return new ComValue(uuid, types.UUID);
 
-            case types.UNSIGNEDBYTE: // TODO we may need different behavior for unsigned here
+            case types.UNSIGNEDBYTE: //TODO we may need different behavior for unsigned here
             case types.BYTE:
                 return new ComValue(ndr.readUnsignedSmall(),types.BYTE);
 
@@ -499,11 +509,11 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
 
             case types.DISPATCH:
             case types.COMOBJECT:
-                let session = additionalData.get(CallBuilder.CURRENTSESSION); // Session
+                let session = additionalData.get(CallBuilder.CURRENTSESSION); //Session
                 let ptr = deSerialize(ndr, new ComValue(null, types.INTERFACEPOINTER), defferedPointers, flag, additionalData);
                 let comObject = new ComObjectImpl(session, ptr);
                 if (ptr && ((Flags.FLAG_REPRESENTATION_ARRAY & flag) != Flags.FLAG_REPRESENTATION_ARRAY) && ptr.isCustomObjRef()) {
-                    // now we need to ask the session for its marshaller unmarshaller based on the CLSID
+                    //now we need to ask the session for its marshaller unmarshaller based on the CLSID 
                     comObject.setCustomObject(session.getCustomMarshallerUnMarshallerTemplate(ptr.getCustomCLSID()).decode(comObject, ndr, defferedPointers, flag, additionalData));
                 }
                 additionalData.get(CallBuilder.COMOBJECTS).push(comObject);
@@ -513,18 +523,19 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData) {
                 return new ComValue(DualStringArray.decode(ndr), types.DUALSTRINGARRAY);
 
             default:
-                throw new Error('UTIL_SERDESER_NOT_FOUND' + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
+
 }
 
 /**
- *
+ * 
  * @param {ComValue} val
- * @param {number} flag
- * @return {Object}
+ * @param {number} flag 
  */
-function getLengthInBytes(val, flag) {
+function getLengthInBytes(val, flag)
+{
     let c = val.getType();
     let obj = val.getValue();
 
@@ -537,16 +548,16 @@ function getLengthInBytes(val, flag) {
 
         let length;
 
-        switch (c) {
+        switch (c){
             case types.CURRENCY:
-                throw new Error('Not yet implemented');
+                throw new Error("Not yet implemented");
 
             case types.VARIANTBODY:
                 return (obj)? obj.getLengthInBytes() :  0;
-
+                
             case types.VARIANT:
                 return (obj)? obj.getLengthInBytes(flag) : 0;
-
+                
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
                     return 2;
@@ -554,23 +565,23 @@ function getLengthInBytes(val, flag) {
                     return 1;
                 }
 
-            case types.STRING:
+            case types.STRING: 
 
-                length = 4 + 4 + 4; // max len, offset ,actual length
+                length = 4 + 4 + 4; //max len, offset ,actual length
 
                 if (!((flag & Flags.FLAG_REPRESENTATION_STRING_BSTR) == Flags.FLAG_REPRESENTATION_STRING_BSTR)) {
-                    length = length + 2; // adding null termination
+                    length = length + 2; //adding null termination
                 }
 
-                let strLen = (obj || '').length;
+                let strLen = (obj || "").length;
 
                 if ((flag & Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR) {
-                    length = length + strLen; // this is only a character array, no unicode, each char is writen in 1 byte "abcd" --> ab, cd ,00 ; "abcde" --> ab,cd,e0, 00
-                    if (!(strLen % 2 == 0)) { // odd
+                    length = length + strLen; //this is only a character array, no unicode, each char is writen in 1 byte "abcd" --> ab, cd ,00 ; "abcde" --> ab,cd,e0, 00
+                    if (!(strLen % 2 == 0)) { //odd
                         length++;
                     }
                 } else {
-                    length = length + (strLen * 2); // these are both unicode (utf-16le)
+                    length = length + (strLen * 2); //these are both unicode (utf-16le)
                 }
 
                 return length;
@@ -596,9 +607,9 @@ function getLengthInBytes(val, flag) {
                     return length;
                 }
 
-                // for LPWSTR and BSTR adding 2 for the null character.
+                //for LPWSTR and BSTR adding 2 for the null character.
                 length = length + (obj.getType() == Flags.FLAG_REPRESENTATION_STRING_LPCTSTR ? 0 : 2);
-                // Pointer referentId --> USER
+                //Pointer referentId --> USER
                 return length + this.getLengthInBytes(new ComValue(obj.getString(), types.STRING), obj.getType() | flag);
 
             case types.CHARACTER:
@@ -624,15 +635,20 @@ function getLengthInBytes(val, flag) {
                 return 16;
 
             default:
-                throw new Error('UTIL_SERDESER_NOT_FOUND' + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
+                throw new Error("UTIL_SERDESER_NOT_FOUND" + new ErrorCodes().UTIL_SERDESER_NOT_FOUND + c);
         }
     }
+
 }
+
+// ----------------
+// private helper classes
+
 
 const DT_DAYS_1899_1970 = 25569;
 const MS_IN_ONE_DAY = 86400000;
 
-/** FROM JACAOB 1.10. www.danadler.com.
+/**FROM JACAOB 1.10. www.danadler.com.
 * Convert a COM time from functions Date(), Time(), Now() to a
 * Java time (milliseconds). Visual Basic time values are based to
 * 30.12.1899, Java time values are based to 1.1.1970 (= 0
@@ -651,17 +667,17 @@ function convertWindowsTimeToMilliseconds(comTime) {
 
     // code from jacobgen:
     comTime = comTime - DT_DAYS_1899_1970;
-    // TODO test this and check for needed offsets
-    // result = Math.round(86400000 * comTime) - cal.get(Calendar.ZONE_OFFSET);
+    //TODO test this and check for needed offsets
+    //result = Math.round(86400000 * comTime) - cal.get(Calendar.ZONE_OFFSET);
     result = Math.round(MS_IN_ONE_DAY * comTime);
-    // cal.setTime(new Date(result));
-    // result -= cal.get(Calendar.DST_OFFSET);
+    //cal.setTime(new Date(result));
+    //result -= cal.get(Calendar.DST_OFFSET);
 
     return result;
 }
 
 
-/** FROM JACAOB 1.10. www.danadler.com.
+/**FROM JACAOB 1.10. www.danadler.com.
  * Convert a Java time to a COM time.
  *
  * @param {number} milliseconds Java time.
@@ -671,14 +687,14 @@ function convertMillisecondsToWindowsTime(milliseconds) {
     let result;
 
     // code from jacobgen:
-    // Calendar cal = Calendar.getInstance();
-    // cal.setTimeInMillis(milliseconds);
-    // milliseconds += (cal.get(Calendar.ZONE_OFFSET) + cal
+    //Calendar cal = Calendar.getInstance();
+    //cal.setTimeInMillis(milliseconds);
+    //milliseconds += (cal.get(Calendar.ZONE_OFFSET) + cal
     //    .get(Calendar.DST_OFFSET)); // add GMT offset
     result = (milliseconds / MS_IN_ONE_DAY) + DT_DAYS_1899_1970;
 
     return result;
-}// convertMillisecondsToWindowsTime()
+}//convertMillisecondsToWindowsTime()
 
 
 module.exports = {

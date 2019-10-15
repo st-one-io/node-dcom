@@ -1,53 +1,41 @@
-// @ts-check
-const DefaultConnection = require('../defaultconnection.js');
-const AuthenticationVerifier = require('../core/authenticationverifier.js');
-const NdrBuffer = require('../../ndr/ndrbuffer.js');
-const NTLMAuthentication = require('./ntlmauthentication.js');
-const NTLMFlags = require('./ntlmflags.js');
-const Security = require('../security.js');
-const Type1Message = require('./messages/type1message.js');
-const Type2Message = require('./messages/type2message.js');
-const Type3Message = require('./messages/type3message.js');
+var DefaultConnection = require('../defaultconnection.js');
+var AuthenticationVerifier = require('../core/authenticationverifier.js');
+var NdrBuffer = require('../../ndr/ndrbuffer.js');
+var NTLMAuthentication = require('./ntlmauthentication.js');
+var NTLMFlags = require('./ntlmflags.js');
+var Security = require('../security.js');
+var Type1Message = require('./messages/type1message.js');
+var Type2Message = require('./messages/type2message.js');
+var Type3Message = require('./messages/type3message.js');
 
 
 var contextSerial = 0;
 /**
  * NTLM Connection for secure communication
  */
-class NTLMConnection extends DefaultConnection {
-  /**
-   * Receives an object with some authentication information
-   * @param {Object} info
-   */
-  constructor(info) {
+class NTLMConnection extends DefaultConnection
+{
+  constructor(info)
+  {
     super();
     this.authentication = new NTLMAuthentication(info);
     this.ntlm;
   }
 
-  /**
-   *
-   * @param {Number} transmitLength
-   */
-  setTransmitLength(transmitLength) {
+  setTransmitLength(transmitLength)
+  {
     this.transmitLength = transmitLength;
     this.transmitBuffer = new NdrBuffer([transmitLength]);
   }
 
-  /**
-   *
-   * @param {Number} receiveLength
-   */
-  setReceiveLength(receiveLength) {
+  setReceiveLength(receiveLength)
+  {
     this.receiveLength = receiveLength;
     this.receiveBuffer = new NdrBuffer([receiveLength]);
   }
 
-  /**
-   *
-   * @param {AuthenticationVerifier} verifier
-   */
-  incomingRebind(verifier) {
+  incomingRebind(verifier)
+  {    
     switch (verifier.body[8]) {
       case 1:
         this.contextId = verifier.contextId;
@@ -57,30 +45,30 @@ class NTLMConnection extends DefaultConnection {
         this.ntlm = new Type2Message(verifier.body);
         break;
       case 3:
-        let type2 = this.ntlm;
+        var type2 = this.ntlm;
         this.ntlm = new Type3Message(verifier.body);
         /* FIXME: In the future usentlmv2 and other things that the original
         *  library was reading from properties should be defined diferently
         *  so our lib can also support to manually choose those values
         */
-       let usentlmv2 = true;
+        var usentlmv2 = true;
         if (usentlmv2) {
           this.authentication.createSecurityWhenServer(this.ntlm);
           this.setSecurity(this.authentication.getSecurity());
         }
         break;
       default:
-        throw new Error('Invalid NTLM message type');
+        throw new Error("Invalid NTLM message type");
     }
   }
 
   /**
-   *
+   * 
    * @param {Object} info
-   * @param {*} pduType
    * @return {NtlmMessage}
    */
-  outgoingRebind(info, pduType) {
+  outgoingRebind(info, pduType)
+  {
     if (this.ntlm == null) {
       this.contextId = ++contextSerial;
       this.ntlm = this.authentication.createType1(info.domain);
@@ -111,7 +99,7 @@ class NTLMConnection extends DefaultConnection {
             this.contextId, verifier);
         }
     } else {
-      throw new Error('Unrecognized NTLM message.');
+      throw new Error("Unrecognized NTLM message.");
     }
 
     let protectionLevel = this.ntlm.getFlag(NTLMFlags.NTLMSSP_NEGOTIATE_SEAL) ?

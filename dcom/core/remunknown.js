@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 // @ts-check
 
 const HashMap = require('hashmap');
@@ -17,29 +16,25 @@ const StdObjRef = require('./stdobjref');
  */
 class RemUnknown extends NdrObject {
     /**
-     *
+     * 
      * @param {String} ipidOfUnknown
      * @param {String} requestIID
-     * @param {Array} refs
      */
-    constructor(ipidOfUnknown, requestIID, refs) {
+    constructor(ipidOfUnknown, requestIID, refs){
         super();
-        this.IID_Unknown = '00000131-0000-0000-c000-000000000046';
+        this.IID_Unknown = "00000131-0000-0000-c000-000000000046";
         this.ipidOfUnknown = ipidOfUnknown;
         this.requestIID = requestIID;
         this.iidPtr = null;
         this.refs = refs;
     }
 
-    /**
-     * @return {Number}
-     */
     getOpnum() {
         return 3;
     }
 
     /**
-     *
+     * 
      * @param {NetworkDataRepresentation} ndr
      */
     write(ndr) {
@@ -62,11 +57,10 @@ class RemUnknown extends NdrObject {
         try {
             uuid.encode(ndr, ndr.buf);
         } catch (e) {
-            throw new Error('RemUnknown - Performing a QueryInterface for ' +
-             this.requestIID + ' ' + e);
+            throw new Error('RemUnknown - Performing a QueryInterface for ' + this.requestIID + ' ' + e);
         }
 
-        ndr.writeUnsignedLong(0);
+        ndr.writeUnsignedLong(0)//TODO Index Matching
     }
 
     /**
@@ -85,8 +79,8 @@ class RemUnknown extends NdrObject {
             }
 
             ndr.readUnsignedLong();
-            this.iidPtr = new InterfacePointer(this.requestIID, -1,
-                 new StdObjRef().decode(ndr));
+            this.iidPtr = new InterfacePointer(this.requestIID, -1, new StdObjRef().decode(ndr));
+            //this.iidPtr = new InterfacePointer().decode(ndr, new Array(), Flags.FLAG_NULL, new HashMap());
         }
         let hresult1 = ndr.readUnsignedLong();
         if (hresult1 != 0 ) {
@@ -94,9 +88,6 @@ class RemUnknown extends NdrObject {
         }
     }
 
-    /**
-     * @return {InterfacePointer}
-     */
     getInterfacePointer() {
         return this.iidPtr;
     }
