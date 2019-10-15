@@ -20,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "bytebuffer": "^5.0.1",
+    "hashcode": "^1.0.3",
     "hashmap": "^2.3.0",
     "ip": "^1.1.5",
     "legacy-encoding": "^3.0.0",
