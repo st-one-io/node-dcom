@@ -52,6 +52,7 @@ class ConnectionOrientedEndpoint extends Events.EventEmitter{
     this.currentIID = null;
     this.locked = false;
     this.ee = new Events.EventEmitter();
+    this.ee.setMaxListeners(30);
   }
 
   getTransport(){
