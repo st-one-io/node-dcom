@@ -17,7 +17,7 @@
     "opc-da"
   ],
   "author": "Igor Steuck Lopes",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "bytebuffer": "^5.0.1",
     "hashcode": "^1.0.3",
