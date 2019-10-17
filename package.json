@@ -1,5 +1,5 @@
 {
-  "name": "dcom",
+  "name": "node-dcom",
   "version": "1.0.0",
   "description": "Simple lib to support DCOM communication (Heavly based on J-Interop)",
   "main": "dcom/index.js",
