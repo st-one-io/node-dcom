@@ -67,8 +67,9 @@ To release all the objects created in a given session call the function ```destr
 session.destroySession(session);
 ```
 
-
-
 ## Contributing
 
 This is a partial implementation and there are lots that could be done to improve what is already supported or to add support for more DCOM features. Feel free to dive in! Open an issue or submit PRs.
+
+## License
+Copyright 2017 Smart-Tech, [Apache 2.0 license](LICENSE).
