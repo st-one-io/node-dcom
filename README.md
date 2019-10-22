@@ -2,6 +2,8 @@
 
 node-com is a partial DCOM-compatible lib for Node.js environment. Most of the implementation do not follow the official specification so not all the protocol features are supported. This was implemented as a part of our [OPC-DA node](https://github.com/netsmarttech/node-red-contrib-opc-da) for Node-RED so features were implemented as they were needed for what we wanted to achieve with that node. Most of the code base is a NodeJS implementation of the J-Interop Java library.
 
+This node was created by [Smart-Tech](https://netsmarttech.com/) as part of the [ST-One](https://netsmarttech.com/page/st-one) project.
+
 ## Table of Contents
 
 - [Install](#install)

@@ -321,7 +321,7 @@ class Session
 
     if (session.stub == null) {
       this.mapofSessionIdsVsSessions.delete(Number(session.getSessionIdentifier()));
-      this.listOfSessions.remove(session);
+      this.removeSession(session);
 
       await this.postDestroy(session);
       return;
