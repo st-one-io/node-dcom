@@ -379,7 +379,8 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 return (!obj) ? new Variant.VariantBody().decode(ndr, defferedPointers, flag, additionalData) : obj.decode(ndr, defferedPointers, flag, additionalData);
             case types.DATE:
                 ndr.getBuffer().align(8);
-                let date = new Date(Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex()));
+                let mili = Encdec.dec_doublele(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                let date = new Date(convertWindowsTimeToMilliseconds(mili));
                 ndr.getBuffer().advance(8);
                 return new ComValue(date, types.DATE);
 
@@ -659,8 +660,8 @@ const MS_IN_ONE_DAY = 86400000;
 * (24 hours * 0.6453). Example usage:
 * <code>Date javaDate = new Date(toMilliseconds (vbDate));</code>.
 *
-* @param {number} comTime COM time.
-* @return Java time.
+* @param {number} comTime
+* @return
 */
 function convertWindowsTimeToMilliseconds(comTime) {
     let result;
