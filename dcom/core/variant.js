@@ -366,7 +366,7 @@ class Variant {
   setDeffered(deffered)
   {
     if (this.member != null && !this.member.getValue().isReference()) {
-      this.member.getValue().setDeferred(deffered);
+      this.member.getValue().setDeffered(deffered);
     }
   }
 

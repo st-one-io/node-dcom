@@ -80,6 +80,7 @@ variantTypes.VT_UI4_ARRAY = variantTypes.VT_ARRAY | variantTypes.VT_UI4;
 variantTypes.VT_UINT_ARRAY = variantTypes.VT_ARRAY | variantTypes.VT_UINT;
 variantTypes.VT_UNKNOWN_ARRAY = variantTypes.VT_ARRAY | variantTypes.VT_UNKNOWN;
 variantTypes.VT_VARIANT_ARRAY = variantTypes.VT_ARRAY | variantTypes.VT_VARIANT;
+variantTypes.VT_DATE_ARRAY = variantTypes.VT_ARRAY | variantTypes.VT_DATE;
 
 var supportedTypes = new HashMap();
 var supportedTypes_classes = new HashMap();
