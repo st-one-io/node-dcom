@@ -11,7 +11,7 @@ class Clsid {
    * @param {String} uuid
    */
   constructor(uuid) {
-    if (!this.checkSyntax(uuid)) throw new Error("Invalid Clsid Syntax");
+    if (!this.checkSyntax(uuid)) throw 0x00000061;
     this.nestedUUID = new UUID(uuid);
     this.autoRegister = false;
   }
