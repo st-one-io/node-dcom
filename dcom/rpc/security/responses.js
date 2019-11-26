@@ -105,7 +105,6 @@ class Responses
 
         let magicConstant = LegacyEncoding.encode("KGS!@#$%", "us-ascii");
 
-        let aux;
         let des = Crypto.createCipheriv('ded-ecb', Buffer.from(lowKey),'');
         des.update(magicConstant);
         let lowHash = [...des.final()];
