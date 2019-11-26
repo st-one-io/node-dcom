@@ -72,7 +72,7 @@ class DefaultConnection
       let aux = pdu.getStub().slice(index, index + allocation);
       fragmentStub = aux;
       fragment.setStub(fragmentStub);
-
+      
       let flags = pdu.getFlags() & ~(pdu.PFC_FIRST_FRAG | pdu.PFC_LAST_FRAG);
       if (index == 0) flags |= pdu.PFC_FIRST_FRAG;
       index += allocation;
@@ -98,6 +98,7 @@ class DefaultConnection
       return fragment;
     } else {
       let first_fragment = fragment;
+      if (!(fragment instanceof ResponseCoPdu) || !(fragment instanceof RequestCoPdu)) return fragment;
       let stub = fragment.getStub();
       do{
         fragment = await this.receiveFragment(transport);
