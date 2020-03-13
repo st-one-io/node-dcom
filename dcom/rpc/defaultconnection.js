@@ -98,7 +98,14 @@ class DefaultConnection
       return fragment;
     } else {
       let first_fragment = fragment;
-      if (!(fragment instanceof ResponseCoPdu) || !(fragment instanceof RequestCoPdu)) return fragment;
+      console.log(fragment.getType());
+      
+      // check if the fragment is a valid type for a fragmented pdu
+      // 2 - ResponseCoPdu
+      // 0 - RequestCoPdu
+      if (!((fragment.getType() == 0) || (fragment.getType() == 2))){
+         return fragment;
+      }
       let stub = fragment.getStub();
       do{
         fragment = await this.receiveFragment(transport);
