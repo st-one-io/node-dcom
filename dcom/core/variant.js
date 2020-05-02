@@ -759,7 +759,7 @@ class VariantBody
 
     var typo = new Variant().getSupportedType(this.obj, dataType);
     if (typo != null) {
-      this.types = Number.parseInt(typo) | (args.isByRef ? VT_BYREF:0);
+      this.types = Number.parseInt(typo) | (args.isByRef ? variantTypes.VT_BYREF:0);
     } else {
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
