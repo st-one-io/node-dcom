@@ -136,7 +136,6 @@ class Variant {
     this.arryInits.push(types.COMOBJECT);
     // TO-DO: if IDispatch support is desired: this.arryInits.push(Dispatch);
     // this.arryInits.push(Unknown);
-
     if (value) {
       switch(value.getType()){
         case types.INTEGER:
@@ -144,24 +143,19 @@ class Variant {
         case types.LONG:
         case types.DOUBLE:
         case types.SHORT:
-          this.init(value, isByref? isByref : false);
         case types.BOOLEAN:
-          this.init(value, isByref? isByref : false);
         case types.CHARACTER:
-          this.init(value, isByref? isByref : false);
         case types.STRING:
-          this.init(value, isByref? isByref : false);
         case types.COMSTRING:
-          this.init(value, isByref? isByref : false);
         case types.COMOBJECT:
-          this.init(value, isByref? isByref : false);
           // TO-DO: if IDispatch com is desired it must be implemented here to set the correct flag
         case types.DATE:
-          this.init(value, isByref? isByref : false);
         case types.CURRENCY:
           this.init(value, isByref? isByref : false);
+		  break;
         case types.COMARRAY:
           this.initArrays(value, isByref? isByref : false, FLAG? FLAG : Flags.FLAG_NULL);
+		  break;
       }
     }
   }
@@ -357,7 +351,7 @@ class Variant {
     if (obj.getType() == types.VARIANTBODY) {
       this.member = new ComValue(new Pointer(obj), types.POINTER);
     }else {
-      var variantBody = new VariantBody(1, {obj, isByref});
+      var variantBody = new VariantBody(1, {referent: obj, dataType: obj.getType(), isByref: isByref});
       this.member = new ComValue(new Pointer(new ComValue(variantBody, types.VARIANTBODY)), types.POINTER);
     }
     this.member.getValue().setReferent(0x72657355);
@@ -372,13 +366,13 @@ class Variant {
 
   setFlag(FLAG)
   {
-    var variantBody = this.member.getReferent();
+    var variantBody = this.member.getValue().getReferent();
     variantBody.FLAG |= FLAG;
   }
 
   getFlag()
   {
-    var variantBody = this.member.getReferent();
+    var variantBody = this.member.getValue().getReferent();
     return variantBody.FLAG;
   }
 
@@ -387,7 +381,7 @@ class Variant {
     if (this.member == null) {
       return true;
     }
-    var variantBody = this.member.getReferent();
+    var variantBody = this.member.getValue().getReferent();
     return variantBody == null ? true : variantBody.isNull();
   }
 
@@ -461,8 +455,7 @@ class Variant {
     FLAG = (FLAG == undefined) ? Flags.FLAG_NULL : FLAG;
     this.initArrays(array, isByref, FLAG);
   }
-
-
+  
   // TO-DO: this will take some time, postpone it until it is needed
   initArrays(array, isByref, FLAG)
   {
@@ -581,75 +574,76 @@ class Variant {
   getObject()
   {
     this.checkValidity();
-    return (this.member.getReferent());
+    return (this.member.getValue().getReferent());
   }
 
   getObjectAsInt(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsInt();
+    return (this.member.getValue().getReferent()).getObjectAsInt();
   }
 
   getObjectAsFloat(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsFloat();
+    return (this.member.getValue().getReferent()).getObjectAsFloat();
   }
 
   getObjectAsCODE(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsCODE();
+    return (this.member.getValue().getReferent()).getObjectAsCODE();
   }
 
   getObjectAsDouble(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsDouble();
+    return (this.member.getValue().getReferent()).getObjectAsDouble();
   }
 
   getObjectAsShort(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsShort();
+    return (this.member.getValue().getReferent()).getObjectAsShort();
   }
 
   getObjectAsBoolean(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsBoolean();
+    return (this.member.getValue().getReferent()).getObjectAsBoolean();
   }
 
   getObjectAsString(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsString();
+    return (this.member.getValue().getReferent()).getObjectAsString();
   }
 
   // TO-DO: asString2
 
   getObjectAsDate(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsDate();
+    return (this.member.getValue().getReferent()).getObjectAsDate();
   }
 
   getObjectAsComObject(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsComObject();
+    return (this.member.getValue().getReferent()).getObjectAsComObject();
   }
 
   getObjectAsVariant(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsVariant();
+    return (this.member.getValue().getReferent()).getObjectAsVariant();
   }
 
   getObjectAsArray(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsArray();
+    return (this.member.getValue().getReferent()).getObjectAsArray();
   }
 
   getObjectAsLong(){
     this.checkValidity();
-    return (this.member.getReferent()).getObjectAsLong();
+    return (this.member.getValue().getReferent()).getObjectAsLong();
   }
 
   encode(ndr, defferedPointers, FLAG)
   {
-    this.member.setDeferred(true);
-    // TO-DO: serializing
+	var ref = this.member.getValue();
+    ref.setDeffered(true);
+	MarshalUnMarshalHelper.serialize(ndr, new ComValue(ref, types.POINTER), defferedPointers, FLAG);
   }
 
   decode(ndr, defferedPointers, FLAG, addionalData)
@@ -663,38 +657,38 @@ class Variant {
 
   isArray()
   {
-    this.checkValidity;
-    return (this.member.getReferent()).isArray();
+    this.checkValidity();
+    return (this.member.getValue().getReferent()).isArray();
   }
 
   getLengthInBytes(FLAG)
   {
     this.checkValidity();
-    // // TODO: MARSHALING GET LENGTH IN BYTES
+	return MarshalUnMarshalHelper.getLengthInBytes(new ComValue(this.member.getValue().getReferent(), types.VARIANTBODY), FLAG);
   }
 
   isByRefFlagSet()
   {
     this.checkValidity();
-    return (this.member.getReferent()).isByref();
+    return (this.member.getValue().getReferent()).isByref();
   }
 
   getType()
   {
     this.checkValidity();
-    return (this.member.getReferent()).getType();
+    return (this.member.getValue().getReferent()).getType();
   }
 
   checkValidity()
   {
-    if (this.member == null || this.member.isNull()) {
+    if (this.member == null || this.member.getValue().isNull()) {
       throw new Error(new ErrorCodes().VARIANT_IS_NULL);
     }
   }
 
   toString()
   {
-    return this.member == null ? "[null]" : String('[' + this.member.toString() + ']');
+    return this.member == null ? "[null]" : String('[' + this.member.getValue().toString() + ']');
   }
 };
 
@@ -702,6 +696,7 @@ class VariantBody
 {
   constructor(constructor,args)
   {
+	this._init();
     this.serialVersionUID = -8484108480626831102;
   	this.VT_PTR = 0x1A;
   	this.VT_SAFEARRAY = 0x1B;
@@ -741,7 +736,28 @@ class VariantBody
     this.type3.push(NULL);
     this.type3.push(SCODE);
   }
-
+  
+  _init(){
+    if (inited) return;
+    ErrorCodes = require('../common/errorcodes.js');
+    System = require('../common/system.js');
+    HashMap = require('hashmap');
+    Flags = require('./flags.js');
+    ComString = require('./string');
+    ComArray = require('./comarray');
+    ComObject = require('./comobject');
+    ComObjectImpl = require('./comobjcimpl');
+    types = require('./types');
+    ComValue = require('./comvalue');
+    MarshalUnMarshalHelper = require('./marshalunmarshalhelper');
+    Pointer = require('./pointer');
+    Struct = require('./struct');
+    InterfacePointer = require('./interfacepointer');
+    variantTypes = require('./varianttypes').variantTypes;
+    supportedTypes = require('./varianttypes').supportedTypes;
+    supportedTypes_classes = require('./varianttypes').supportedTypes_classes;
+    inited = true;
+  }
   VariantBodyObj(args){
     var dataType = (args.dataType == undefined) ? -1 : args.dataType;
     
@@ -755,11 +771,11 @@ class VariantBody
       this.FLAG = Flags.FLAG_REPRESENTATION_VARIANT_BOOL;
     }
 
-    this.isByref = args.isByRef;
+    this.isByref = args.isByref;
 
     var typo = new Variant().getSupportedType(this.obj, dataType);
     if (typo != null) {
-      this.types = Number.parseInt(typo) | (args.isByRef ? variantTypes.VT_BYREF:0);
+      this.types = Number.parseInt(typo) | (args.isByref ? variantTypes.VT_BYREF:0);
     } else {
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
@@ -778,7 +794,7 @@ class VariantBody
       this.type = variantTypes.VT_NULL;
     }
 
-    this.VariantBodyObj(1, {referent: new Number(args.errorCode), isByref: args.isByRef, dataType: -1});
+    this.VariantBodyObj(1, {referent: new Number(args.errorCode), isByref: args.isByref, dataType: -1});
     this.isScode = true;
     this.type = variantTypes.VT_ERROR;
   }
@@ -796,7 +812,7 @@ class VariantBody
     this.nestedArrayRealClass = args.nestedClass;
     this.is2Dimensional = args.is2Dimensional;
 
-    this.isByRef = args.isByref;
+    this.isByref = args.isByref;
 
     var types = Number.parseInt(new Variant().getSupportedType(args.nestedClass, this.FLAG));
     if (types != null) {
@@ -912,41 +928,40 @@ class VariantBody
     var index = new Number(ndr.getBuffer().getIndex());
     if (index%8.0 != 0) {
       var i = (i=Math.round(index%8.0)) == 0 ? 0 : 8 - i;
-      ndr.writeOctetArray(new Array[Number.parseInt(i)], 0, Number.parseInt(i));
+      ndr.writeOctetArray(new Array(parseInt(i)), 0, parseInt(i));
     }
 
-    var start = ndr.getBuffer.getIndex();
+    var start = ndr.getBuffer().getIndex();
 
     ndr.writeUnsignedLong(0xFFFFFFFF);
     ndr.writeUnsignedLong(0);
 
-    var varType = this.getVarType(obj != null ? obj.constructor : this.nestedArrayRealClass, obj);
+    var varType = this.getVarType ( this.obj );
 
-    if ((FLAG & FLags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) ==
+    if ((FLAG & Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) ==
       Flags.FLAG_REPRESENTATION_DISPATCH_NULL_FOR_OUT) {
-      varType = isByRef ? 0x4000 | variantTypes.VT_DISPATCH : variantTypes.VT_DISPATCH;
+      varType = this.isByref ? 0x4000 | variantTypes.VT_DISPATCH : variantTypes.VT_DISPATCH;
     }
 
     ndr.writeUnsignedShort(varType);
-
     ndr.writeUnsignedSmall(0xCC);
-		ndr.writeUnsignedSmall(0xCC);
-		ndr.writeUnsignedSmall(0xCC);
-		ndr.writeUnsignedSmall(0xCC);
-		ndr.writeUnsignedSmall(0xCC);
+	ndr.writeUnsignedSmall(0xCC);
+	ndr.writeUnsignedSmall(0xCC);
+	ndr.writeUnsignedSmall(0xCC);
+	ndr.writeUnsignedSmall(0xCC);
     ndr.writeUnsignedSmall(0xCC);
 
-    if (obj != null) {
+    if (this.obj != null) {
       ndr.writeUnsignedLong(varType);
     } else {
-      if (!isByRef) {
+      if (!this.isByref) {
         ndr.writeUnsignedLong(variantTypes.VT_ARRAY);
       } else {
         ndr.writeUnsignedLong(variantTypes.VT_BYREF_VT_ARRAY);
       }
     }
 
-    if (isByRef) {
+    if (this.isByref) {
       var flag = -1;
       if (this.isArray) {
         flag = -4;
@@ -968,7 +983,7 @@ class VariantBody
 
     var varDefferedPointers = new Array();
 
-    this.setValue(ndr, obj, varDefferedPointers, FLAG);
+    this.setValue(ndr, this.obj, varDefferedPointers, FLAG);
 
     var x = 0;
     while (x < varDefferedPointers.length) {
@@ -994,7 +1009,75 @@ class VariantBody
     ndr.writeUnsignedLong(value);
     ndr.getBuffer().setIndex(currentIndex);
   }
+  
+  getVarType(obj){
+	var type = 0;
 
+    if ( obj.getType() == types.DISPATCH ){
+        return this.isByref ? 0x4000 | variantTypes.VT_DISPATCH : variantTypes.VT_DISPATCH;
+    }
+
+    if ( obj.getType() == types.COMOBJECT ){
+        return this.isByref ? 0x4000 | variantTypes.VT_UNKNOWN : variantTypes.VT_UNKNOWN;
+    }
+
+    if ( obj.getType() ){
+      var type2 = new Variant().getSupportedType (obj, this.FLAG );
+	  
+      if ( type2 != null ){
+        type = type2;
+      }
+      else{
+        type2 = new Variant().getSupportedType( types.VARIANT, this.FLAG );
+      }
+	  
+      if ( this.isNull ){
+          type = 1;
+      }
+      else if ( this.isScode ){
+          type = 10;
+      }
+      else if ( this.isArray ){
+          type = 0x2000 | type;
+      }
+    }
+
+    if ( this.isByref && type != 0 && !c.equals ( JIArray.class ) )
+    {
+        type = type | 0x4000;
+    }
+    return type;
+  }
+  
+  setValue(ndr, obj, defferedPointers, FLAG){
+	if ( this.isNull ){
+        return;
+    }
+    if ( obj != null ){
+	  var type = obj.getType();
+	  
+      if ( type == variantTypes.EMPTY){
+          return;
+      }
+	  else{
+        if ( type == types.COMOBJECT ){
+            type = types.COMOBJECT;
+        }
+        MarshalUnMarshalHelper.serialize ( ndr, obj, defferedPointers, FLAG );
+      }
+    }
+    else{
+        ndr.writeUnsignedLong ( new Object().hashCode() );
+        ndr.writeUnsignedLong ( 1 );
+
+        MarshalUnMarshalHelper.serialize ( ndr, new ComValue(this.safeArrayStruct, types.STRUCT), defferedPointers, FLAG );
+    }
+  }
+
+  getLengthInBytes(){
+	return MarshalUnMarshalHelper.getLengthInBytes(this.obj, Flags.FLAG_NULL);
+  }
+  
   getMaxLength(c, obj)
   {
     var length = 0;
@@ -1039,11 +1122,11 @@ class VariantBody
 		var varDefferedPointers = [];
 		if((variantType & variantTypes.VT_ARRAY) == 0x2000)
 		{
-			var isByRef = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
+			var isByref = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
 			// the struct may be null if the array has nothing
-			let safeArray = this.getDecodedValueAsArray(ndr,varDefferedPointers,variantType & ~variantTypes.VT_ARRAY,isByRef,additionalData,FLAG);
+			let safeArray = this.getDecodedValueAsArray(ndr,varDefferedPointers,variantType & ~variantTypes.VT_ARRAY,isByref,additionalData,FLAG);
 			let type2 = variantType;
-			if (isByRef)
+			if (isByref)
 			{
 				type2 = type2 & ~variantTypes.VT_BYREF; // so that actual type can be determined
 			}
@@ -1069,12 +1152,12 @@ class VariantBody
 			{
         variant = new VariantBody(3, {safeArray: safeArray, nestedClass: new Variant().getSupportedClass(new Number(type2 
           & ~new Variant().VT_ARRAY)),is2Dimensional: (safeArray.getValue().getMember(8).getValue().getArrayInstance()).length > 1 ? true : false ,
-          isByref: isByRef, FLAG: flagofFlags});
+          isByref: isByref, FLAG: flagofFlags});
 			}
 			else
 			{
         variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~VT_ARRAY)),
-          is2Dimensional: false,isByref: isByRef, FLAG: flagofFlags});
+          is2Dimensional: false,isByref: isByref, FLAG: flagofFlags});
 			}
 
 			variant.FLAG = flagofFlags;
@@ -1082,10 +1165,10 @@ class VariantBody
 		}
 		else
 		{
-      var isByRef = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
-      let ref = this.getDecodedValue(ndr,varDefferedPointers,variantType,isByRef,additionalData,FLAG);
+      var isByref = (variantType & variantTypes.VT_BYREF) == 0 ? false : true;
+      let ref = this.getDecodedValue(ndr,varDefferedPointers,variantType,isByref,additionalData,FLAG);
       variant = new VariantBody(1, {referent: ref,
-        isByRef: isByRef, dataType: variantType});
+        isByref: isByref, dataType: variantType});
 			let type2 = variantType & 0x0FFF ;
 			if (type2 == variantTypes.VT_INT)
 			{
@@ -1169,14 +1252,14 @@ class VariantBody
 		return variant;
   }
 
-  getDecodedValue(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+  getDecodedValue(ndr, defferedPointers, type, isByref, additionalData, FLAG)
 	{
 
     let obj = null;
     let c = this.getVarClass(type);
 		if (c != null)
 		{
-			if (isByRef)
+			if (isByref)
 			{
 				ndr.readUnsignedLong(); // Read the Pointer
 			}
@@ -1244,10 +1327,10 @@ class VariantBody
 		return c;
   }
   
-  getDecodedValueAsArray(ndr, defferedPointers, type, isByRef, additionalData, FLAG)
+  getDecodedValueAsArray(ndr, defferedPointers, type, isByref, additionalData, FLAG)
 	{
 		// int newFLAG = FLAG;
-		if (isByRef)
+		if (isByref)
 		{
 			ndr.readUnsignedLong();// read the pointer
 			type = type & ~variantTypes.VT_BYREF; // so that actual type can be determined
