@@ -80,9 +80,9 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
 NdrBuffer.prototype.writeOctetArray = function (b, i, l){
   let first = this.buf.slice(0, this.index);
   let end = this.buf.slice(this.index, this.buf.length);
-  let middle = b.slice(i, l);
+  let middle = Buffer.from(b.slice(i, l));
   
-  this.buf = Buffer.concat([first, middle, end]);;
+  this.buf = Buffer.concat([first, middle, end]);
 
   this.advance(l);
 }
