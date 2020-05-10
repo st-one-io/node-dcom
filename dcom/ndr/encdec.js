@@ -59,27 +59,30 @@ module.exports = {
 
   // TO-DO: encoding and decoding 64 bits integers
   enc_uint64be: function (l, dst, di) {
-    enc_uint32be((l & 0xFFFFFFFF), dst, di + 4);
-    enc_uint32be(((l >> 32) & 0xFFFFFFFF), dst, di);
+    this.enc_uint32be((l & 0xFFFFFFFF), dst, di + 4);
+    this.enc_uint32be(((l >> 32) & 0xFFFFFFFF), dst, di);
     return 8;
   },
 
   enc_uint64le: function (l,  dst, di) {
-    enc_uint32le(( l & 0xFFFFFFFF), dst, di);
-    enc_uint32le(( ( l >> 32 ) & 0xFFFFFFFF), dst, di + 4);
+    this.enc_uint32le(( l & 0xFFFFFFFF), dst, di);
+    this.enc_uint32le(( ( l >> 32 ) & 0xFFFFFFFF), dst, di + 4);
     return 8;
   },
 
   dec_uint64be: function (src, si) {
     let l;
-    l = dec_uint32be(src, si) & 0xFFFFFFFF;
+    l = this.dec_uint32be(src, si) & 0xFFFFFFFF;
     l <<= 32;
-    l |= dec_uint32be(src, si + 4) & 0xFFFFFFFF;
+    l |= this.dec_uint32be(src, si + 4) & 0xFFFFFFFF;
     return l;
   },
 
   dec_uint64le: function (src, si) {
-    let l = src.readUInt32LE(si)
+    let l;
+    l = this.dec_uint32le( src, si + 4 ) & 0xFFFFFFFF;
+    l <<= 32;
+    l |= this.dec_uint32le( src, si ) & 0xFFFFFFFF;
     return l;
   },
   // TO-DO: encoding and decoding of floats and 64 bits floats
