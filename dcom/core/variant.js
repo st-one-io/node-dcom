@@ -676,7 +676,7 @@ class Variant {
   getType()
   {
     this.checkValidity();
-    return (this.member.getValue().getReferent()).getType();
+    return (this.member.getValue().getReferent()).getObject().getType();
   }
 
   checkValidity()
