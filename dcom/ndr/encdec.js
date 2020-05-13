@@ -57,7 +57,6 @@ module.exports = {
     return src.readUInt32LE(si);
   },
 
-  // TO-DO: encoding and decoding 64 bits integers
   enc_uint64be: function (l, dst, di) {
     this.enc_uint32be((l & 0xFFFFFFFF), dst, di + 4);
     this.enc_uint32be(((l >> 32) & 0xFFFFFFFF), dst, di);
@@ -85,14 +84,44 @@ module.exports = {
     l |= this.dec_uint32le( src, si ) & 0xFFFFFFFF;
     return l;
   },
-  // TO-DO: encoding and decoding of floats and 64 bits floats
+
   enc_doublele: function (d, dst, di) {
-    return enc_uint64le(d, dst, di);
+	var buffer = new ArrayBuffer(8);         
+    var longNum = new Float64Array(buffer);  
+    longNum[0] = d;
+	
+	ltEndian = Array.from(new Int8Array(buffer));
+	
+	dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	dst[di++] = ltEndian[3];
+    dst[di++] = ltEndian[4];
+    dst[di++] = ltEndian[5];
+    dst[di++] = ltEndian[6];
+    dst[di] =   ltEndian[7];
+
+    return 8;
   },
 
 
   enc_doublebe: function ( d, dst, di) {
-    return enc_uint64be(d, dst, di);
+    var buffer = new ArrayBuffer(8);         
+    var longNum = new Float64Array(buffer);  
+    longNum[0] = d;
+	
+	ltEndian = Array.from(new Int8Array(buffer)).reverse();
+	
+	dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	dst[di++] = ltEndian[3];
+    dst[di++] = ltEndian[4];
+    dst[di++] = ltEndian[5];
+    dst[di++] = ltEndian[6];
+    dst[di] =   ltEndian[7];
+
+    return 8;
   },
 
   dec_doublele: function (src, si) {
@@ -100,12 +129,45 @@ module.exports = {
   },
 
   dec_doublebe: function (src, si) {
-    return this.dec_uint64be(src, si);
+    return Buffer.from(src).readDoubleBE(si);
+  },
+  
+  dec_floatbe: function(src, si) {
+    return Buffer.from(src).readFloatBE(si);
   },
 
   dec_floatle: function(src, si) {
     return Buffer.from(src).readFloatLE(si);
+  },
+  
+  enc_floatbe: function ( d, dst, di) {
+	var buffer = new ArrayBuffer(4);         
+    var longNum = new Float32Array(buffer);  
+    longNum[0] = d;
+	
+	ltEndian = Array.from(new Int8Array(buffer)).reverse();
+	
+	dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	dst[di] = ltEndian[3];
+
+    return 4;
+  },
+  
+  enc_floatle: function ( d, dst, di) {
+	
+	var buffer = new ArrayBuffer(4);         
+    var longNum = new Float32Array(buffer);  
+    longNum[0] = d;
+	
+	ltEndian = Array.from(new Int8Array(buffer));
+	
+	dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	dst[di] = ltEndian[3];
+
+    return 4;
   }
-  // TO-DO: encoding and ecoding of time values
-  // TO-DO: encoding and decoding of utf values
 };

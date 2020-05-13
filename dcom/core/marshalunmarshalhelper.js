@@ -115,7 +115,7 @@ function serialize(ndr, val, defferedPointers, flag) {
                 }
                 ndr.getBuffer().align(4);
                 // TO-DO: it should be enc_floatle but since javascript dont differentiate we'll try use a direct call to uint32le
-                Encdec.enc_uint32le(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                Encdec.enc_floatle(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(4);
                 break;
 
