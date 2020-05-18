@@ -89,7 +89,7 @@ NetworkDataRepresentation.prototype.readCharacterArray = function (array, offset
   if (array == null || length == 0) return;
   length += offset;
   for (var i = offset; i < length; i++){
-    array[i] = new Buffer([this.buf.buf[this.buf.index++]]).toString();
+    array[i] = new Buffer.from([this.buf.buf[this.buf.index++]]).toString();
   }
 }
 
