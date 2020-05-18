@@ -89,50 +89,46 @@ class DefaultConnection
   async receive(transport)
   {
     var fragment = await this.receiveFragment(transport);
-    // flag indicating if this is a single packet
     var first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
     var last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
     var flag =  first && last;
     
-    if (!this.bytesRemainingInReceiveBuffer && flag){
+    if ((!this.bytesRemainingInReceiveBuffer && flag) || !(fragment instanceof ResponseCoPdu)){
       return fragment;
-    } else {
-      let first_fragment = fragment;
-      if (!(fragment instanceof ResponseCoPdu) || !(fragment instanceof RequestCoPdu)) return fragment;
-      let stub = fragment.getStub();
-      do{
-        fragment = await this.receiveFragment(transport);
+    } 
 
-        let newStub = fragment.getStub();
-        if (newStub != null && newStub.length > 0){
-          if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG)){
-            first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
-            stub = stub = Buffer.concat([newStub, stub]);
-          } else{
-            // if its the the first frag, it will be in the middle or in the end
-            if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)) {
-              last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
-            }
-            stub = Buffer.concat([stub, newStub]);
-          }
-        }
-      }while(!last);
+    let stub = fragment.getStub();
 
-      let length = stub.length;
-      if (length > 0) {
-        fragment.setStub(stub);
-        fragment.setAllocationHint(length);
-      } else {
-        fragment.setStub(null);
-        fragment.setAllocationHint(0);
-      }
+    do{
+      fragment = await this.receiveFragment(transport);
+      let newStub = fragment.getStub();
       
-      fragment.setFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG, true);
-      fragment.setFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG, true);
-      let aeea = first_fragment;
-      return fragment;
-    }
+      if (newStub != null && newStub.length > 0){
+        if (fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG)){
+          first = fragment.getFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG);
+          stub = Buffer.concat([stub, newStub]);
+        } else{
+          // if its the the first frag, it will be in the middle or in the end
+          if (fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG)) {
+            last = fragment.getFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG);
+          }
+          stub = Buffer.concat([stub, newStub]);
+        }
+      }
+    }while(!last);
 
+    let length = stub.length;
+    if (length > 0) {
+      fragment.setStub(stub);
+      fragment.setAllocationHint(length);
+    } else {
+      fragment.setStub(null);
+      fragment.setAllocationHint(0);
+    }
+    
+    fragment.setFlag(new ConnectionOrientedPdu().PFC_FIRST_FRAG, true);
+    fragment.setFlag(new ConnectionOrientedPdu().PFC_LAST_FRAG, true);
+    return fragment;
  }
 
   transmitFragment(fragment, transport, info)
