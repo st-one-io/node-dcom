@@ -1156,7 +1156,7 @@ class VariantBody
 			}
 			else
 			{
-        variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~VT_ARRAY)),
+        variant = new VariantBody(3, {safeArray: null, nestedClass: new Variant().getSupportedClass(new Number(type2 & ~new Variant().VT_ARRAY)),
           is2Dimensional: false,isByref: isByref, FLAG: flagofFlags});
 			}
 

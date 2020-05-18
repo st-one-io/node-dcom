@@ -104,8 +104,9 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
     return new FragmentIterator(stubSize);
   }
 
+
   assemble(fragments){
-    if (!fragments.hasNext(getStub())){
+    if (!fragments.hasNext()){
       throw new Error("No fragments available.");
     }
 
@@ -113,7 +114,7 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
     var stub = pdu.getStub();
 
     if (sub == null) stub = [0];
-    while(fragments.hasNext(getStub())){
+    while(fragments.hasNext()){
       var fragment = fragments.next();
       var fragmentStub = fragment.getStub();
       if (fragmentStub != null && fragmentStub.next());{
@@ -148,18 +149,38 @@ class ResponseCoPdu extends ConnectionOrientedPdu {
 }
 
 class FragmentIterator {
-  constructor(stubSize){
-    this.stubSize = stubSize;
-
-    this.index = 0;
+  constructor(currentFragment){
+    this.currentFragment = currentFragment;
   }
 
-  hasNext(stub){
-    return this.index < stub.length;
+  hasNext(){
+    return ( this.currentFragment != null );
   }
 
-  next(stub){
-    if (this.index >= stub.length) throw new Erro("No such element exception.");
+  next(){
+    if ( this.currentFragment == null ){
+      throw new Error("No Such Element");
+    }
+
+    try{
+      return this.currentFragment;
+    }
+    finally{
+      if ( this.currentFragment.getFlag ( ConnectionOrientedPdu.PFC_LAST_FRAG ) )
+      {
+        this.currentFragment = null;
+      }
+      else{
+          try{
+              this.currentFragment = receiveFragment ( transport );
+          }
+          catch (e){
+            throw new Error("Illegal State");
+          }
+      }
+    }
+    /*
+    if (this.index >= this.fragment.getStub().length) throw new Error("No such element exception.");
 
     var fragment = Object.assign(this);
     var allocation = stub.length - this.index;
@@ -178,6 +199,7 @@ class FragmentIterator {
     if (this.index >= stub.length) flags |= PFC_LAST_FRAG;
     fragment.flags(flags);
     return fragment;
+    */
   }
 
   remove(){

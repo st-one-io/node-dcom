@@ -13,9 +13,9 @@ const CallBuilder = require('./callbuilder');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 const InterfacePointer = require('./interfacepointer');
 const InterfacePointerBody = require('./interfacepointerbody');
-const Union = {};
+const Union = require('./union');
+const Struct = require('./struct');
 const Variant = require('./variant');
-const VariantBody = {};
 
 const types = require('./types');
 const ComValue = require('./comvalue');
