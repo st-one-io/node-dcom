@@ -4,6 +4,7 @@ let types;
 let ComArray;
 let ComObject;
 let ComString;
+let Currency;
 let Pointer;
 let Struct;
 let Union;
@@ -60,7 +61,7 @@ class ComValue {
                 if (!(obj instanceof Date)) throw new Error("Value of type DATE must be instance of Date");
                 break;
             case types.CURRENCY:
-                //TODO
+                if (!(obj instanceof Currency)) throw new Error("Value of type CURRENCY must be instance of Currency");
                 break;
             case types.UUID:
                 if (!(obj instanceof UUID)) throw new Error("Value of type UUID must be instance of UUID");
@@ -133,6 +134,7 @@ class ComValue {
         ComArray = require('./comarray');
         ComObject = require('./comobjcimpl');
         ComString = require('./string');
+        Currency = require('./currency');
         Pointer = require('./pointer.js');
         Struct = require('./struct');
         Union = require('./union');

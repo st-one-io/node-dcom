@@ -9,6 +9,7 @@ const ComArray = require('./comarray');
 const ComObject = require('./comobject');
 const ComObjectImpl = require('./comobjcimpl');
 const ComString = require('./string.js');
+const Currency = require('./currency');
 const CallBuilder = require('./callbuilder');
 const NetworkDataRepresentation = require('../ndr/networkdatarepresentation');
 const InterfacePointer = require('./interfacepointer');
@@ -88,8 +89,52 @@ function serialize(ndr, val, defferedPointers, flag) {
                 ndr.getBuffer().advance(8);
                 break;
 
-            //case types.CURRENCY:
-            //    break;
+            case types.CURRENCY:
+
+                let units = value.getUnits ();
+                let fractionalUnits = value.getFractionalUnits ();
+    
+                let p = units + Math.round(fractionalUnits / 10000);
+    
+                let toSend = ~ Math.trunc( p * 10000.00 ) + 1;
+
+                let toSend2 = "";
+
+                if(toSend < 0){
+                    toSend2 = (0xFFFFFFFF + toSend + 1).toString(16);
+                }
+                else{
+                    toSend2 = toSend.toString(16);
+                }
+                
+                let hibytes = 0;
+                let lowbytes = 0;
+                if ( toSend2.length > 8 )
+                {
+                    lowbytes = parseInt( toSend2.substring ( 8 ), 16 );
+                    hibytes = parseInt( toSend2.substring ( 0, 8 ), 16 );
+                }
+                else
+                {
+                    lowbytes = toSend;
+                    if ( toSend < 0 )
+                    {
+                        hibytes = -1;
+                    }
+                }              
+
+                let index = parseFloat( ndr.getBuffer ().getIndex () );
+                let i = Math.round(index%8.0);
+                i = (i == 0) ? 0 : 8 - i ;
+                
+                ndr.writeOctetArray(Buffer.alloc(i), 0, i);
+                
+                let struct =  new Struct();
+                
+                struct.addMember(lowbytes);
+                struct.addMember(hibytes);
+                
+                serialize (ndr, new ComValue(struct, types.STRUCT), null, flag );
 
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
@@ -384,9 +429,24 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 ndr.getBuffer().advance(8);
                 return new ComValue(date, types.DATE);
 
-            //case types.CURRENCY:
-            //    break;
-
+            case types.CURRENCY:
+                var index = ndr.getBuffer().getIndex();
+                var i = Math.round(index%8.0);
+                i = (i == 0) ? 0 : 8 - i ;
+        
+                ndr.readOctetArray([...Buffer.alloc(i)], 0, i);
+                let lowbyte = ndr.readUnsignedLong ();
+        
+                var hibyte = ndr.readUnsignedLong ();
+        
+                if ( hibyte < 0 ){
+                    lowbyte = -1 * Math.abs ( lowbyte );
+                }
+                
+                let value = new Currency((lowbyte - lowbyte % 10000 ) / 10000, lowbyte % 10000);
+                return new ComValue (value, types.CURRENCY);
+            
+               
             case types.BOOLEAN:
                 if ((flag & Flags.FLAG_REPRESENTATION_VARIANT_BOOL) == Flags.FLAG_REPRESENTATION_VARIANT_BOOL) {
                     let s = ndr.readUnsignedShort();
@@ -493,9 +553,9 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
             case types.LONG:
                 // JS support for 64bit numbers is done poorly, mostly we would need external packages, so far this should work for our needs
                 // i.e, see everythink beyond 32 bits as 32 bits
-                let index = ndr.getBuffer().getIndex();
-                let i = Math.round(index%8.0);
-                i= (i == 0) ? 0 : 8 - i ;
+                var index = ndr.getBuffer().getIndex();
+                var i = Math.round(index%8.0);
+                i = (i == 0) ? 0 : 8 - i ;
 
                 ndr.getBuffer().align(i);
                 let long = Encdec.dec_uint64le(Buffer.from(ndr.getBuffer().getBuffer()), ndr.getBuffer().getIndex());
@@ -551,7 +611,7 @@ function getLengthInBytes(val, flag)
 
         switch (c){
             case types.CURRENCY:
-                throw new Error("Not yet implemented");
+                return 4 + 4;
 
             case types.VARIANTBODY:
                 return (obj)? obj.getLengthInBytes() :  0;

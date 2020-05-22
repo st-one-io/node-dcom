@@ -93,6 +93,14 @@ NetworkDataRepresentation.prototype.readCharacterArray = function (array, offset
   }
 }
 
+NetworkDataRepresentation.prototype.writeCharacterArray = function (array, offset, length){
+  if ( array == null || length == 0 )
+    return;
+  length += offset;
+  for (let i = offset; i < length; i++ )
+    this.buf.buf[buf.index++] = new Buffer.from(array[i]);
+}
+
 NetworkDataRepresentation.prototype.writeOctetArray = function (b, i, l){
   this.buf.writeOctetArray(b, i, l);
 }

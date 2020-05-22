@@ -38,7 +38,7 @@ class Union {
             throw new Error("UNION_NULL_DISCRMINANT" + new ErrorCodes().UNION_NULL_DISCRMINANT);
         }
 
-        if (!discriminant.getClass().equals(discriminantClass)) {
+        if (!discriminant.getClass().equals(this.discriminantClass)) {
             throw new Error("UNION_DISCRMINANT_MISMATCH" + new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
         }
 
@@ -47,29 +47,6 @@ class Union {
         }
 
         this.dsVsMember.set(discriminant, member);
-    }
-
-    /** Adds a member to this Union. The <code>member</code> is distinguished using the <code>discriminant</code>. <br>
-     *
-     * @param discriminant
-     * @param member
-     */
-    addMember(discriminant, member) {
-        if (discriminant == null) {
-            throw new IllegalArgumentException(System.getLocalizedMessage(new ErrorCodes().UNION_NULL_DISCRMINANT));
-        }
-
-        if (!discriminant.getClass().equals(discriminantClass)) {
-            throw new Error(new ErrorCodes().UNION_DISCRMINANT_MISMATCH);
-        }
-
-        if (member == null) {
-            member = Struct.MEMBER_IS_EMPTY;
-        }
-
-        this.dsVsMember.set(discriminant, member);
-        //do not need a seperate list of pointers like the struct , since based on the discriminant only 1 pointer
-        //(if present) can be deserialized\serialized.
     }
 
     /**Removes the entry , identified by it's <code>discriminant</code> from the parameter list of the union. <br>
@@ -107,7 +84,7 @@ class Union {
         let value = keys.next().value;
 
         //will not write empty union members
-        if (!value.equals(Struct.MEMBER_IS_EMPTY)) {
+        if (value.isEmpty()) {
             MarshalUnMarshalHelper.serialize(ndr, MarshalUnMarshalHelper.inferClass(value), value, listOfDefferedPointers, flags);
         }
 
@@ -139,11 +116,11 @@ class Union {
 
         //should allow null since this could be a "default"
         if (value == null) {
-            value = Struct.MEMBER_IS_EMPTY;
+            value = new Struct();
         }
 
         //will not write empty union members
-        if (value != (Struct.MEMBER_IS_EMPTY)) {
+        if (value.isEmpty()) {
             retVal.dsVsMember.set(key, MarshalUnMarshalHelper.deSerialize(ndr, value, listOfDefferedPointers, flags, additionalData));
         } else {
             retVal.dsVsMember.set(key, value);

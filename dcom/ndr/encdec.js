@@ -86,16 +86,16 @@ module.exports = {
   },
 
   enc_doublele: function (d, dst, di) {
-	var buffer = new ArrayBuffer(8);         
+	  var buffer = new ArrayBuffer(8);         
     var longNum = new Float64Array(buffer);  
     longNum[0] = d;
 	
-	ltEndian = Array.from(new Int8Array(buffer));
+	  ltEndian = Array.from(new Int8Array(buffer));
 	
-	dst[di++] = ltEndian[0];
+	  dst[di++] = ltEndian[0];
     dst[di++] = ltEndian[1];
     dst[di++] = ltEndian[2];
-	dst[di++] = ltEndian[3];
+  	dst[di++] = ltEndian[3];
     dst[di++] = ltEndian[4];
     dst[di++] = ltEndian[5];
     dst[di++] = ltEndian[6];
@@ -110,12 +110,12 @@ module.exports = {
     var longNum = new Float64Array(buffer);  
     longNum[0] = d;
 	
-	ltEndian = Array.from(new Int8Array(buffer)).reverse();
+	  ltEndian = Array.from(new Int8Array(buffer)).reverse();
 	
-	dst[di++] = ltEndian[0];
+	  dst[di++] = ltEndian[0];
     dst[di++] = ltEndian[1];
     dst[di++] = ltEndian[2];
-	dst[di++] = ltEndian[3];
+	  dst[di++] = ltEndian[3];
     dst[di++] = ltEndian[4];
     dst[di++] = ltEndian[5];
     dst[di++] = ltEndian[6];
@@ -141,32 +141,32 @@ module.exports = {
   },
   
   enc_floatbe: function ( d, dst, di) {
-	var buffer = new ArrayBuffer(4);         
+    var buffer = new ArrayBuffer(4);         
     var longNum = new Float32Array(buffer);  
     longNum[0] = d;
-	
-	ltEndian = Array.from(new Int8Array(buffer)).reverse();
-	
-	dst[di++] = ltEndian[0];
+    
+    ltEndian = Array.from(new Int8Array(buffer)).reverse();
+    
+    dst[di++] = ltEndian[0];
     dst[di++] = ltEndian[1];
     dst[di++] = ltEndian[2];
-	dst[di] = ltEndian[3];
+    dst[di] = ltEndian[3];
 
     return 4;
   },
   
   enc_floatle: function ( d, dst, di) {
 	
-	var buffer = new ArrayBuffer(4);         
+	  var buffer = new ArrayBuffer(4);         
     var longNum = new Float32Array(buffer);  
     longNum[0] = d;
 	
-	ltEndian = Array.from(new Int8Array(buffer));
+	  ltEndian = Array.from(new Int8Array(buffer));
 	
-	dst[di++] = ltEndian[0];
+	  dst[di++] = ltEndian[0];
     dst[di++] = ltEndian[1];
     dst[di++] = ltEndian[2];
-	dst[di] = ltEndian[3];
+	  dst[di] = ltEndian[3];
 
     return 4;
   }
