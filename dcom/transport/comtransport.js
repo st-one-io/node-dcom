@@ -174,7 +174,7 @@ class ComTransport extends events.EventEmitter
       if (self.receivedBuffer.length > 0) {
         clearTimeout(timer);
         let ret = self.receivedBuffer;
-        self.receivedBuffer = Buffer.from('');
+        //self.receivedBuffer = Buffer.from('');
         resolve(ret);
       } else {
         if (self.recvPromise == null){

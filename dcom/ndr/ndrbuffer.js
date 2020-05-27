@@ -187,7 +187,7 @@ NdrBuffer.prototype.dec_ndr_string = function (){
   this.align(4);
   let i = this.index;
   let val = null;
-  let len = Encdec_dec_uint32le(this.buf, i);
+  let len = Encdec.dec_uint32le(this.buf, i);
 
   i += 12;
   if (len != 0){

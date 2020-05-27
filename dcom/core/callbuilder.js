@@ -693,11 +693,12 @@ class CallBuilder extends NdrObject {
 			} else {
 				OrpcThat.decode(ndr);
 				await this.readPacket(ndr, false);
+				this.readResult(ndr);
 			}
 		}
 
 		// last has to be the result.
-		this.hresult = ndr.readUnsignedLong();
+		//this.hresult = ndr.readUnsignedLong();
 	}
 
 	/**

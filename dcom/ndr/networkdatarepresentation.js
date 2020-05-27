@@ -89,7 +89,7 @@ NetworkDataRepresentation.prototype.readCharacterArray = function (array, offset
   if (array == null || length == 0) return;
   length += offset;
   for (var i = offset; i < length; i++){
-    array[i] = new Buffer.from([this.buf.buf[this.buf.index++]]).toString();
+    array[i] = Buffer.from([this.buf.buf[this.buf.index++]]).toString();
   }
 }
 
@@ -98,7 +98,7 @@ NetworkDataRepresentation.prototype.writeCharacterArray = function (array, offse
     return;
   length += offset;
   for (let i = offset; i < length; i++ )
-    this.buf.buf[buf.index++] = new Buffer.from(array[i]);
+    this.buf.buf[buf.index++] = Buffer.from(array[i]);
 }
 
 NetworkDataRepresentation.prototype.writeOctetArray = function (b, i, l){
