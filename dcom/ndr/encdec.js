@@ -70,19 +70,11 @@ module.exports = {
   },
 
   dec_uint64be: function (src, si) {
-    let l;
-    l = this.dec_uint32be(src, si) & 0xFFFFFFFF;
-    l <<= 32;
-    l |= this.dec_uint32be(src, si + 4) & 0xFFFFFFFF;
-    return l;
+    return src.readUInt32BE(si);
   },
 
-  dec_uint64le: function (src, si) {
-    let l;
-    l = this.dec_uint32le( src, si + 4 ) & 0xFFFFFFFF;
-    l <<= 32;
-    l |= this.dec_uint32le( src, si ) & 0xFFFFFFFF;
-    return l;
+dec_uint64le: function (src, si) {
+    return src.readUInt32LE(si);
   },
 
   enc_doublele: function (d, dst, di) {
