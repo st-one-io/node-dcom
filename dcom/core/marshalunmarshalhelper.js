@@ -455,13 +455,23 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                     return new ComValue(ndr.readBoolean(), types.BOOLEAN);
                 }
 
-            case types.UNSIGNEDSHORT: //TODO we may need different behavior for unsigned here
-            case types.SHORT:
-                return new ComValue(ndr.readUnsignedShort(), types.SHORT);
+            case types.UNSIGNEDSHORT:
+                return new ComValue(ndr.readUnsignedShort(), types.UNSIGNEDSHORT);
 
-            case types.UNSIGNEDINTEGER: //TODO we may need different behavior for unsigned here
+            case types.SHORT:
+                ndr.getBuffer().align(2);
+                let short = Encdec.dec_int16le(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                ndr.getBuffer().advance(2);
+                return new ComValue(short, types.SHORT);
+
+            case types.UNSIGNEDINTEGER:
+                return new ComValue(ndr.readUnsignedLong(), types.UNSIGNEDINTEGER);
+
             case types.INTEGER:
-                return new ComValue(ndr.readUnsignedLong(), types.INTEGER);
+                ndr.getBuffer().align(4);
+                let int = Encdec.dec_int32le(ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                ndr.getBuffer().advance(4);
+                return new ComValue(int, types.INTEGER);
 
             case types.FLOAT:
                 ndr.getBuffer().align(4);
@@ -540,9 +550,13 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 uuid.decode(ndr, ndr.getBuffer());
                 return new ComValue(uuid, types.UUID);
 
-            case types.UNSIGNEDBYTE: //TODO we may need different behavior for unsigned here
+            case types.UNSIGNEDBYTE:
+                return new ComValue(ndr.readUnsignedSmall(),types.UNSIGNEDBYTE);
+
             case types.BYTE:
-                return new ComValue(ndr.readUnsignedSmall(),types.BYTE);
+                let byte = Buffer.from(ndr.getBuffer().getBuffer()).readInt8(ndr.getBuffer().getIndex());
+                ndr.getBuffer().advance(1);
+                return new ComValue(byte,types.BYTE);
 
             case types.DOUBLE:
                 ndr.getBuffer().align(8);

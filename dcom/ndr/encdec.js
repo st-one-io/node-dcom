@@ -12,6 +12,72 @@ module.exports = {
   TIME_1970_MILLIS_64BE: 7,
   TIME_1970_MILLIS_64LE: 8,
   //functions
+
+  // decoders
+  dec_uint16be: function (src, si){
+    return src.readUInt16BE(si);
+  },
+
+  dec_uint16le: function (src, si){
+    return src.readUInt16LE(si);
+  },
+
+  dec_int16be: function (src, si){
+    return src.readInt16BE(si);
+  },
+
+  dec_int16le: function (src, si){
+    return src.readInt16LE(si);
+  },
+
+  dec_uint32be: function (src, si){
+    return src.readUInt32BE(si);
+  },
+  
+  dec_uint32le: function (src, si){
+    return src.readUInt32LE(si);
+  },
+
+  dec_int32be: function (src, si){
+    return src.readInt32BE(si);
+  },
+
+  dec_int32le: function (src, si){
+    return src.readInt32LE(si);
+  },
+
+  dec_uint64be: function (src, si) {
+    return src.readUInt32BE(si);
+  },
+
+  dec_uint64le: function (src, si) {
+    return src.readUInt32LE(si);
+  },
+
+  dec_int64be: function (src, si) {
+    return src.readInt32BE(si);
+  },
+
+  dec_int64le: function (src, si) {
+    return src.readInt32LE(si);
+  },
+
+  dec_doublele: function (src, si) {
+    return Buffer.from(src).readDoubleLE(si);
+  },
+
+  dec_doublebe: function (src, si) {
+    return Buffer.from(src).readDoubleBE(si);
+  },
+  
+  dec_floatbe: function(src, si) {
+    return Buffer.from(src).readFloatBE(si);
+  },
+
+  dec_floatle: function(src, si) {
+    return Buffer.from(src).readFloatLE(si);
+  },
+
   enc_uint16be: function (s, dst, di){
     dst[di++] = (s >> 8) & 0xFF;
     dst[di] = (s & 0xFF);
@@ -40,23 +106,6 @@ module.exports = {
     return 4;
   },
 
-  // decoders
-  dec_uint16be: function (src, si){
-    return src.readUInt16BE(si);
-  },
-
-  dec_uint32be: function (src, si){
-     return src.readUInt32BE(si);
-  },
-
-  dec_uint16le: function (src, si){
-    return src.readUInt16LE(si);
-  },
-
-  dec_uint32le: function (src, si){
-    return src.readUInt32LE(si);
-  },
-
   enc_uint64be: function (l, dst, di) {
     this.enc_uint32be((l & 0xFFFFFFFF), dst, di + 4);
     this.enc_uint32be(((l >> 32) & 0xFFFFFFFF), dst, di);
@@ -67,14 +116,6 @@ module.exports = {
     this.enc_uint32le(( l & 0xFFFFFFFF), dst, di);
     this.enc_uint32le(( ( l >> 32 ) & 0xFFFFFFFF), dst, di + 4);
     return 8;
-  },
-
-  dec_uint64be: function (src, si) {
-    return src.readUInt32BE(si);
-  },
-
-dec_uint64le: function (src, si) {
-    return src.readUInt32LE(si);
   },
 
   enc_doublele: function (d, dst, di) {
@@ -114,22 +155,6 @@ dec_uint64le: function (src, si) {
     dst[di] =   ltEndian[7];
 
     return 8;
-  },
-
-  dec_doublele: function (src, si) {
-    return Buffer.from(src).readDoubleLE(si);
-  },
-
-  dec_doublebe: function (src, si) {
-    return Buffer.from(src).readDoubleBE(si);
-  },
-  
-  dec_floatbe: function(src, si) {
-    return Buffer.from(src).readFloatBE(si);
-  },
-
-  dec_floatle: function(src, si) {
-    return Buffer.from(src).readFloatLE(si);
   },
   
   enc_floatbe: function ( d, dst, di) {
