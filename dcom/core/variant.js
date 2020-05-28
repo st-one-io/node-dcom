@@ -142,12 +142,16 @@ class Variant {
         case types.FLOAT:
         case types.LONG:
         case types.DOUBLE:
+        case types.BYTE:
         case types.SHORT:
         case types.BOOLEAN:
         case types.CHARACTER:
         case types.STRING:
         case types.COMSTRING:
         case types.COMOBJECT:
+        case types.UNSIGNEDBYTE:
+        case types.UNSIGNEDSHORT:
+        case types.UNSIGNEDINTEGER:
           // TO-DO: if IDispatch com is desired it must be implemented here to set the correct flag
         case types.DATE:
         case types.CURRENCY:
