@@ -105,9 +105,9 @@ supportedTypes.set(types.CHARACTER, variantTypes.VT_I1);
 supportedTypes.set(types.COMARRAY, variantTypes.VT_ARRAY);
 supportedTypes.set(types.LONG, variantTypes.VT_I8);
 supportedTypes.set(types.CURRENCY, variantTypes.VT_CY);
-supportedTypes.set(types.UNSIGNEDSHORT, variantTypes.VT_UI1);
-supportedTypes.set(types.UNSIGNEDINTEGER, variantTypes.VT_UI2);
-supportedTypes.set(types.UNSIGNEDLONG, variantTypes.VT_UI4);
+supportedTypes.set(types.UNSIGNEDBYTE, variantTypes.VT_UI1);
+supportedTypes.set(types.UNSIGNEDSHORT, variantTypes.VT_UI2);
+supportedTypes.set(types.UNSIGNEDINTEGER, variantTypes.VT_UI4);
 // TO-DO: find a way to dothis.supportedTypes(Currency, new Number( variantTypes.VT_CY));
 
 // TO-DO: evaluate what should be done with the missing types
@@ -116,7 +116,7 @@ supportedTypes_classes.set(new Number( variantTypes.VT_DATE), new ComValue(null,
 // TO-DO: find a way to do this.supportedTypes_classes.set(new Number(variantTypes.VT_CY), Currency); properly
 supportedTypes_classes.set(new Number( variantTypes.VT_CY), new ComValue(null, types.CURRENCY));
 supportedTypes_classes.set(new Number( variantTypes.VT_VARIANT), new ComValue(null, types.VARIANT));
-supportedTypes_classes.set(new Number( variantTypes.VT_I4), new ComValue(null, types.LONG));
+supportedTypes_classes.set(new Number( variantTypes.VT_I4), new ComValue(null, types.INTEGER));
 supportedTypes_classes.set(new Number( variantTypes.VT_INT), new ComValue(null, types.INTEGER));
 supportedTypes_classes.set(new Number( variantTypes.VT_R4), new ComValue(null, types.FLOAT));
 supportedTypes_classes.set(new Number( variantTypes.VT_BOOL), new ComValue(null, types.BOOLEAN));

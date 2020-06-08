@@ -691,78 +691,9 @@ class CallBuilder extends NdrObject {
 				new Pointer(dualStringPtr).decode(ndr, [], Flags.FLAG_NULL, new Map());
 				ndr.readUnsignedLong();
 			} else {
-				let orpcThat = OrpcThat.decode(ndr);
-				let fromCallback = false;
-				if (this.session == null) {
-					throw new Error("Programming Error ! Session not attached with this call ! ... Please rectify ! ");
-				}
-
-				let index = 0;
-				let outparams = this.outParams;
-				let comObjects = [];
-				let additionalData = new Map();
-
-				additionalData.set(CURRENTSESSION, this.session);
-				additionalData.set(COMOBJECTS, comObjects);
-
-				let results = [];
-				// user has nothing to return.
-				if (outparams != null && outparams.length > 0) {
-
-					while (index < outparams.length) {
-						let listOfDefferedPointers = [];
-						results.push(MarshalUnMarshalHelper.deSerialize(ndr, outparams[index], listOfDefferedPointers, this.outparamFlags[index], additionalData));
-						let x = 0;
-
-						while (x < listOfDefferedPointers.length) {
-							let newList = [];
-							let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, this.outparamFlags[index], additionalData);
-							listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); // this should replace the value in the original place.
-							x++;
-							/* let begin = listOfDefferedPointers.slice(0, x);
-							let end = listOfDefferedPointers.slice(x, listOfDefferedPointers.length);
-							let middle = newList;
-							middle.push(...end);
-      						begin.push(...middle);
-							listOfDefferedPointers = begin;*/
-							listOfDefferedPointers.splice(x, 0, ...newList);
-						}
-						index++;
-					}
-
-
-					// now create the right COM Objects, it is required here only and no place else.
-					for (let i = 0; i < comObjects.length; i++) {
-
-						let comObjectImpl = comObjects[i];
-						let comObject = null;
-						if (fromCallback) {
-							// this is a new IP , so make a new ComServer for this.
-							let newsession = Session.createSession(this.session);
-							newsession.setGlobalSocketTimeout(this.session.getGlobalSocketTimeout());
-							newsession.useSessionSecurity(this.session.isSessionSecurityEnabled());
-							newsession.useNTLMv2(this.session.isNTLMv2Enabled());
-							let comServer = new ComServer(newsession, comObjectImpl.internal_getInterfacePointer(), null);
-							comObject = comServer.getInstance();
-							Session.linkTwoSessions(this.session, newsession);
-						} else {
-							if (comObjectImpl.internal_getInterfacePointer().isCustomObjRef()) {
-								continue;
-							}
-							comObject = FrameworkHelper.instantiateComObject2(this.session, comObjectImpl.internal_getInterfacePointer());
-						}
-
-						comObjectImpl.replaceMember(comObject);
-						FrameworkHelper.addComObjectToSession(comObjectImpl.getAssociatedSession(), comObjectImpl);
-						await comObjectImpl.addRef();
-					}
-
-					comObjects.length = 0;
-				}
-
-				this.outParams = results;
-				this.results = results;
-				this.executed = true;
+				OrpcThat.decode(ndr);
+				await this.readPacket(ndr, false);
+				//this.readResult(ndr);
 			}
 		}
 
@@ -813,11 +744,13 @@ class CallBuilder extends NdrObject {
 					let replacement = MarshalUnMarshalHelper.deSerialize(ndr, new ComValue(listOfDefferedPointers[x], types.POINTER), newList, this.outparamFlags[index], additionalData);
 					listOfDefferedPointers[x].replaceSelfWithNewPointer(replacement); // this should replace the value in the original place.
 					x++;
+					/*
 					let begin = listOfDefferedPointers.slice(0, x);
 					let end = listOfDefferedPointers.slice(x, listOfDefferedPointers.length);
 					let middle = newList;
 					listOfDefferedPointers = begin.concat(middle.concat(end));
-					// listOfDefferedPointers.splice(x, 0, ...newList);
+					*/
+					listOfDefferedPointers.splice(x, 0, ...newList);
 				}
 				index++;
 			}

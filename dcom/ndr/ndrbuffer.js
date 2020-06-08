@@ -80,9 +80,9 @@ NdrBuffer.prototype.alignToValue = function (boundary, value){
 NdrBuffer.prototype.writeOctetArray = function (b, i, l){
   let first = this.buf.slice(0, this.index);
   let end = this.buf.slice(this.index, this.buf.length);
-  let middle = b.slice(i, l);
+  let middle = Buffer.from(b.slice(i, l));
   
-  this.buf = Buffer.concat([first, middle, end]);;
+  this.buf = Buffer.concat([first, middle, end]);
 
   this.advance(l);
 }
@@ -131,9 +131,7 @@ NdrBuffer.prototype.enc_ndr_small = function (s){
 }
 
 NdrBuffer.prototype.dec_ndr_small = function (){
-  let val = this.buf[this.index] & 0xFF;
-  //let val2 = Buffer.from(this.buf).readUInt8(this.index);
-  //console.log(val, val2);
+  let val = Buffer.from(this.buf).readUInt8(this.index);
   this.advance(1);
   return val;
 }
@@ -189,7 +187,7 @@ NdrBuffer.prototype.dec_ndr_string = function (){
   this.align(4);
   let i = this.index;
   let val = null;
-  let len = Encdec_dec_uint32le(this.buf, i);
+  let len = Encdec.dec_uint32le(this.buf, i);
 
   i += 12;
   if (len != 0){

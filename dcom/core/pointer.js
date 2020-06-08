@@ -248,7 +248,7 @@ class Pointer {
 
     /**
      * 
-     * @param {Pointer} replacement
+     * @param {ComValue} replacement
      */
     replaceSelfWithNewPointer(replacement) {
         this.isDeffered = replacement.getValue().isDeffered;

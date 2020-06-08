@@ -39,7 +39,7 @@ class OXIDStub extends Stub{
    */
   async pingIPIDS(oxid) {
       let list = oxid.server.session.mapOfSessionvsIPIDPingHolders.keys();
-      console.log(list.length);
+      //console.log(list.length);
       while(list.length > 0) {
         let key = list.pop();
         let holder = oxid.server.session.mapOfSessionvsIPIDPingHolders.get(key);

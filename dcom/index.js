@@ -7,6 +7,7 @@ const ComString = require('./core/string');
 const ComValue = require('./core/comvalue');
 const Flags = require('./core/flags');
 const Pointer = require('./core/pointer');
+const Currency = require('./core/currency');
 const Types = require('./core/types');
 const Variant = require('./core/variant');
 const ComArray = require('./core/comarray');
@@ -21,6 +22,7 @@ module.exports = {
     ComValue,
     Flags,
     Pointer,
+    Currency,
     Types,
     Variant,
     ComArray,

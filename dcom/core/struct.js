@@ -24,7 +24,7 @@ class Struct {
     /**@type {number[]} */
     this.listOfDimensions = new Array();
     this.arrayAdded = false;
-    this.MEMBER_IS_EMPTY = Struct.MEMBER_IS_EMPTY;
+    //this.MEMBER_IS_EMPTY = Struct.MEMBER_IS_EMPTY;
   }
 
   _init(){
@@ -289,8 +289,12 @@ class Struct {
 
     return alignment;
   }
+
+  isEmpty(){
+    return this.arrayAdded;
+  }
 }
 
-Struct.MEMBER_IS_EMPTY = new Struct();
+//Struct.MEMBER_IS_EMPTY = new Struct();
 
 module.exports = Struct;
