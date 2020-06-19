@@ -678,7 +678,7 @@ function getLengthInBytes(val, flag)
 
                 if (!obj) return 0;
 
-                if (!obj.getString()) {
+                if (obj.getString() == null) {
                     return length;
                 }
 
