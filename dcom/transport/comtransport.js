@@ -108,6 +108,7 @@ class ComTransport extends events.EventEmitter
 
       channel.on('error', function(data){
         self.emit('disconnected');
+        reject(data)
       });
 
       channel.on('close', function(){
@@ -116,7 +117,10 @@ class ComTransport extends events.EventEmitter
         }
       });
 
+      const connectFailedTimer = setTimeout(() =>
+        channel.emit('error', 'Connection could not be established'), self.timeout)
       channel.connect(Number.parseInt(self.port),  self.host, () => {
+        clearTimeout(connectFailedTimer)
         self.attached = true;
         channel.setKeepAlive(true);
         self.channelWrapper = channel;

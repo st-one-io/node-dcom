@@ -87,7 +87,7 @@ class Stub extends Events.EventEmitter {
     transport = this.endpoint.transport;
     await transport.attach()
     .catch(function(reject) {
-      debug(reject);
+      throw new Error(reject)
     });
   }
 
