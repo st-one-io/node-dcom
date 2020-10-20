@@ -29,7 +29,7 @@ class RemActivation extends NdrObject {
      *
      * @param {Clsid} clsid
      */
-    constructor(clsid, interfaces) {
+    constructor(clsid, interfaces, comVersion) {
         super();
         this.RPC_C_IMP_LEVEL_IDENTIFY = 2;
         this.TPC_C_IMP_LEVEL_IMPERSONATE = 3;
@@ -48,7 +48,7 @@ class RemActivation extends NdrObject {
         this.ipid = null;
 
         this.authenticationHint = -1;
-        this.comVersion = null;
+        this.comVersion = comVersion;
         this.hresult = -1;
         this.mInterfacePointer = null;
         this.isDual = false;
@@ -99,7 +99,7 @@ class RemActivation extends NdrObject {
      * @param {NetworkDatarepresentation} ndr 
      */
     write(ndr) {
-        let oprcthis = new orpcThis();
+        let oprcthis = new orpcThis(this.comVersion);
         oprcthis.encode(ndr);
         
         let uuid = new UUID();
@@ -177,7 +177,7 @@ class RemActivation extends NdrObject {
 
         this.authenticationHint = ndr.readUnsignedLong();
 
-        this.comVersion = new ComVersion();
+        this.comVersion = new ComVersion(5, 4);
         this.comVersion.setMajorVersion(ndr.readUnsignedShort());
         this.comVersion.setMinorVersion(ndr.readUnsignedShort());
 

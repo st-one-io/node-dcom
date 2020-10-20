@@ -33,11 +33,11 @@ let cidForCallback;
 
 class OrpcThis {
 
-    constructor(casualityIdentifier) {
+    constructor(comVersion, casualityIdentifier) {
         this.cid = casualityIdentifier ? casualityIdentifier.toString() : generateUUID();
         this.flags = 0
         this.arry = null; //OrpcExtentArray[]
-        this.version = new System().getComVersion();
+        this.version = new System(comVersion).getComVersion();
     }
 
     setORPCFlags(flags) {

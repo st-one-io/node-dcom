@@ -45,9 +45,10 @@ class ComServer extends Stub {
     this.address;
     this.args = arguments;
     this.callType = 0;
+    this.comVersion = null;
     
     // we can create a server with different types of arguments
-    if (arguments.length == 3) {
+    if (arguments.length == 4) {
       if (arguments[0] instanceof Session){
         this.callType = 0;
       } else if (arguments[0] instanceof Stub) {
@@ -66,6 +67,8 @@ class ComServer extends Stub {
       this.session = this.args[0];
       this.interfacePointer = this.args[1];
       this.address = this.args[2];
+      this.comVersion = this.args[3];
+
       this.comServerSession(this.session, this.interfacePointer, this.address);
       return;
     } 
@@ -76,7 +79,8 @@ class ComServer extends Stub {
       this.clsid = this.args[0];
       this.address = this.args[1];
       this.session = this.args[2];
-      
+      this.comVersion = this.args[3];
+
       await this.comServerClsid(this.clsid, this.address, this.session);
     }
   }
@@ -301,7 +305,7 @@ class ComServer extends Stub {
     this.getEndpoint().getSyntax().setVersion(0,0);
     await this.getEndpoint().rebind(this.info);
 
-    this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"]);
+    this.serverActivation = new RemActivation(this.clsid,["39c13a4d-011e-11d0-9675-0020afd8adb3"], this.comVersion);
     
     await super.call(this.endpoint.IDEMPOTENT, this.serverActivation, this.info);
 

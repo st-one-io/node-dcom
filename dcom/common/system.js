@@ -5,15 +5,15 @@ var dns = require('dns');
 
 class System
 {
-  constructor()
+  constructor(comVersion)
   {
     this.pathToDB = null;
     this.mapOfProgIdsVsClsids = new HashMap();
     this.socketQueue = [];
-    this.comVersion = new ComVersion();
     this.autoRegister = false;
     this.autoCollection = true;
     this.mapOfHostnamesVsIPs = new HashMap();
+    this.comVersion = (comVersion) ? new ComVersion(comVersion.major, comVersion.minor) : new ComVersion();
   }
 
   setComVersion(comVersion)
