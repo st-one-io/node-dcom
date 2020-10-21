@@ -43,7 +43,7 @@ Now that you've already created a session you can create a server reference. To 
 
 ```javascript
 let Clsid = new Clsid(ClassID);
-let comServer = new ComServer(Clsid, address, session);
+let comServer = new ComServer(Clsid, address, session, {major: 5, minor: 7});
 comServer.init();
 ```
 
