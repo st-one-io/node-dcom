@@ -4,7 +4,7 @@
   "description": "Simple lib to support DCOM communication (Heavly based on J-Interop)",
   "main": "dcom/index.js",
   "scripts": {
-    "test": "none"
+    "test": "node examples/example.js"
   },
   "repository": {
     "type": "git",
