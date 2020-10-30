@@ -117,7 +117,7 @@ class ComTransport extends events.EventEmitter
         }
       });
 
-      const connectFailedTimer = setTimeout(() =>
+      const connectFailedTimer = self.timeout && setTimeout(() =>
         channel.emit('error', 'Connection could not be established'), self.timeout)
       channel.connect(Number.parseInt(self.port),  self.host, () => {
         clearTimeout(connectFailedTimer)
