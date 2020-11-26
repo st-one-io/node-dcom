@@ -48,7 +48,7 @@ class ComServer extends Stub {
     this.comVersion = null;
     
     // we can create a server with different types of arguments
-    if (arguments.length == 4) {
+    if (arguments.length >= 3) {
       if (arguments[0] instanceof Session){
         this.callType = 0;
       } else if (arguments[0] instanceof Stub) {
