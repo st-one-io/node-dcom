@@ -118,6 +118,34 @@ module.exports = {
     return 8;
   },
 
+  enc_longle: function (d, dst, di){
+    var buffer = new ArrayBuffer(4);         
+    var longNum = new Int32Array(buffer);  
+    longNum[0] = d;
+	
+	  ltEndian = Array.from(new Int8Array(buffer));
+	
+	  dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	  dst[di] = ltEndian[3];
+    return 4;
+  },
+
+  enc_longbe: function (d, dst, di){
+    var buffer = new ArrayBuffer(4);         
+    var longNum = new Int32Array(buffer);  
+    longNum[0] = d;
+	
+	  ltEndian = Array.from(new Int8Array(buffer)).reverse();
+	
+	  dst[di++] = ltEndian[0];
+    dst[di++] = ltEndian[1];
+    dst[di++] = ltEndian[2];
+	  dst[di] = ltEndian[3];
+    return 4;
+  },
+  
   enc_doublele: function (d, dst, di) {
 	  var buffer = new ArrayBuffer(8);         
     var longNum = new Float64Array(buffer);  
