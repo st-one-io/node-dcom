@@ -264,7 +264,7 @@ function serialize(ndr, val, defferedPointers, flag) {
                     value = Number.NaN;
                 }
                 ndr.getBuffer().align(8);
-                Encdec.enc_uint64le(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
+                Encdec.enc_longle(value, ndr.getBuffer().getBuffer(), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(8);
                 break;
 
@@ -572,7 +572,7 @@ function deSerialize(ndr, val, defferedPointers, flag, additionalData)
                 i = (i == 0) ? 0 : 8 - i ;
 
                 ndr.getBuffer().align(i);
-                let long = Encdec.dec_uint64le(Buffer.from(ndr.getBuffer().getBuffer()), ndr.getBuffer().getIndex());
+                let long = Encdec.dec_int32le(Buffer.from(ndr.getBuffer().getBuffer()), ndr.getBuffer().getIndex());
                 ndr.getBuffer().advance(i);
                 return new ComValue(long, types.LONG);
 
