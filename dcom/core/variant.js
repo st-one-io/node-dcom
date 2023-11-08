@@ -784,7 +784,7 @@ class VariantBody
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
 
-    if (dataType == variantTypes.VT_NULL) {
+    if (this.types == variantTypes.VT_NULL) {
       this.isNull = true;
       this.obj = new Number(0);
     }
