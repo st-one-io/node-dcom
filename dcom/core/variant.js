@@ -779,12 +779,12 @@ class VariantBody
 
     var typo = new Variant().getSupportedType(this.obj, dataType);
     if (typo != null) {
-      this.types = Number.parseInt(typo) | (args.isByref ? variantTypes.VT_BYREF:0);
+      this.type = Number.parseInt(typo) | (args.isByref ? variantTypes.VT_BYREF:0);
     } else {
       throw new Error(new ErrorCodes().VARIANT_UNSUPPORTED_TYPE);
     }
 
-    if (dataType == variantTypes.VT_NULL) {
+    if (this.type == -1 || this.type == variantTypes.VT_NULL) {
       this.isNull = true;
       this.obj = new Number(0);
     }
